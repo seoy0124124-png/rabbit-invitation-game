@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>붉은 설산의 저택</title>
     <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/visual-novel.css">
     <script defer src="/js/game.js"></script>
 </head>
-<body class="scene scene-game">
+<body class="scene scene-game" th:classappend="' player-' + ${#strings.toLowerCase(player.code)}">
 <div class="snow" aria-hidden="true"></div>
 <header class="topbar">
     <div>
@@ -23,7 +24,7 @@
 </header>
 
 <main class="atmosphere-map">
-    <img class="mansion-map ambient-large" src="/images/mansion-map.svg" alt="붉은 설산의 저택">
+    <img class="mansion-map ambient-large" src="/images/backgrounds/rabbit-invitation-bg.png" alt="검은 숲 너머 붉은 설산의 저택">
     <a class="button ghost" href="/lobby">메인으로 돌아가기</a>
 </main>
 </body>

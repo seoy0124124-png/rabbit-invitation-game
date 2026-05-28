@@ -43,11 +43,31 @@ const endingState = {
 
 let publicEvidence = [];
 let personalHints = [];
+let lastPhase = null;
+let hintsInitialized = false;
+let evidenceInitialized = false;
+
+const seenHintIds = new Set(JSON.parse(window.sessionStorage.getItem("mysterySeenHints") || "[]"));
+const seenEvidenceIds = new Set(JSON.parse(window.sessionStorage.getItem("mysterySeenEvidence") || "[]"));
 
 const storyReaderState = {
     source: "",
     page: 0,
     pages: []
+};
+
+const actingReaderState = {
+    source: "",
+    page: 0,
+    pages: []
+};
+
+const rememberSeen = (storageKey, seenSet, id) => {
+    if (!id) {
+        return;
+    }
+    seenSet.add(id);
+    window.sessionStorage.setItem(storageKey, JSON.stringify([...seenSet]));
 };
 
 const splitEndingPages = (body) => {
@@ -158,6 +178,79 @@ const paintStoryPage = () => {
     }
 };
 
+const paintActingPage = () => {
+    const panel = document.querySelector("[data-acting-content]");
+    const controls = document.querySelector("[data-acting-controls]");
+    if (!panel || !controls || actingReaderState.pages.length === 0) {
+        return;
+    }
+    const page = actingReaderState.pages[actingReaderState.page] || actingReaderState.pages[0];
+    const renderKey = `${actingReaderState.source}:${actingReaderState.page}`;
+    if (panel.dataset.renderKey !== renderKey) {
+        panel.dataset.renderKey = renderKey;
+        panel.classList.remove("is-turning");
+        window.requestAnimationFrame(() => {
+            panel.classList.add("is-turning");
+            panel.innerHTML = `
+                ${page.title ? `<h3>${escapeHtml(page.title)}</h3>` : ""}
+                ${page.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+            `;
+        });
+    }
+    controls.hidden = false;
+    const indicator = controls.querySelector("[data-acting-page-indicator]");
+    const prev = controls.querySelector("[data-acting-prev]");
+    const next = controls.querySelector("[data-acting-next]");
+    if (indicator) {
+        indicator.textContent = `${actingReaderState.page + 1} / ${actingReaderState.pages.length}`;
+    }
+    if (prev) {
+        prev.disabled = actingReaderState.page === 0;
+    }
+    if (next) {
+        next.disabled = actingReaderState.page >= actingReaderState.pages.length - 1;
+        next.textContent = actingReaderState.page >= actingReaderState.pages.length - 1 ? "마지막 장" : "다음 장";
+    }
+};
+
+const showPhaseCurtain = (phaseLabel, phaseKey) => {
+    const curtain = document.querySelector("[data-phase-curtain]");
+    if (!curtain) {
+        return;
+    }
+    const title = curtain.querySelector("p");
+    const note = curtain.querySelector("span");
+    const lines = {
+        WAITING: ["프롤로그 종료", "하지만 이번에는, 토끼가 돌아오지 못했다."],
+        STORY_REVEAL: ["1막 시작", "괴물은 언제나 가장 두려운 얼굴을 하고 있다."],
+        FIRST_DISCUSSION: ["1막 시작", "괴물은 언제나 가장 두려운 얼굴을 하고 있다."],
+        FIRST_HINT: ["1막의 기록", "누군가의 흔적이 너무 쉽게 남아 있었다."],
+        SECOND_DISCUSSION: ["2막 시작", "같은 장면을 보았는데도, 모두의 이야기는 조금씩 달랐다."],
+        SECOND_HINT: ["2막의 기록", "기억은 가끔 남이 쓴 문장처럼 흔들린다."],
+        THIRD_HINT: ["3막 시작", "숨겨져 있던 문이 열린다."],
+        FINAL_DISCUSSION: ["최종 토론", "당신들이 본 것은 정말 현실이었을까."],
+        VOTE: ["투표 직전", "괴물은 누구인가."],
+        ENDING: ["마지막 장", "누군가는 끝까지 혼자 남고 싶지 않았다."]
+    };
+    const selected = lines[phaseKey] || [phaseLabel || "다음 막", "눈발 사이로 장면이 바뀝니다."];
+    if (title) {
+        title.textContent = selected[0];
+    }
+    if (note) {
+        note.textContent = selected[1];
+    }
+    curtain.hidden = false;
+    curtain.classList.remove("is-fading");
+    window.clearTimeout(showPhaseCurtain.timeout);
+    showPhaseCurtain.timeout = window.setTimeout(() => {
+        curtain.classList.add("is-fading");
+        window.setTimeout(() => {
+            curtain.hidden = true;
+            curtain.classList.remove("is-fading");
+        }, 520);
+    }, 1500);
+};
+
 const initStaticReader = () => {
     const reader = document.querySelector("[data-static-reader]");
     if (!reader || reader.dataset.readerReady) {
@@ -216,8 +309,8 @@ const initStaticReader = () => {
 };
 
 const renderHints = async () => {
-    const list = document.querySelector("[data-hint-list]");
-    if (!list) {
+    const lists = document.querySelectorAll("[data-hint-list]");
+    if (lists.length === 0) {
         return;
     }
     const response = await fetch("/api/hints", {headers: {"Accept": "application/json"}});
@@ -225,28 +318,44 @@ const renderHints = async () => {
         return;
     }
     personalHints = await response.json();
-    const renderGroup = (title, typeCode) => {
+    if (!hintsInitialized) {
+        hintsInitialized = true;
+        personalHints.forEach((hint) => {
+            if (seenHintIds.has(hint.id)) {
+                return;
+            }
+            if (!hint.id.startsWith("evidence-")) {
+                rememberSeen("mysterySeenHints", seenHintIds, hint.id);
+            }
+        });
+    }
+    const renderGroup = (title, typeCode, list) => {
         const items = personalHints.filter((hint) => hint.typeCode === typeCode);
-        return `
-            <section class="hint-group">
-                <h3>${title}</h3>
-                ${items.map((hint) => `
-                    <article class="hint-note compact" data-hint-id="${escapeHtml(hint.id)}">
-                        <button class="hint-open" data-hint-open="${escapeHtml(hint.id)}" type="button">
-                            <span>${escapeHtml(hint.roundLabel)} · ${escapeHtml(hint.type)}</span>
-                            <strong>${escapeHtml(hint.title)}</strong>
-                        </button>
+        list.innerHTML = `
+            ${items.map((hint) => {
+                const isNew = !seenHintIds.has(hint.id);
+                return `
+                <article class="hint-note compact ${isNew ? "is-new" : ""}" data-hint-id="${escapeHtml(hint.id)}">
+                    <button class="hint-open" data-hint-open="${escapeHtml(hint.id)}" type="button">
+                        <span>${escapeHtml(hint.roundLabel)} · ${escapeHtml(hint.type)} ${isNew ? `<b class="new-badge">NEW</b>` : ""}</span>
+                        <strong>${escapeHtml(hint.title)}</strong>
+                    </button>
+                    <div class="share-area">
+                        <p>공개하면 되돌릴 수 없습니다.</p>
                         <button class="button ghost small share-button" data-share-hint="${escapeHtml(hint.id)}" ${hint.shared ? "disabled" : ""} type="button">
-                            ${hint.shared ? "공개됨" : "이 힌트 공개"}
+                            ${hint.shared ? "공개됨" : `${title} 공개`}
                         </button>
-                    </article>
-                `).join("") || `<p class="empty-hints">아직 받은 ${title}이 없습니다.</p>`}
-            </section>
+                    </div>
+                </article>`;
+            }).join("")}
         `;
+        document.querySelectorAll(`[data-empty-type="${typeCode}"]`).forEach((node) => {
+            node.hidden = items.length > 0;
+        });
     };
-    list.innerHTML = renderGroup("증언", "TESTIMONY") + renderGroup("물증", "EVIDENCE");
-    document.querySelectorAll("[data-empty-hints]").forEach((node) => {
-        node.hidden = personalHints.length > 0;
+    lists.forEach((list) => {
+        const typeCode = list.dataset.hintType || "TESTIMONY";
+        renderGroup(typeCode === "EVIDENCE" ? "물증" : "증언", typeCode, list);
     });
 };
 
@@ -255,6 +364,7 @@ const openHintDetail = (hint) => {
     if (!hint || !panel) {
         return;
     }
+    rememberSeen("mysterySeenHints", seenHintIds, hint.id);
     panel.querySelector("[data-evidence-meta]").textContent = `${hint.roundLabel} · ${hint.type}`;
     panel.querySelector("[data-evidence-title]").textContent = hint.title;
     panel.querySelector("[data-evidence-short]").textContent = hint.shared ? "공개된 항목입니다." : "아직 다른 플레이어에게 공개하지 않았습니다.";
@@ -266,6 +376,8 @@ const openHintDetail = (hint) => {
 const renderStory = async () => {
     const locked = document.querySelector("[data-story-locked]");
     const content = document.querySelector("[data-story-content]");
+    const actingLocked = document.querySelector("[data-acting-locked]");
+    const actingContent = document.querySelector("[data-acting-content]");
     if (!locked || !content) {
         return;
     }
@@ -276,20 +388,35 @@ const renderStory = async () => {
     const story = await response.json();
     locked.hidden = story.revealed;
     content.hidden = !story.revealed;
+    if (actingLocked) {
+        actingLocked.hidden = story.revealed;
+    }
+    if (actingContent) {
+        actingContent.hidden = !story.revealed;
+    }
     if (story.revealed) {
-        const source = JSON.stringify([story.personalStory, story.secret, story.actingHint]);
+        const source = JSON.stringify([story.personalStory, story.secret]);
         if (storyReaderState.source !== source) {
             storyReaderState.source = source;
             storyReaderState.pages = splitReaderPages([
                 {title: "개인 이야기", body: story.personalStory},
-                {title: "비밀 정보", body: story.secret},
-                {title: "연기 힌트", body: story.actingHint}
+                {title: "비밀 정보", body: story.secret}
             ]);
             storyReaderState.page = Math.min(storyReaderState.page, storyReaderState.pages.length - 1);
         }
         paintStoryPage();
+        const actingSource = story.actingHint || "아직 별도의 연기 힌트가 없습니다.";
+        if (actingReaderState.source !== actingSource) {
+            actingReaderState.source = actingSource;
+            actingReaderState.pages = splitReaderPages([
+                {title: "연기 힌트", body: actingSource}
+            ], 2);
+            actingReaderState.page = Math.min(actingReaderState.page, actingReaderState.pages.length - 1);
+        }
+        paintActingPage();
     } else {
         document.querySelector("[data-story-controls]")?.setAttribute("hidden", "");
+        document.querySelector("[data-acting-controls]")?.setAttribute("hidden", "");
     }
 };
 
@@ -354,6 +481,58 @@ const evidenceIcon = (visual) => {
     return icons[visual] || "◆";
 };
 
+const evidenceImage = (itemOrVisual) => {
+    const id = typeof itemOrVisual === "object" ? itemOrVisual.id : "";
+    const visual = typeof itemOrVisual === "object" ? itemOrVisual.visual : itemOrVisual;
+    const byId = {
+        "claw-marks": "blood-watch.png",
+        "torn-red-cloth": "torn-invitation.png",
+        "fading-blood": "blood-watch.png",
+        "wet-wolf-fur": "red-thread.png",
+        "broken-door-handle": "wood-shavings.png",
+        "torn-record": "torn-invitation.png",
+        "blurred-ink": "sealed-letter.png",
+        "repeated-sentence": "sealed-letter.png",
+        "wall-memory-scratch": "sealed-letter.png",
+        "damaged-group-picture": "card-fragment.png",
+        "blurred-face": "card-fragment.png",
+        "scratched-watch": "blood-watch.png",
+        "clock-sound-conflict": "blood-watch.png",
+        "broken-thread": "red-thread.png",
+        "wood-dust": "wood-shavings.png",
+        "burned-blueprint": "sealed-letter.png",
+        "cracked-doll-eye": "wood-shavings.png",
+        "future-note": "torn-invitation.png",
+        "red-rabbit-drawing": "card-fragment.png",
+        "half-burned-paper": "matchbox.png",
+        "black-ash": "matchbox.png",
+        "conflicting-times": "blood-watch.png",
+        "silent-footprints": "torn-invitation.png",
+        "laughing-witness": "sealed-letter.png",
+        "rabbit-room-record": "sealed-letter.png",
+        "rabbit-desk-record": "sealed-letter.png",
+        "rabbit-workshop-record": "wood-shavings.png"
+    };
+    const images = {
+        claw: "blood-watch.png",
+        cloth: "torn-invitation.png",
+        blood: "blood-watch.png",
+        paper: "torn-invitation.png",
+        ink: "sealed-letter.png",
+        memory: "sealed-letter.png",
+        portrait: "card-fragment.png",
+        watch: "blood-watch.png",
+        thread: "red-thread.png",
+        wood: "wood-shavings.png",
+        blueprint: "sealed-letter.png",
+        doll: "wood-shavings.png",
+        fur: "red-thread.png",
+        ash: "matchbox.png",
+        footprint: "torn-invitation.png"
+    };
+    return `/images/evidence/${byId[id] || images[visual] || "sealed-letter.png"}`;
+};
+
 const renderEvidence = async () => {
     const list = document.querySelector("[data-evidence-list]");
     if (!list) {
@@ -364,15 +543,23 @@ const renderEvidence = async () => {
         return;
     }
     publicEvidence = await response.json();
-    list.innerHTML = publicEvidence.map((item) => `
-        <button class="evidence-card evidence-${escapeHtml(item.visual)}" data-evidence-id="${escapeHtml(item.id)}" type="button">
-            <span class="evidence-mark">${escapeHtml(evidenceIcon(item.visual))}</span>
-            <strong>${escapeHtml(item.name)}</strong>
-            <small>${escapeHtml(item.revealRound)} · ${escapeHtml(item.category)}</small>
-            <p>${escapeHtml(item.shortDescription)}</p>
-            <span class="evidence-tags">${(item.keywords || []).map((keyword) => `<em>${escapeHtml(keyword)}</em>`).join("")}</span>
-        </button>
-    `).join("");
+    if (!evidenceInitialized) {
+        evidenceInitialized = true;
+        publicEvidence.forEach((item) => rememberSeen("mysterySeenEvidence", seenEvidenceIds, item.id));
+    }
+    list.innerHTML = publicEvidence.map((item) => {
+        const isNew = !seenEvidenceIds.has(item.id);
+        return `
+            <button class="evidence-card evidence-${escapeHtml(item.visual)} ${isNew ? "is-new" : ""}" data-evidence-id="${escapeHtml(item.id)}" type="button">
+                <span class="evidence-photo" style="background-image: url('${escapeHtml(evidenceImage(item))}')"></span>
+                <span class="evidence-mark">${escapeHtml(evidenceIcon(item.visual))}</span>
+                <strong>${escapeHtml(item.name)} ${isNew ? `<b class="new-badge">NEW</b>` : ""}</strong>
+                <small>${escapeHtml(item.revealRound)} · ${escapeHtml(item.category)}</small>
+                <p>${escapeHtml(item.shortDescription)}</p>
+                <span class="evidence-tags">${(item.keywords || []).map((keyword) => `<em>${escapeHtml(keyword)}</em>`).join("")}</span>
+            </button>
+        `;
+    }).join("");
     document.querySelectorAll("[data-empty-evidence]").forEach((node) => {
         node.hidden = publicEvidence.length > 0;
     });
@@ -412,6 +599,10 @@ const refreshState = async () => {
         return;
     }
     const state = await response.json();
+    if (lastPhase && lastPhase !== state.phase) {
+        showPhaseCurtain(state.phaseLabel, state.phase);
+    }
+    lastPhase = state.phase;
     document.querySelectorAll("[data-timer]").forEach((node) => {
         node.textContent = formatTime(state.timerSeconds);
     });
@@ -428,9 +619,6 @@ const refreshState = async () => {
         node.hidden = state.phase !== "VOTE";
     });
     document.body.dataset.phase = state.phase;
-    document.querySelectorAll("[data-stage-floorplan]").forEach((node) => {
-        node.hidden = ["WAITING", "PROLOGUE", "PRIVATE_STORY"].includes(state.phase);
-    });
     renderEnding(state);
     await renderHints();
     await renderStory();
@@ -451,9 +639,58 @@ document.addEventListener("submit", async (event) => {
     showToast(result.message);
 });
 
-document.addEventListener("click", (event) => {
+document.addEventListener("submit", async (event) => {
+    const form = event.target.closest("form[action^='/admin/']");
+    if (!form) {
+        return;
+    }
+    event.preventDefault();
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const submitButton = event.submitter;
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+    try {
+        const response = await fetch(form.action, {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: new URLSearchParams(new FormData(form))
+        });
+        if (!response.ok) {
+            showToast("처리하지 못했습니다.");
+            return;
+        }
+        const htmlResponse = await fetch("/admin", {headers: {"Accept": "text/html"}});
+        if (htmlResponse.ok) {
+            const html = await htmlResponse.text();
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const nextHeader = doc.querySelector(".topbar");
+            const nextMain = doc.querySelector(".admin-grid");
+            const header = document.querySelector(".topbar");
+            const main = document.querySelector(".admin-grid");
+            if (nextHeader && header) {
+                header.innerHTML = nextHeader.innerHTML;
+            }
+            if (nextMain && main) {
+                main.innerHTML = nextMain.innerHTML;
+            }
+        }
+        await refreshState();
+        window.scrollTo(scrollX, scrollY);
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+        }
+    }
+});
+
+document.addEventListener("click", async (event) => {
     const hintShareButton = event.target.closest("[data-share-hint]");
     if (hintShareButton) {
+        if (!window.confirm("공개하면 모든 플레이어가 볼 수 있으며 되돌릴 수 없습니다. 공개할까요?")) {
+            return;
+        }
         postForm("/api/share/hint", {hintId: hintShareButton.dataset.shareHint}).then(async (result) => {
             showToast(result.message);
             await renderHints();
@@ -473,6 +710,9 @@ document.addEventListener("click", (event) => {
     const panelButton = event.target.closest("[data-panel-target]");
     if (panelButton) {
         const target = document.getElementById(panelButton.dataset.panelTarget);
+        if (target && (target.id === "story-panel" || target.id === "acting-panel")) {
+            await renderStory();
+        }
         document.querySelectorAll("[data-panel]").forEach((panel) => {
             panel.hidden = panel !== target;
         });
@@ -480,6 +720,9 @@ document.addEventListener("click", (event) => {
             target.hidden = false;
             if (target.id === "story-panel") {
                 paintStoryPage();
+            }
+            if (target.id === "acting-panel") {
+                paintActingPage();
             }
         }
         return;
@@ -490,7 +733,7 @@ document.addEventListener("click", (event) => {
         const board = collapseButton.closest(".collapsible-board");
         if (board) {
             board.classList.toggle("is-collapsed");
-            collapseButton.textContent = board.classList.contains("is-collapsed") ? "펼치기" : "줄이기";
+            collapseButton.textContent = board.classList.contains("is-collapsed") ? "펼치기" : "접기";
         }
         return;
     }
@@ -514,11 +757,16 @@ document.addEventListener("click", (event) => {
         const item = publicEvidence.find((entry) => entry.id === evidenceButton.dataset.evidenceId);
         const panel = document.querySelector("[data-evidence-detail]");
         if (item && panel) {
+            rememberSeen("mysterySeenEvidence", seenEvidenceIds, item.id);
             panel.querySelector("[data-evidence-meta]").textContent = `${item.revealRound} · ${item.category}`;
             panel.querySelector("[data-evidence-title]").textContent = item.name;
             panel.querySelector("[data-evidence-short]").textContent = item.shortDescription;
             panel.querySelector("[data-evidence-keywords]").innerHTML = (item.keywords || []).map((keyword) => `<em>${escapeHtml(keyword)}</em>`).join("");
             panel.querySelector("[data-evidence-body]").textContent = item.detail;
+            const image = panel.querySelector("[data-evidence-image]");
+            if (image) {
+                image.src = evidenceImage(item);
+            }
             panel.hidden = false;
         }
         return;
@@ -545,6 +793,18 @@ document.addEventListener("click", (event) => {
     if (event.target.closest("[data-story-next]")) {
         storyReaderState.page = Math.min(storyReaderState.pages.length - 1, storyReaderState.page + 1);
         paintStoryPage();
+        return;
+    }
+
+    if (event.target.closest("[data-acting-prev]")) {
+        actingReaderState.page = Math.max(0, actingReaderState.page - 1);
+        paintActingPage();
+        return;
+    }
+
+    if (event.target.closest("[data-acting-next]")) {
+        actingReaderState.page = Math.min(actingReaderState.pages.length - 1, actingReaderState.page + 1);
+        paintActingPage();
         return;
     }
 

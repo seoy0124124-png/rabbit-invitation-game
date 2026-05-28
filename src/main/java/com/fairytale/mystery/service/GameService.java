@@ -251,8 +251,8 @@ public class GameService {
                 "당신은 중앙 홀에 들어섰을 때 시계가 이미 11시 47분에 멈춰 있는 것을 보았습니다. 뒤늦게 들린 초침 소리는 시계가 아니라 벽 안쪽의 작은 기계음 같았습니다. 이 말을 믿어줄 사람은 많지 않을 것입니다.");
         addTestimony("alice-t3", "ALICE", "도망치라고 말하던 RED",
                 "사건 직전 RED가 난간 아래에서 혼잣말을 하고 있었습니다. 당신은 분명 '도망쳐...'라는 말을 들었습니다. 누구에게 한 말인지는 모르겠습니다. 토끼에게 한 경고였을 수도, 자기 자신에게 한 명령이었을 수도 있습니다.");
-        addTestimony("alice-t4", "ALICE", "웃음소리의 주인",
-                "토론이 시작되기 전, 벽난로 뒤에서 낮은 웃음소리가 들렸습니다. MATCH는 못 들은 척했고, PINO는 순간 굳었습니다. 당신은 그 웃음이 토끼의 것이라고 생각했지만, 토끼는 이미 움직이지 않았습니다.");
+        addTestimony("alice-t4", "ALICE", "이름을 부르는 목소리",
+                "토끼가 죽기 직전, 복도 끝에서 아주 낮은 목소리가 들렸습니다. 누군가의 이름을 부르는 목소리였습니다. 이름은 정확히 들리지 않았지만, 그 목소리에는 공포보다 슬픔이 더 많이 섞여 있었습니다. 그 소리를 말하려는 순간, PINO가 아주 짧게 숨을 멈춘 것처럼 보였습니다.");
         addTestimony("alice-t5", "ALICE", "번지는 얼굴",
                 "오래된 그림 속 얼굴 하나가 물에 젖은 것처럼 사라지는 장면을 보았습니다. 그 순간 PINO가 당신을 바라보고 있었습니다. 그가 한 일인지, 그가 두려워하던 일이 벌어진 것인지는 알 수 없습니다.");
 
@@ -265,7 +265,7 @@ public class GameService {
         addTestimony("pino-t4", "PINO", "RED를 본 시간",
                 "당신은 방 안 창문으로 저택 반대편 눈밭에 쓰러진 RED를 보았습니다. 그런데 누군가는 같은 시각 중앙 홀에서 RED의 그림자를 봤다고 말합니다. 둘 중 하나는 거짓말이거나, 누군가 기억의 위치를 바꿔놓았습니다.");
         addTestimony("pino-t5", "PINO", "내가 지우려던 얼굴",
-                "토끼가 당신의 손목을 잡고 '너는 네가 만들어진 이유보다 더 큰 존재야'라고 말했습니다. 그 직후의 기억이 끊겨 있습니다. 당신은 그 말을 지우고 싶었던 걸까요, 아니면 그 말을 믿고 싶어서 붙잡았던 걸까요.");
+                "토끼가 당신의 손목을 잡고 '너는 네가 만들어진 이유보다 더 큰 존재야'라고 말했습니다. 그는 끝까지 당신을 무서워하지 않았습니다. 그 직후의 기억이 끊겨 있습니다. 당신은 그 말을 지우고 싶었던 걸까요, 아니면 그 말을 믿고 싶어서 붙잡았던 걸까요. 누군가 '구원', '버려졌다', '괴물', '혼자 남았다' 같은 말을 꺼내면 손끝부터 먼저 굳어옵니다.");
 
         addTestimony("match-t1", "MATCH", "RED의 피 냄새",
                 "사건 직후 RED는 피 냄새라는 말에 지나치게 예민하게 굳었습니다. 하지만 그녀의 손에는 피가 있었고 옷자락에는 거의 없었습니다. 정말 덮쳐 물어뜯었다면 냄새보다 먼저 몸 전체가 젖어 있었어야 합니다.");
@@ -275,8 +275,8 @@ public class GameService {
                 "토끼의 시체가 발견되기 전, ALICE가 냅킨 구석에 붉은 목의 토끼를 그리고 있었습니다. 당신이 묻자 그녀는 '이미 본 장면이야'라고 답했습니다. 장난이라기엔 손끝이 너무 차가웠습니다.");
         addTestimony("match-t4", "MATCH", "서로 다른 종소리",
                 "당신은 분명 종소리를 들었습니다. 하지만 RED는 아무 소리도 못 들었다고 했고, ALICE는 시계가 이미 멈춰 있었다고 했습니다. PINO는 한참 뒤에야 '종은 한 번 울렸다'고 말했습니다. 모두 같은 밤에 있었던 게 맞는지 의심됩니다.");
-        addTestimony("match-t5", "MATCH", "젖은 회색 털",
-                "난간에 붙은 젖은 회색 털을 가장 먼저 본 건 당신입니다. RED를 의심하기 쉬운 증거였지만, 그 털에서는 숲 바깥의 차가운 냄새가 났습니다. 저택 안의 누군가가 아니라, 정말 늑대가 다녀간 흔적일지도 모릅니다.");
+        addTestimony("match-t5", "MATCH", "PINO의 손끝",
+                "사건 직후, 당신은 PINO의 손끝을 보았습니다. 피는 없었습니다. 대신 아주 미세한 나무 가루가 손톱 사이에 묻어 있었습니다. 말하려 했지만 입을 다물었습니다. 당신도 그 직후 정체를 알 수 없는 설계도 같은 종이를 태웠기 때문입니다. 누군가를 괴물로 만들기엔, 당신 역시 너무 많은 것을 숨기고 있었습니다.");
         addEvidenceItem("claw-marks", "초반 의심", "RED 의심", "벽의 발톱 자국",
                 "중앙 홀 벽에 깊게 긁힌 흔적.",
                 "초반에는 RED의 늑대인간 정체를 의심하게 만듭니다. 하지만 긁힌 깊이가 일정하고 시작점이 어색해, 후반에는 누군가 RED를 범인처럼 보이게 만든 흔적일 수 있습니다.",
@@ -373,6 +373,18 @@ public class GameService {
                 "토론 전후로 낮은 웃음소리를 들었다는 기록이 남아 있습니다.",
                 "RED는 들은 적 없다고 하고, MATCH는 토론 중 들었다고 하며, ALICE는 그게 토끼였다고 주장합니다. PINO는 기억이 안 난다고 말합니다. 웃음소리 하나가 모든 증언을 서로 의심하게 만듭니다.",
                 List.of("웃음소리", "증언 충돌", "기억 공백"), "memory");
+        addEvidenceItem("rabbit-room-record", "3막 기록", "토끼 기록", "토끼의 방에 남은 기록",
+                "낡은 방 한구석에서 발견된 짧은 기록.",
+                "아이들은 늘 스스로를 괴물이라 불렀다. 하지만 괴물이라는 말은 대개 자신을 두려워하는 사람들의 입에서 먼저 나온다. 나는 그 아이들에게 다른 이름을 불러주고 싶었다.",
+                List.of("토끼 기록", "괴물", "다른 이름"), "paper");
+        addEvidenceItem("rabbit-desk-record", "3막 기록", "토끼 기록", "책상 서랍의 기록",
+                "잠기지 않은 책상 서랍 안쪽에 접힌 종이.",
+                "이번에는 아무도 혼자 두지 않을 거야. 숲에서 길을 잃은 아이도, 불 속에 남겨진 아이도, 이상한 나라에서 돌아오지 못한 아이도, 사람이 되고 싶었던 아이도. 모두 돌아와야 한다.",
+                List.of("토끼 기록", "혼자 두지 않음", "구원"), "paper");
+        addEvidenceItem("rabbit-workshop-record", "3막 기록", "숨겨진 작업실", "숨겨진 작업실의 기록",
+                "기계 부품과 목각 가루 사이에서 발견된 기록.",
+                "그 아이는 자신이 사람을 흉내 낸다고 믿었다. 하지만 내가 보기엔 누구보다 사람에 가까웠다. 외로워했고, 질투했고, 사랑받고 싶어 했다. 그게 사람의 마음이 아니라면, 무엇을 사람의 마음이라 부를 수 있을까.",
+                List.of("토끼 기록", "그 아이", "사람의 마음"), "wood");
 
         addPersonalEvidenceHints();
     }
@@ -405,11 +417,96 @@ public class GameService {
         List<String> playerCodes = List.of("RED", "ALICE", "PINO", "MATCH");
         List<GamePhase> phases = hintReleasePhases();
         List<EvidenceItem> items = List.copyOf(evidenceItems.values());
+        Map<String, String> owners = Map.ofEntries(
+                Map.entry("claw-marks", "RED"),
+                Map.entry("torn-red-cloth", "RED"),
+                Map.entry("scratched-watch", "ALICE"),
+                Map.entry("rabbit-room-record", "PINO"),
+                Map.entry("rabbit-desk-record", "ALICE"),
+                Map.entry("rabbit-workshop-record", "PINO"),
+                Map.entry("half-burned-paper", "MATCH"),
+                Map.entry("wood-dust", "MATCH"),
+                Map.entry("repeated-sentence", "MATCH")
+        );
+        Map<String, GamePhase> customPhases = Map.ofEntries(
+                Map.entry("claw-marks", GamePhase.SECOND_HINT),
+                Map.entry("torn-red-cloth", GamePhase.SECOND_HINT),
+                Map.entry("scratched-watch", GamePhase.SECOND_HINT),
+                Map.entry("wood-dust", GamePhase.THIRD_HINT),
+                Map.entry("half-burned-paper", GamePhase.THIRD_HINT),
+                Map.entry("repeated-sentence", GamePhase.THIRD_HINT),
+                Map.entry("rabbit-room-record", GamePhase.THIRD_HINT),
+                Map.entry("rabbit-desk-record", GamePhase.THIRD_HINT),
+                Map.entry("rabbit-workshop-record", GamePhase.THIRD_HINT)
+        );
+        Map<String, String> customBodies = Map.ofEntries(
+                Map.entry("claw-marks", """
+                        그 자국을 보는 순간, 목덜미의 오래된 상처가 욱신거립니다.
+
+                        하지만 이상하게도 그 자국은 당신이 아는 짐승의 흔적과 조금 다릅니다. 진짜 늑대라면 저렇게 일정하게 긁지 않습니다.
+
+                        누군가 늑대를 흉내 내고 있다면, 그건 당신을 향한 덫일지도 모릅니다.
+                        """),
+                Map.entry("torn-red-cloth", """
+                        찢긴 천을 보는 순간, 도망치던 숲의 냄새가 떠오릅니다.
+
+                        하지만 찢긴 방향이 이상합니다. 짐승에게 물어뜯긴 것이라기보다, 누군가 당신의 망토 색을 알고 일부러 잘라낸 것처럼 느껴집니다.
+
+                        이 천은 당신의 죄가 아니라, 누군가가 당신에게 씌우려는 얼굴일지도 모릅니다.
+                        """),
+                Map.entry("scratched-watch", """
+                        그 그림과 글자를 볼 때마다, 초침 소리가 들리는 것 같습니다.
+
+                        하지만 이상한 점은 그 소리가 시계에서 나는 것이 아니라 벽 안쪽 어딘가에서 나는 것처럼 느껴진다는 것입니다.
+
+                        누군가 시간을 멈춘 게 아니라, 시간이 멈춘 것처럼 보이게 만들고 있는 것 같았습니다.
+                        """),
+                Map.entry("wood-dust", """
+                        사건 직후 당신은 PINO의 손끝을 보았습니다.
+
+                        피가 아니라 아주 미세한 나무 가루가 묻어 있었습니다. 말하려 했지만 입을 다물었습니다. 당신도 그 직후 정체를 알 수 없는 설계도 같은 종이를 태웠기 때문입니다.
+
+                        누군가를 의심하기엔, 당신 역시 너무 많은 것을 숨기고 있었습니다.
+                        """),
+                Map.entry("half-burned-paper", """
+                        종이 끝부분은 분명 누군가 급하게 태우려다 멈춘 흔적입니다.
+
+                        그을린 부분을 보는 순간, 당신이 태웠던 설계도도 떠오릅니다. 관절처럼 꺾인 선, 실이 지나가는 위치, 누군가를 움직이기 위해 그려진 것 같은 구조.
+
+                        그 종이를 남겨두면 누군가 또 망가질 것 같았습니다.
+                        """),
+                Map.entry("repeated-sentence", """
+                        반복된 문장은 단순한 낙서처럼 보이지 않습니다.
+
+                        종이 끝부분은 누군가 급히 태우려다 멈춘 흔적이고, 그을린 냄새는 당신이 숨긴 설계도 냄새와 닮아 있습니다.
+
+                        기억을 남기면 안 된다는 말은 협박일까요, 아니면 누군가를 보호하려는 절박한 부탁일까요.
+                        """),
+                Map.entry("rabbit-room-record", """
+                        “이번에는 아무도 혼자 두지 않을 거야.”
+
+                        그 문장을 읽는 순간, 당신은 자신도 모르게 손을 움켜쥡니다. 다정해서가 아니라, 너무 늦게 도착한 말처럼 느껴졌기 때문입니다.
+
+                        당신은 혼자 남기 싫었습니다. 하지만 토끼는 모두를 혼자 두지 않으려 했습니다. 그 차이가 견딜 수 없습니다.
+                        """),
+                Map.entry("rabbit-desk-record", """
+                        이 기록은 환각처럼 보이지 않습니다.
+
+                        글자는 떨리고 있지만, 문장마다 누군가를 잃어본 사람의 숨이 남아 있습니다. 토끼는 누군가를 심판하려 한 게 아니라, 돌아오지 못한 아이들을 다시 부르려 했던 것 같습니다.
+                        """),
+                Map.entry("rabbit-workshop-record", """
+                        “그 아이는 누구보다 사람에 가까웠다.”
+
+                        그 문장을 읽는 순간, 당신은 웃으려다 실패합니다. 불쌍하다는 말, 구원이라는 말, 버려졌다는 말, 괴물이라는 말, 특별하지 않았다는 말, 혼자 남았다는 말이 나오면 시선을 피하세요.
+
+                        누군가 “토끼는 너를 무서워하지 않았다”고 말한다면, 잠깐 말을 멈추고 손끝을 만지세요. 필요하다면 아주 낮게 “그만해”라고 말해도 됩니다.
+                        """)
+        );
         for (int index = 0; index < items.size(); index++) {
             EvidenceItem item = items.get(index);
-            String playerCode = playerCodes.get(index % playerCodes.size());
-            GamePhase phase = phases.get((index / playerCodes.size()) % phases.size());
-            String body = item.shortDescription() + "\n\n" + item.detail();
+            String playerCode = owners.getOrDefault(item.id(), playerCodes.get(index % playerCodes.size()));
+            GamePhase phase = customPhases.getOrDefault(item.id(), phases.get((index / playerCodes.size()) % phases.size()));
+            String body = customBodies.getOrDefault(item.id(), item.shortDescription() + "\n\n" + item.detail());
             hints.put("evidence-" + item.id(), new PersonalHint(
                     "evidence-" + item.id(),
                     playerCode,

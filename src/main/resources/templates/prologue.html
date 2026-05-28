@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>프롤로그</title>
     <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/visual-novel.css">
     <script defer src="/js/game.js"></script>
 </head>
-<body class="scene scene-prologue">
+<body class="scene scene-prologue" th:classappend="' player-' + ${#strings.toLowerCase(player.code)}">
 <div class="snow" aria-hidden="true"></div>
 <form class="leave-form" action="/leave" method="post">
     <button class="button danger small" type="submit">입장 화면으로 나가기</button>
@@ -16,6 +17,7 @@
     <section class="prologue-frame prologue-reader" data-static-reader data-reader-key="prologue">
         <p class="eyebrow" th:text="${player.name} + '의 초대장'"></p>
         <h1 th:text="${prologue.title}">눈 내리는 오두막</h1>
+        <div class="memory-scene memory-scene-prologue" aria-hidden="true"></div>
         <div class="story-reader-body" data-static-reader-body>
             <p th:each="paragraph : ${prologue.paragraphs}" th:text="${paragraph}">
                 눈 내리는 숲 깊은 곳, 토끼는 작은 오두막으로 당신을 이끌었다.

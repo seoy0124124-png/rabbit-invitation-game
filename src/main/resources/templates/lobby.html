@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>플레이어 무대</title>
     <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/visual-novel.css">
     <script defer src="/js/game.js"></script>
 </head>
-<body class="scene scene-game stage-body">
+<body class="scene scene-game stage-body" th:classappend="' player-' + ${#strings.toLowerCase(player.code)}">
 <div class="snow" aria-hidden="true"></div>
 <header class="topbar stage-topbar">
     <div>
@@ -24,14 +25,14 @@
 </header>
 
 <main class="murder-stage">
-    <section class="stage-floorplan" data-stage-floorplan hidden aria-label="저택 약도">
-        <img src="/images/mansion-map.svg" alt="저택 전체 약도">
-        <p>저택 전체 약도</p>
-    </section>
-
     <section class="stage-circle" aria-label="붉은 설산의 저택 무대">
-        <img class="stage-mansion" src="/images/mansion-map.svg" alt="붉은 설산의 저택">
         <div class="round-table" aria-hidden="true"></div>
+        <div class="stage-props" aria-hidden="true">
+            <span class="prop candle"></span>
+            <span class="prop watch"></span>
+            <span class="prop card card-one"></span>
+            <span class="prop card card-two"></span>
+        </div>
 
         <button class="character-shadow"
                 th:each="character, stat : ${suspects}"
@@ -41,7 +42,7 @@
                 th:data-role="${character.publicDescription}"
                 type="button">
             <img class="silhouette-img"
-                 th:src="@{'/images/characters/' + ${#strings.toLowerCase(character.code)} + '.svg'}"
+                 th:src="@{'/images/characters/' + ${#strings.toLowerCase(character.code)} + '.png'}"
                  th:alt="${character.name} + ' 실루엣'">
             <span class="shadow-tooltip">
                 <strong th:text="${character.name}">빨간망토</strong>
@@ -51,7 +52,9 @@
     </section>
 
     <aside class="personal-dock" aria-label="개인 기능">
-        <button class="button primary small" data-panel-target="hint-panel" type="button">받은 증언/물증</button>
+        <button class="button primary small" data-panel-target="testimony-panel" type="button">증언</button>
+        <button class="button primary small" data-panel-target="evidence-hint-panel" type="button">물증</button>
+        <button class="button ghost small" data-panel-target="acting-panel" type="button">연기 힌트</button>
         <button class="button ghost small" data-panel-target="story-panel" type="button">개인 이야기</button>
     </aside>
 
@@ -65,7 +68,7 @@
     <section class="public-records parchment collapsible-board" data-public-records aria-label="공개된 증언">
         <header class="board-header">
             <p class="eyebrow">공개된 증언</p>
-            <button class="button ghost small" data-collapse-target="public-records" type="button">줄이기</button>
+            <button class="button ghost small" data-collapse-target="public-records" type="button">접기</button>
         </header>
         <div class="record-list" data-public-record-list data-collapsible-content>
             <article class="record-card" th:each="record : ${publicRecords}">
@@ -80,7 +83,7 @@
     <section class="evidence-board collapsible-board" data-evidence-board aria-label="공개된 증거 보드">
         <header class="board-header">
             <p class="eyebrow">공개된 물증</p>
-            <button class="button ghost small" data-collapse-target="evidence-board" type="button">줄이기</button>
+            <button class="button ghost small" data-collapse-target="evidence-board" type="button">접기</button>
         </header>
         <div class="evidence-card-list" data-evidence-list data-collapsible-content></div>
         <p class="empty-evidence" data-empty-evidence data-collapsible-content>아직 공개된 물증이 없습니다.</p>
@@ -88,6 +91,7 @@
 
     <section class="floating-panel parchment evidence-detail" id="evidence-detail" data-evidence-detail hidden>
         <button class="panel-close" data-evidence-close type="button">닫기</button>
+        <img class="evidence-detail-image" data-evidence-image src="/images/evidence/sealed-letter.png" alt="" aria-hidden="true">
         <p class="eyebrow" data-evidence-meta>물증</p>
         <h2 data-evidence-title>벽의 발톱 자국</h2>
         <p data-evidence-short>짧은 설명</p>
@@ -95,23 +99,53 @@
         <div class="story-body" data-evidence-body></div>
     </section>
 
-    <section class="floating-panel parchment dock-panel" id="hint-panel" data-panel hidden>
+    <section class="floating-panel parchment dock-panel" id="testimony-panel" data-panel hidden>
         <button class="panel-close" data-panel-close type="button">닫기</button>
-        <p class="eyebrow">내가 받은 증언과 물증</p>
-        <div class="hint-list" data-hint-list>
-            <section class="hint-note" th:each="hint : ${hints}" th:data-hint-id="${hint.id}">
+        <p class="eyebrow">내가 받은 증언</p>
+        <p class="share-caution">공개하면 모든 플레이어가 볼 수 있으며 되돌릴 수 없습니다.</p>
+        <div class="hint-list" data-hint-list data-hint-type="TESTIMONY">
+            <section class="hint-note" th:each="hint : ${hints}" th:if="${hint.type.name() == 'TESTIMONY'}" th:data-hint-id="${hint.id}">
                 <span th:text="${hint.roundLabel + ' · ' + hint.type.label}">ROUND 1 증언 · 증언</span>
                 <h3 th:text="${hint.title}">힌트 제목</h3>
                 <p th:text="${hint.body}">힌트 내용</p>
                 <button class="button ghost small share-button" th:data-share-hint="${hint.id}" type="button">이 힌트 공개</button>
             </section>
         </div>
-        <p class="empty-hints" data-empty-hints th:hidden="${!#lists.isEmpty(hints)}">아직 받은 증언이나 물증이 없습니다. 관리자가 힌트 단계를 공개하면 확인할 수 있습니다.</p>
+        <p class="empty-hints" data-empty-hints data-empty-type="TESTIMONY">아직 받은 증언이 없습니다.</p>
+    </section>
+
+    <section class="floating-panel parchment dock-panel" id="evidence-hint-panel" data-panel hidden>
+        <button class="panel-close" data-panel-close type="button">닫기</button>
+        <p class="eyebrow">내가 받은 물증</p>
+        <p class="share-caution">공개하면 모든 플레이어가 볼 수 있으며 되돌릴 수 없습니다.</p>
+        <div class="hint-list" data-hint-list data-hint-type="EVIDENCE">
+            <section class="hint-note" th:each="hint : ${hints}" th:if="${hint.type.name() == 'EVIDENCE'}" th:data-hint-id="${hint.id}">
+                <span th:text="${hint.roundLabel + ' · ' + hint.type.label}">ROUND 1 물증 · 물증</span>
+                <h3 th:text="${hint.title}">힌트 제목</h3>
+                <p th:text="${hint.body}">힌트 내용</p>
+                <button class="button ghost small share-button" th:data-share-hint="${hint.id}" type="button">이 물증 공개</button>
+            </section>
+        </div>
+        <p class="empty-hints" data-empty-hints data-empty-type="EVIDENCE">아직 받은 물증이 없습니다. 관리자가 힌트 단계를 공개하면 확인할 수 있습니다.</p>
+    </section>
+
+    <section class="floating-panel parchment story-panel" id="acting-panel" data-panel hidden>
+        <button class="panel-close" data-panel-close type="button">닫기</button>
+        <p class="eyebrow">연기 힌트</p>
+        <div class="locked-panel" data-acting-locked th:hidden="${storyRevealed}">
+            <span>잠김</span>
+            <p>아직 공개되지 않았습니다. 관리자가 공개하면 확인할 수 있습니다.</p>
+        </div>
+        <div class="story-body story-reader-body" data-acting-content hidden></div>
+        <div class="ending-controls story-reader-controls" data-acting-controls hidden>
+            <button class="button ghost small" data-acting-prev type="button">뒤로가기</button>
+            <span data-acting-page-indicator>1 / 1</span>
+            <button class="button primary small" data-acting-next type="button">다음 장</button>
+        </div>
     </section>
 
     <section class="floating-panel parchment story-panel" id="story-panel" data-panel hidden>
         <button class="panel-close" data-panel-close type="button">닫기</button>
-        <p class="eyebrow">개인 이야기</p>
         <div class="locked-panel" data-story-locked th:hidden="${storyRevealed}">
             <span>잠김</span>
             <p>아직 공개되지 않았습니다. 관리자가 공개하면 확인할 수 있습니다.</p>
@@ -147,6 +181,12 @@
         </div>
     </section>
 </main>
+<div class="phase-curtain" data-phase-curtain hidden>
+    <div>
+        <p>눈을 감습니다.</p>
+        <span>저택의 불빛이 잠시 사라집니다.</span>
+    </div>
+</div>
 <div class="toast" data-toast hidden></div>
 </body>
 </html>

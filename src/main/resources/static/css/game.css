@@ -26,7 +26,7 @@ body {
     margin: 0;
     min-height: 100vh;
     color: #f5ead6;
-    font-family: "Georgia", "Noto Serif KR", serif;
+    font-family: "Pretendard", "SUIT", "Noto Sans KR", system-ui, sans-serif;
 }
 
 a {
@@ -45,7 +45,7 @@ select {
     background:
             radial-gradient(circle at 50% 18%, rgba(157, 29, 45, 0.22), transparent 26rem),
             linear-gradient(rgba(6, 8, 8, 0.38), rgba(6, 8, 8, 0.9)),
-            url("/images/mansion-map.svg"),
+            url("/images/backgrounds/rabbit-invitation-bg.png"),
             linear-gradient(135deg, #07100f, #1a1715 58%, #070808);
     background-size: auto, auto, min(74rem, 130vw), auto;
     background-position: center, center, center 58%, center;
@@ -61,11 +61,112 @@ select {
 
 .scene-entry {
     background:
-            linear-gradient(rgba(4, 6, 6, 0.32), rgba(4, 6, 6, 0.88)),
-            url("/images/mansion-map.svg"),
-            linear-gradient(140deg, #080b0b, #171211 62%, #050606);
-    background-size: auto, min(62rem, 118vw), auto;
-    background-position: center, center 57%, center;
+            radial-gradient(circle at 48% 43%, rgba(238, 216, 169, 0.08), transparent 18rem),
+            radial-gradient(circle at 68% 64%, rgba(154, 28, 41, 0.11), transparent 14rem),
+            radial-gradient(ellipse at 50% 53%, transparent 0 28%, rgba(0,0,0,0.48) 72%, rgba(0,0,0,0.88) 100%),
+            linear-gradient(90deg, rgba(0,0,0,0.95), transparent 22%, transparent 78%, rgba(0,0,0,0.96)),
+            linear-gradient(180deg, rgba(1,2,2,0.16), rgba(1,2,2,0.9)),
+            url("/images/backgrounds/rabbit-invitation-bg.png"),
+            #050606;
+    background-size: auto, auto, auto, auto, auto, cover, auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    isolation: isolate;
+}
+
+.scene-entry::before,
+.scene-entry::after {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+}
+
+.scene-entry::before {
+    background:
+            radial-gradient(ellipse at 50% 50%, transparent 0 28%, rgba(0,0,0,0.24) 55%, rgba(0,0,0,0.86) 100%),
+            linear-gradient(180deg, rgba(0,0,0,0.28), transparent 20%, transparent 58%, rgba(0,0,0,0.62));
+    mix-blend-mode: multiply;
+}
+
+.scene-entry::after {
+    background:
+            linear-gradient(90deg, transparent 0 8%, rgba(231, 211, 176, 0.08) 17%, transparent 28%),
+            radial-gradient(ellipse at 50% 72%, rgba(226, 214, 190, 0.08), transparent 34rem),
+            repeating-linear-gradient(90deg, transparent 0 7.5rem, rgba(255,255,255,0.018) 7.55rem 7.62rem, transparent 7.68rem 13rem);
+    opacity: 0.62;
+    filter: blur(0.2px);
+}
+
+.entry-atmosphere {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.entry-atmosphere span {
+    position: absolute;
+    display: block;
+}
+
+.entry-atmosphere .fog {
+    width: 72vw;
+    height: 18vh;
+    background: radial-gradient(ellipse, rgba(218, 213, 198, 0.16), transparent 68%);
+    filter: blur(1.4rem);
+    opacity: 0.5;
+    animation: entryFog 18s ease-in-out infinite alternate;
+}
+
+.entry-atmosphere .fog-one {
+    left: -14vw;
+    top: 48vh;
+}
+
+.entry-atmosphere .fog-two {
+    right: -18vw;
+    top: 64vh;
+    opacity: 0.36;
+    animation-duration: 23s;
+}
+
+.entry-atmosphere .dust {
+    inset: -10%;
+    background-image:
+            radial-gradient(circle, rgba(235, 222, 196, 0.24) 0 1px, transparent 1.4px),
+            radial-gradient(circle, rgba(235, 222, 196, 0.14) 0 1px, transparent 1.5px);
+    background-size: 9rem 9rem, 13rem 13rem;
+    opacity: 0.28;
+    animation: dustFloat 34s linear infinite;
+}
+
+.entry-atmosphere .red-lantern {
+    right: 24%;
+    top: 33%;
+    width: 18rem;
+    aspect-ratio: 1;
+    background: radial-gradient(circle, rgba(167, 31, 45, 0.12), transparent 66%);
+    filter: blur(1.2rem);
+    opacity: 0.7;
+}
+
+.scene-entry .snow {
+    display: none;
+}
+
+.scene-prologue {
+    background:
+            radial-gradient(circle at 50% 46%, rgba(202, 49, 66, 0.12), transparent 17rem),
+            radial-gradient(circle at 50% 68%, rgba(234, 216, 184, 0.08), transparent 23rem),
+            linear-gradient(90deg, rgba(0,0,0,0.9), transparent 18%, transparent 82%, rgba(0,0,0,0.92)),
+            linear-gradient(180deg, rgba(3,4,4,0.34), rgba(3,4,4,0.94)),
+            url("/images/backgrounds/rabbit-invitation-bg.png"),
+            #050606;
+    background-size: auto, auto, auto, auto, cover, auto;
+    background-position: center;
     background-repeat: no-repeat;
 }
 
@@ -103,6 +204,21 @@ select {
     }
 }
 
+@keyframes entryFog {
+    from {
+        transform: translate3d(-3rem, 0, 0) scaleX(1);
+    }
+    to {
+        transform: translate3d(4rem, -0.6rem, 0) scaleX(1.08);
+    }
+}
+
+@keyframes dustFloat {
+    to {
+        transform: translate3d(-4rem, 5rem, 0);
+    }
+}
+
 .entry-layout,
 .prologue,
 .topbar,
@@ -111,55 +227,75 @@ select {
     z-index: 2;
 }
 
+.entry-layout {
+    width: min(100%, 72rem);
+    min-height: calc(100vh - 4rem);
+    display: grid;
+    place-items: center;
+    transform: translateY(1.2rem);
+}
+
 .parchment,
 .prologue-frame {
     color: var(--ink);
     background:
-            linear-gradient(135deg, rgba(255,255,255,0.24), transparent 34%),
-            repeating-linear-gradient(0deg, rgba(88, 52, 24, 0.06) 0 1px, transparent 1px 8px),
-            var(--paper);
+            radial-gradient(circle at 50% 0, rgba(255,255,255,0.2), transparent 12rem),
+            linear-gradient(135deg, rgba(255,255,255,0.18), transparent 34%),
+            repeating-linear-gradient(0deg, rgba(88, 52, 24, 0.062) 0 1px, transparent 1px 8px),
+            linear-gradient(180deg, #ead8b8, #d4b17a);
     border: 1px solid rgba(52, 28, 18, 0.5);
-    border-radius: 8px;
-    box-shadow: 0 1.2rem 3.8rem var(--shadow), inset 0 0 0 2px rgba(255,255,255,0.16);
+    border-radius: 4px;
+    box-shadow:
+            0 1.2rem 3.8rem var(--shadow),
+            0 0 2.2rem rgba(159,29,45,0.08),
+            inset 0 0 0 2px rgba(255,255,255,0.12);
 }
 
 .entry-card {
     position: relative;
-    width: min(36rem, 100%);
-    padding: clamp(2rem, 6vw, 3.6rem);
+    width: min(28rem, 92vw);
+    padding: clamp(1.35rem, 3.4vw, 2.15rem) clamp(1.3rem, 3.6vw, 2.25rem) clamp(1.25rem, 3vw, 1.9rem);
 }
 
 .invitation-card {
     isolation: isolate;
     background:
-            linear-gradient(145deg, rgba(255,255,255,0.3), transparent 32%),
-            repeating-linear-gradient(0deg, rgba(88, 52, 24, 0.055) 0 1px, transparent 1px 9px),
-            linear-gradient(180deg, #f0dfbf, #dcc08d);
-    border-color: rgba(74, 41, 28, 0.58);
+            radial-gradient(circle at 48% 0, rgba(255, 241, 205, 0.38), transparent 9rem),
+            radial-gradient(circle at 8% 16%, rgba(79, 42, 22, 0.16), transparent 4rem),
+            radial-gradient(circle at 92% 86%, rgba(65, 31, 20, 0.18), transparent 4.2rem),
+            linear-gradient(145deg, rgba(255,255,255,0.16), transparent 30%),
+            repeating-linear-gradient(0deg, rgba(72, 39, 20, 0.075) 0 1px, transparent 1px 7px),
+            linear-gradient(180deg, rgba(217, 190, 145, 0.84), rgba(158, 113, 66, 0.82));
+    border-color: rgba(69, 36, 22, 0.28);
+    clip-path: polygon(2% 3%, 12% 1%, 21% 3%, 31% 1%, 44% 2.5%, 55% 1%, 68% 3%, 82% 1.5%, 96% 4%, 98.5% 18%, 97% 33%, 99% 47%, 97.5% 61%, 99% 77%, 96% 96%, 82% 98%, 67% 96.5%, 54% 99%, 41% 97%, 26% 98.5%, 13% 96%, 3% 98%, 1.5% 84%, 3% 70%, 1% 56%, 2.5% 42%, 1% 26%);
     box-shadow:
-            0 2rem 4.6rem rgba(0,0,0,0.62),
-            0 0 0 1px rgba(244, 218, 168, 0.18),
-            inset 0 0 0 1px rgba(255,255,255,0.22);
+            0 1.1rem 1.8rem rgba(0,0,0,0.38),
+            0 1.9rem 4.8rem rgba(0,0,0,0.58),
+            0 0 0 1px rgba(44, 25, 16, 0.14),
+            inset 0 0 2.8rem rgba(69, 36, 22, 0.14),
+            inset 0 0 0 1px rgba(255,255,255,0.09);
     transform-origin: center top;
-    animation: invitationUnfold 520ms ease-out both;
+    animation: invitationUnfold 620ms ease-out both;
+    backdrop-filter: blur(0.7px);
+    transform: rotate(-0.6deg);
 }
 
 .invitation-card::before {
     position: absolute;
-    right: clamp(1.2rem, 4vw, 2rem);
-    top: clamp(1.1rem, 4vw, 1.8rem);
+    right: clamp(1rem, 3vw, 1.55rem);
+    top: clamp(0.95rem, 3vw, 1.35rem);
     z-index: 1;
-    width: 4.4rem;
+    width: 3.85rem;
     aspect-ratio: 1;
     content: "";
     background:
             radial-gradient(circle at 42% 38%, rgba(255, 172, 150, 0.24), transparent 0.58rem),
-            radial-gradient(circle, rgba(116, 12, 24, 0.98) 0 1.32rem, transparent 1.36rem),
-            radial-gradient(circle, rgba(204, 49, 66, 0.66) 0 1.88rem, transparent 1.92rem);
+            radial-gradient(circle, rgba(99, 8, 18, 0.98) 0 1.12rem, transparent 1.16rem),
+            radial-gradient(circle, rgba(148, 28, 38, 0.7) 0 1.68rem, transparent 1.72rem);
     border-radius: 50%;
     box-shadow:
-            0 0.45rem 0.95rem rgba(72, 20, 16, 0.28),
-            0 0 1.5rem rgba(159,29,45,0.26);
+            0 0.42rem 0.8rem rgba(72, 20, 16, 0.26),
+            0 0 0.8rem rgba(98, 8, 18, 0.2);
 }
 
 .invitation-card::after {
@@ -168,9 +304,11 @@ select {
     z-index: -1;
     content: "";
     background:
-            linear-gradient(150deg, transparent 0 46%, rgba(90, 50, 32, 0.12) 46.2% 46.7%, transparent 47%),
-            linear-gradient(30deg, transparent 0 45%, rgba(90, 50, 32, 0.1) 45.2% 45.7%, transparent 46%),
-            linear-gradient(90deg, transparent 0 12%, rgba(80,45,35,0.18) 12.2% 12.35%, transparent 12.6% 87.4%, rgba(80,45,35,0.16) 87.65% 87.8%, transparent 88%);
+            radial-gradient(circle at 6% 18%, rgba(53, 26, 18, 0.16), transparent 1.6rem),
+            radial-gradient(circle at 92% 86%, rgba(53, 26, 18, 0.18), transparent 1.8rem),
+            linear-gradient(150deg, transparent 0 46%, rgba(90, 50, 32, 0.14) 46.2% 46.7%, transparent 47%),
+            linear-gradient(30deg, transparent 0 45%, rgba(90, 50, 32, 0.12) 45.2% 45.7%, transparent 46%),
+            linear-gradient(90deg, transparent 0 12%, rgba(80,45,35,0.16) 12.2% 12.35%, transparent 12.6% 87.4%, rgba(80,45,35,0.14) 87.65% 87.8%, transparent 88%);
     border-radius: inherit;
     pointer-events: none;
 }
@@ -178,9 +316,12 @@ select {
 .entry-card h1 {
     margin: 0;
     color: #2b1714;
-    font-size: clamp(2.15rem, 7vw, 3.65rem);
-    line-height: 1.04;
+    font-family: "Cinzel", "Cormorant Garamond", "Times New Roman", "Noto Serif KR", serif;
+    font-size: clamp(1.75rem, 5vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.08;
     letter-spacing: 0;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.22);
 }
 
 .prologue-frame h1 {
@@ -191,70 +332,150 @@ select {
     letter-spacing: 0;
 }
 
+.memory-scene {
+    position: relative;
+    min-height: clamp(10rem, 27vw, 14rem);
+    margin: 0.2rem 0 1.1rem;
+    overflow: hidden;
+    background:
+            radial-gradient(circle at 50% 48%, rgba(255, 232, 182, 0.12), transparent 15rem),
+            linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.22)),
+            url("/images/backgrounds/rabbit-invitation-bg.png");
+    background-size: auto, auto, cover;
+    background-position: center;
+    border: 1px solid rgba(58, 31, 20, 0.26);
+    border-radius: 3px;
+    box-shadow:
+            inset 0 0 3rem rgba(0,0,0,0.42),
+            inset 0 0 0 1px rgba(255,255,255,0.05),
+            0 0.8rem 1.8rem rgba(58, 31, 20, 0.16);
+}
+
+.memory-scene::before,
+.memory-scene::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+}
+
+.memory-scene::before {
+    background:
+            radial-gradient(ellipse at 50% 50%, transparent 0 42%, rgba(0,0,0,0.48) 100%),
+            linear-gradient(90deg, rgba(0,0,0,0.34), transparent 28% 72%, rgba(0,0,0,0.34));
+}
+
+.memory-scene::after {
+    background:
+            radial-gradient(circle at 69% 58%, rgba(159, 29, 45, 0.12), transparent 8rem),
+            radial-gradient(ellipse at 40% 72%, rgba(232, 216, 186, 0.08), transparent 12rem);
+    filter: blur(0.35rem);
+}
+
+.memory-scene-prologue {
+    background-position: center 46%;
+}
+
 .lead {
-    font-size: 1.08rem;
-    line-height: 1.7;
+    font-size: 1rem;
+    line-height: 1.82;
 }
 
 .invitation-head {
     display: grid;
-    gap: 0.55rem;
-    max-width: 25rem;
+    gap: 0.42rem;
+    max-width: 21rem;
+    margin-inline: auto;
+    text-align: center;
 }
 
 .invitation-subtitle {
     margin: 0;
-    color: #684330;
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.6;
+    color: #6f1e24;
+    font-size: 0.94rem;
+    font-weight: 800;
+    line-height: 1.72;
 }
 
 .invitation-copy {
-    max-width: 27rem;
-    margin: 2.1rem 0 1.9rem;
-    color: #4f3528;
-    font-size: 1rem;
+    max-width: 20.5rem;
+    margin: 1.42rem auto 1.2rem;
+    color: #34251e;
+    font-size: 0.92rem;
+    line-height: 1.9;
+    text-align: center;
+}
+
+.invitation-copy::first-line,
+.invitation-subtitle {
+    text-shadow: 0 0 0.4rem rgba(111, 30, 36, 0.1);
 }
 
 .invitation-form {
-    max-width: 25rem;
-    padding-top: 1.1rem;
+    max-width: 19rem;
+    margin-inline: auto;
+    padding-top: 0.82rem;
     border-top: 1px solid rgba(91, 55, 36, 0.24);
 }
 
 .invitation-form label {
-    color: #5c3829;
-    font-size: 0.82rem;
-    letter-spacing: 0.08em;
+    color: rgba(66, 41, 29, 0.84);
+    font-size: 0.74rem;
+    letter-spacing: 0.11em;
+    text-align: center;
 }
 
 .invitation-form input {
-    min-height: 2.6rem;
-    padding: 0.58rem 0.75rem;
-    color: #2d1d16;
-    background: rgba(255, 247, 225, 0.52);
-    border: 1px solid rgba(78, 45, 32, 0.28);
-    border-radius: 4px;
-    box-shadow: inset 0 0.25rem 0.7rem rgba(78, 45, 32, 0.08);
+    min-height: 2.28rem;
+    padding: 0.48rem 0.68rem;
+    color: #e8d8ba;
+    background:
+            linear-gradient(180deg, rgba(8, 6, 5, 0.92), rgba(26, 18, 14, 0.9));
+    border: 1px solid rgba(91, 62, 38, 0.72);
+    border-radius: 2px;
+    box-shadow:
+            inset 0 0.2rem 0.75rem rgba(0, 0, 0, 0.58),
+            inset 0 0 0 1px rgba(221, 190, 134, 0.05),
+            0 0.28rem 0.7rem rgba(48, 24, 16, 0.28);
 }
 
 .invitation-form input::placeholder {
-    color: rgba(73, 45, 33, 0.52);
+    color: rgba(232, 216, 186, 0.3);
 }
 
 .invitation-form input:focus {
-    border-color: rgba(159, 29, 45, 0.56);
+    border-color: rgba(132, 83, 48, 0.92);
     box-shadow:
-            inset 0 0.25rem 0.7rem rgba(78, 45, 32, 0.08),
-            0 0 0 3px rgba(159, 29, 45, 0.14);
+            inset 0 0.2rem 0.75rem rgba(0, 0, 0, 0.58),
+            inset 0 0 0 1px rgba(221, 190, 134, 0.08),
+            0 0 0 2px rgba(91, 62, 38, 0.18);
 }
 
 .invitation-button {
-    justify-self: start;
-    min-height: 2.55rem;
-    padding-inline: 1.2rem;
-    box-shadow: 0 0.55rem 1.15rem rgba(92, 17, 27, 0.2);
+    justify-self: center;
+    margin-top: 0.68rem;
+    min-height: 2.12rem;
+    padding: 0.38rem 1.15rem;
+    color: #fff1dc;
+    background:
+            radial-gradient(circle at 50% 0, rgba(255,255,255,0.16), transparent 44%),
+            linear-gradient(90deg, rgba(255,255,255,0.06), transparent 18% 82%, rgba(255,255,255,0.06)),
+            linear-gradient(180deg, #8c1d27, #541018);
+    border: 1px solid rgba(169, 93, 66, 0.44);
+    border-radius: 2px;
+    box-shadow:
+            inset 0 0 0 1px rgba(255,255,255,0.06),
+            inset 0 -0.28rem 0.55rem rgba(34, 5, 9, 0.32),
+            0 0.45rem 0.75rem rgba(44, 5, 10, 0.26);
+    font-size: 0.88rem;
+}
+
+.scene-entry .button:hover {
+    transform: translateY(-0.04rem);
+    box-shadow:
+            inset 0 0 0 1px rgba(255,255,255,0.07),
+            inset 0 -0.28rem 0.55rem rgba(34, 5, 9, 0.34),
+            0 0.5rem 0.8rem rgba(44, 5, 10, 0.3);
 }
 
 @keyframes invitationUnfold {
@@ -311,17 +532,20 @@ select:focus {
     min-height: 2.7rem;
     padding: 0.72rem 1rem;
     color: #f9eddb;
-    background: #251d1a;
-    border: 1px solid rgba(245, 224, 188, 0.35);
-    border-radius: 6px;
+    background:
+            linear-gradient(90deg, rgba(255,255,255,0.05), transparent 18% 82%, rgba(255,255,255,0.05)),
+            linear-gradient(180deg, rgba(42, 26, 22, 0.96), rgba(17, 12, 11, 0.96));
+    border: 1px solid rgba(177, 130, 74, 0.26);
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.035), 0 0.45rem 1rem rgba(0,0,0,0.24);
     cursor: pointer;
     text-decoration: none;
-    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
 .button:hover {
-    transform: translateY(-1px);
-    border-color: rgba(255,255,255,0.62);
+    transform: translateY(-0.05rem);
+    border-color: rgba(201, 151, 82, 0.4);
 }
 
 .scene-admin .button:hover {
@@ -329,14 +553,18 @@ select:focus {
 }
 
 .button.primary {
-    background: linear-gradient(180deg, var(--blood-bright), #741421);
-    border-color: rgba(255, 220, 220, 0.32);
+    background:
+            linear-gradient(90deg, rgba(255,255,255,0.08), transparent 18% 82%, rgba(255,255,255,0.08)),
+            linear-gradient(180deg, #9b2630, #65121d);
+    border-color: rgba(204, 49, 66, 0.56);
 }
 
 .button.danger {
-    background: linear-gradient(180deg, #8f1826, #4f0b13);
-    border-color: rgba(255, 185, 185, 0.44);
-    box-shadow: 0 0 1rem rgba(159, 29, 45, 0.18);
+    background:
+            linear-gradient(90deg, rgba(255,255,255,0.06), transparent 18% 82%, rgba(255,255,255,0.06)),
+            linear-gradient(180deg, #8f1826, #4f0b13);
+    border-color: rgba(204, 49, 66, 0.48);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.035), 0 0 1rem rgba(159, 29, 45, 0.14);
 }
 
 .button.small {
@@ -349,7 +577,7 @@ select:focus {
 
 .button.ghost {
     color: #f4dfbd;
-    background: rgba(22, 17, 15, 0.78);
+    background: rgba(16, 11, 10, 0.72);
 }
 
 .error {
@@ -358,19 +586,45 @@ select:focus {
 }
 
 .prologue-frame {
-    width: min(52rem, 100%);
-    min-height: min(42rem, calc(100vh - 6rem));
-    padding: clamp(1.5rem, 5vw, 3.4rem);
+    width: min(42rem, 100%);
+    min-height: auto;
+    max-height: calc(100vh - 5rem);
+    padding: clamp(1.35rem, 4vw, 2.4rem);
     display: grid;
-    grid-template-rows: auto auto minmax(18rem, 1fr) auto auto;
+    grid-template-rows: auto auto auto minmax(9rem, 1fr) auto auto;
     align-content: start;
-    overflow: hidden;
+    overflow: auto;
+    transform: rotate(-0.25deg);
+    box-shadow:
+            0 1.4rem 4rem rgba(0,0,0,0.68),
+            0 0 2.4rem rgba(159,29,45,0.1),
+            inset 0 0 0 2px rgba(255,255,255,0.12);
 }
 
 .prologue-frame p {
-    max-width: 44rem;
-    font-size: 1.08rem;
-    line-height: 1.9;
+    max-width: 32rem;
+    margin-inline: auto;
+    font-size: 1rem;
+    line-height: 1.82;
+}
+
+.prologue-frame .eyebrow,
+.prologue-frame h1 {
+    text-align: center;
+}
+
+.prologue-frame h1,
+.story-body h3,
+.ending-page h2,
+.stage-topbar h1 {
+    font-family: "Cinzel", "Cormorant Garamond", "Times New Roman", "Noto Serif KR", serif;
+}
+
+.story-reader-body p::first-letter,
+.story-body p::first-letter {
+    color: var(--blood);
+    font-size: 1.16em;
+    font-weight: 800;
 }
 
 .topbar {
@@ -379,9 +633,9 @@ select:focus {
     justify-content: space-between;
     gap: 1rem;
     padding: 1.2rem clamp(1rem, 3vw, 2rem);
-    background: rgba(6, 8, 8, 0.72);
-    border-bottom: 1px solid rgba(255,255,255,0.12);
-    backdrop-filter: blur(8px);
+    background: rgba(6, 8, 8, 0.48);
+    border-bottom: 1px solid rgba(234,216,184,0.1);
+    backdrop-filter: blur(5px);
 }
 
 .topbar h1 {
@@ -477,6 +731,25 @@ select:focus {
     font-weight: 700;
 }
 
+.hint-note.is-new,
+.evidence-card.is-new {
+    border-color: rgba(204, 49, 66, 0.76);
+    box-shadow: 0 0 0 1px rgba(204, 49, 66, 0.22), 0 0 1.4rem rgba(204, 49, 66, 0.2);
+}
+
+.new-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.32rem;
+    padding: 0.08rem 0.32rem;
+    color: #fff4df;
+    background: linear-gradient(180deg, var(--blood-bright), #741421);
+    border-radius: 999px;
+    font-size: 0.64rem;
+    letter-spacing: 0;
+    vertical-align: middle;
+}
+
 .hint-note h3 {
     margin: 0.35rem 0;
 }
@@ -528,11 +801,16 @@ select:focus {
 
 .story-body {
     margin-top: 0.9rem;
-    padding: 0.9rem;
-    background: rgba(255,255,255,0.16);
-    border-radius: 6px;
-    line-height: 1.82;
+    padding: clamp(1rem, 3vw, 1.45rem);
+    background:
+            radial-gradient(circle at 50% 0, rgba(255,255,255,0.22), transparent 12rem),
+            repeating-linear-gradient(0deg, rgba(88, 52, 24, 0.045) 0 1px, transparent 1px 9px),
+            rgba(255, 246, 221, 0.3);
+    border: 1px solid rgba(80, 45, 35, 0.14);
+    border-radius: 4px;
+    line-height: 1.9;
     white-space: pre-line;
+    box-shadow: inset 0 0 1.2rem rgba(80, 45, 35, 0.08);
 }
 
 .story-body h3 {
@@ -541,12 +819,13 @@ select:focus {
 }
 
 .story-body > p {
-    margin-top: 0;
+    max-width: 32rem;
+    margin: 0 auto 1rem;
 }
 
 .story-body.is-turning,
 .story-reader-body.is-turning {
-    animation: pageTurn 260ms ease-out;
+    animation: pageTurn 420ms ease-out;
 }
 
 .secret span {
@@ -559,8 +838,13 @@ select:focus {
 }
 
 .mansion-map {
-    width: min(100%, 52rem);
-    filter: drop-shadow(0 2rem 3rem rgba(0,0,0,0.72));
+    width: min(100%, 66rem);
+    max-height: 72vh;
+    object-fit: cover;
+    border: 1px solid rgba(234,216,184,0.14);
+    border-radius: 4px;
+    filter: saturate(0.95) contrast(1.06) drop-shadow(0 2rem 3rem rgba(0,0,0,0.72));
+    box-shadow: inset 0 0 3rem rgba(0,0,0,0.42);
 }
 
 .admin-grid {
@@ -704,18 +988,20 @@ select:focus {
 
 .stage-body {
     background:
-            radial-gradient(circle at 17% 24%, rgba(234,216,184,0.08) 0 0.08rem, transparent 0.1rem),
-            radial-gradient(circle at 82% 34%, rgba(234,216,184,0.07) 0 0.07rem, transparent 0.09rem),
-            radial-gradient(circle at 62% 78%, rgba(234,216,184,0.06) 0 0.08rem, transparent 0.1rem),
-            radial-gradient(circle at 50% 48%, rgba(159, 29, 45, 0.18), transparent 18rem),
-            radial-gradient(circle at 50% 115%, rgba(234, 216, 184, 0.08), transparent 28rem),
-            linear-gradient(rgba(3, 4, 4, 0.34), rgba(3, 4, 4, 0.96)),
+            radial-gradient(circle at 50% 48%, rgba(146, 23, 36, 0.22), transparent 18rem),
+            radial-gradient(circle at 50% 78%, rgba(226, 197, 144, 0.08), transparent 26rem),
+            linear-gradient(90deg, rgba(0,0,0,0.92), transparent 18%, transparent 82%, rgba(0,0,0,0.94)),
+            linear-gradient(180deg, rgba(2,3,3,0.35), rgba(2,3,3,0.94)),
+            url("/images/backgrounds/rabbit-invitation-bg.png"),
             #050606;
-    background-size: 13rem 13rem, 17rem 17rem, 19rem 19rem, auto, auto, auto, auto;
+    background-size: auto, auto, auto, auto, cover, auto;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .stage-topbar {
-    background: linear-gradient(180deg, rgba(7, 8, 8, 0.88), rgba(7, 8, 8, 0.46));
+    background: linear-gradient(180deg, rgba(5, 6, 6, 0.78), rgba(5, 6, 6, 0.2));
+    border-bottom-color: rgba(234, 216, 184, 0.08);
 }
 
 .murder-stage {
@@ -735,18 +1021,18 @@ select:focus {
 
 .murder-stage::before {
     background:
-            radial-gradient(circle at 16% 42%, transparent 0 3.6rem, rgba(234,216,184,0.07) 3.65rem 3.78rem, transparent 3.82rem),
-            linear-gradient(30deg, transparent 0 47%, rgba(185, 28, 43, 0.14) 47.1% 47.4%, transparent 47.5%),
-            linear-gradient(145deg, transparent 0 58%, rgba(234,216,184,0.08) 58.1% 58.25%, transparent 58.35%);
-    opacity: 0.75;
+            radial-gradient(ellipse at 50% 62%, transparent 0 28%, rgba(0,0,0,0.34) 62%, rgba(0,0,0,0.72) 100%),
+            radial-gradient(circle at 50% 46%, rgba(255, 220, 150, 0.1), transparent 13rem),
+            repeating-linear-gradient(90deg, transparent 0 8rem, rgba(255,255,255,0.015) 8.06rem 8.12rem, transparent 8.18rem 14rem);
+    opacity: 1;
 }
 
 .murder-stage::after {
     background:
-            repeating-conic-gradient(from 12deg at 86% 18%, rgba(234,216,184,0.08) 0 2deg, transparent 2deg 12deg),
-            radial-gradient(circle at 86% 18%, transparent 0 4.4rem, rgba(234,216,184,0.08) 4.45rem 4.56rem, transparent 4.6rem);
-    mask-image: radial-gradient(circle at 86% 18%, #000 0 7rem, transparent 7.4rem);
-    opacity: 0.5;
+            radial-gradient(ellipse at 38% 68%, rgba(234,216,184,0.13), transparent 23rem),
+            radial-gradient(ellipse at 68% 60%, rgba(234,216,184,0.09), transparent 20rem),
+            linear-gradient(180deg, transparent, rgba(0,0,0,0.32));
+    opacity: 0.7;
 }
 
 .stage-circle {
@@ -754,32 +1040,6 @@ select:focus {
     inset: 0;
     display: grid;
     place-items: center;
-}
-
-.stage-floorplan {
-    position: absolute;
-    left: 50%;
-    top: 52%;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    gap: 0.45rem;
-    width: min(28rem, 54vw);
-    padding: 1rem;
-    color: #e8d8ba;
-    transform: translate(-50%, -50%);
-}
-
-.stage-floorplan img {
-    width: 100%;
-    opacity: 0.72;
-    filter: drop-shadow(0 1.2rem 2.6rem rgba(0,0,0,0.74));
-}
-
-.stage-floorplan p {
-    margin: 0;
-    color: rgba(232, 216, 186, 0.72);
-    font-size: 0.82rem;
 }
 
 body[data-phase="FIRST_DISCUSSION"] .murder-stage::before,
@@ -799,39 +1059,131 @@ body[data-phase="VOTE"] .murder-stage::after {
     opacity: 0.12;
 }
 
-.stage-mansion {
-    width: min(25rem, 42vw);
-    max-height: 34vh;
-    opacity: 0.42;
-    filter: grayscale(0.2) sepia(0.25) drop-shadow(0 2rem 4rem rgba(0,0,0,0.86));
-}
-
 .round-table {
     position: absolute;
-    width: min(45rem, 76vw);
-    aspect-ratio: 1;
+    width: min(38rem, 68vw);
+    height: min(19rem, 34vw);
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -30%);
     background:
-            radial-gradient(circle, rgba(234, 216, 184, 0.08), transparent 27%),
-            repeating-conic-gradient(from -8deg, rgba(234,216,184,0.18) 0 1deg, transparent 1deg 29deg),
-            radial-gradient(circle, transparent 48%, rgba(159, 29, 45, 0.18) 48.4% 49%, transparent 49.4%),
-            radial-gradient(circle, transparent 60%, rgba(234,216,184,0.22) 60.2% 60.6%, transparent 60.9%);
-    border: 1px solid rgba(200, 162, 74, 0.34);
+            radial-gradient(ellipse at 50% 34%, rgba(120, 70, 42, 0.32), transparent 28%),
+            repeating-linear-gradient(8deg, rgba(145, 91, 52, 0.16) 0 0.18rem, rgba(37, 20, 15, 0.11) 0.18rem 0.55rem),
+            radial-gradient(ellipse at 50% 50%, rgba(40, 22, 18, 0.96), rgba(15, 10, 9, 0.94) 64%, transparent 65%);
+    border: 1px solid rgba(95, 55, 32, 0.74);
     border-radius: 50%;
     box-shadow:
-            inset 0 0 3rem rgba(159, 29, 45, 0.14),
-            0 0 5rem rgba(0,0,0,0.62);
+            inset 0 0 2rem rgba(0,0,0,0.74),
+            inset 0 0 0 0.35rem rgba(96, 49, 31, 0.24),
+            0 1.5rem 4rem rgba(0,0,0,0.78);
 }
 
 .round-table::after {
     position: absolute;
-    inset: 16%;
+    inset: 16% 10%;
     content: "";
+    transform: rotate(-6deg);
     background:
-            linear-gradient(90deg, transparent 49.7%, rgba(159,29,45,0.28) 49.8% 50.2%, transparent 50.3%),
-            linear-gradient(0deg, transparent 49.7%, rgba(159,29,45,0.28) 49.8% 50.2%, transparent 50.3%),
-            repeating-conic-gradient(rgba(234,216,184,0.12) 0 2deg, transparent 2deg 18deg);
-    border: 1px dashed rgba(234, 216, 184, 0.2);
+            radial-gradient(circle at 26% 48%, rgba(255, 244, 210, 0.85) 0 0.26rem, transparent 0.28rem),
+            radial-gradient(circle at 74% 43%, rgba(255, 244, 210, 0.75) 0 0.22rem, transparent 0.24rem),
+            linear-gradient(90deg, transparent 49.6%, rgba(156, 28, 42, 0.74) 49.8% 50.2%, transparent 50.4%),
+            radial-gradient(ellipse at 50% 50%, transparent 0 56%, rgba(226, 197, 144, 0.16) 57%, transparent 59%);
+    border: 1px solid rgba(234, 216, 184, 0.1);
+    border-radius: 48%;
+}
+
+.stage-props {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    z-index: 1;
+    width: min(32rem, 56vw);
+    height: min(15rem, 28vw);
+    pointer-events: none;
+    transform: translate(-50%, -30%);
+}
+
+.prop {
+    position: absolute;
+    display: block;
+}
+
+.prop.candle {
+    left: 48%;
+    top: 16%;
+    width: 0.55rem;
+    height: 3.4rem;
+    background: linear-gradient(#ead8b8, #8e6b43);
+    border-radius: 0.18rem;
+    box-shadow: 0 0 1.4rem rgba(255, 206, 132, 0.55);
+}
+
+.prop.candle::before {
+    position: absolute;
+    left: 50%;
+    top: -1.05rem;
+    width: 0.8rem;
+    height: 1.25rem;
+    content: "";
+    background: radial-gradient(ellipse at 50% 70%, #ffd986 0 28%, rgba(202, 49, 51, 0.68) 54%, transparent 68%);
+    border-radius: 50% 50% 50% 0;
+    transform: translateX(-50%) rotate(45deg);
+    filter: blur(0.2px);
+}
+
+.prop.watch {
+    left: 58%;
+    top: 47%;
+    width: 3.1rem;
+    aspect-ratio: 1;
+    border: 0.28rem solid rgba(178, 139, 73, 0.74);
     border-radius: 50%;
+    background:
+            linear-gradient(90deg, transparent 48%, rgba(178,139,73,0.66) 49% 51%, transparent 52%),
+            linear-gradient(0deg, transparent 48%, rgba(178,139,73,0.48) 49% 51%, transparent 52%),
+            rgba(19, 13, 11, 0.9);
+    box-shadow: 0 0.9rem 1.4rem rgba(0,0,0,0.56);
+}
+
+.prop.card {
+    width: 2.2rem;
+    height: 3rem;
+    background: rgba(226, 211, 181, 0.86);
+    border: 1px solid rgba(74, 41, 28, 0.64);
+    border-radius: 0.18rem;
+    box-shadow: 0 0.7rem 1.1rem rgba(0,0,0,0.36);
+}
+
+.prop.card::after {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    content: "♥";
+    color: var(--blood);
+    font-size: 1rem;
+    transform: translate(-50%, -50%);
+}
+
+.prop.card-one {
+    left: 29%;
+    top: 48%;
+    transform: rotate(-13deg);
+}
+
+.prop.card-two {
+    right: 23%;
+    top: 23%;
+    transform: rotate(12deg);
+}
+
+.prop.thread {
+    left: 23%;
+    top: 58%;
+    width: 58%;
+    height: 0.12rem;
+    background: linear-gradient(90deg, transparent, rgba(173, 30, 43, 0.9), transparent);
+    transform: rotate(-8deg);
+    filter: drop-shadow(0 0 0.55rem rgba(173, 30, 43, 0.42));
 }
 
 .character-shadow {
@@ -1077,9 +1429,13 @@ body[data-phase="VOTE"] .murder-stage::after {
     padding: 0.9rem;
     overflow: auto;
     background:
-            linear-gradient(135deg, rgba(255,255,255,0.18), transparent 36%),
+            radial-gradient(circle at 50% 0, rgba(255,255,255,0.18), transparent 9rem),
+            linear-gradient(135deg, rgba(255,255,255,0.12), transparent 36%),
             repeating-linear-gradient(0deg, rgba(88, 52, 24, 0.08) 0 1px, transparent 1px 7px),
-            rgba(218, 195, 154, 0.92);
+            rgba(205, 176, 126, 0.88);
+    border-color: rgba(156, 109, 59, 0.42);
+    border-radius: 4px;
+    box-shadow: 0 1rem 2.8rem rgba(0,0,0,0.58), inset 0 0 1.2rem rgba(72, 39, 20, 0.08);
 }
 
 .board-header {
@@ -1111,10 +1467,10 @@ body[data-phase="VOTE"] .murder-stage::after {
 .record-card {
     padding: 0.75rem;
     color: var(--ink);
-    background: rgba(255, 246, 221, 0.42);
-    border: 1px solid rgba(70, 40, 24, 0.24);
+    background: rgba(255, 239, 203, 0.36);
+    border: 1px solid rgba(70, 40, 24, 0.18);
     border-left: 3px solid var(--blood);
-    border-radius: 6px;
+    border-radius: 3px;
     box-shadow: inset 0 0 1rem rgba(70, 40, 24, 0.08);
 }
 
@@ -1154,12 +1510,13 @@ body[data-phase="VOTE"] .murder-stage::after {
     padding: 0.9rem;
     color: var(--ink);
     background:
-            linear-gradient(135deg, rgba(255,255,255,0.2), transparent 34%),
+            radial-gradient(circle at 50% 0, rgba(255,255,255,0.18), transparent 9rem),
+            linear-gradient(135deg, rgba(255,255,255,0.13), transparent 34%),
             repeating-linear-gradient(90deg, rgba(80, 45, 35, 0.05) 0 1px, transparent 1px 9px),
-            rgba(222, 202, 166, 0.92);
-    border: 1px solid rgba(200, 162, 74, 0.38);
-    border-radius: 8px;
-    box-shadow: 0 1rem 2.8rem rgba(0,0,0,0.48);
+            rgba(205, 176, 126, 0.88);
+    border: 1px solid rgba(156, 109, 59, 0.42);
+    border-radius: 4px;
+    box-shadow: 0 1rem 2.8rem rgba(0,0,0,0.58), inset 0 0 1.2rem rgba(72, 39, 20, 0.08);
     overflow: auto;
 }
 
@@ -1176,9 +1533,9 @@ body[data-phase="VOTE"] .murder-stage::after {
     padding: 0.62rem;
     color: #2d1d16;
     text-align: left;
-    background: rgba(255, 246, 221, 0.5);
-    border: 1px solid rgba(70, 40, 24, 0.22);
-    border-radius: 6px;
+    background: rgba(255, 239, 203, 0.38);
+    border: 1px solid rgba(70, 40, 24, 0.18);
+    border-radius: 3px;
     cursor: pointer;
 }
 
@@ -1291,6 +1648,7 @@ body[data-phase="VOTE"] .murder-stage::after {
     overflow: auto;
     transform: translate(-50%, -50%);
     animation: parchmentOpen 180ms ease-out;
+    border-radius: 4px;
 }
 
 .dock-panel {
@@ -1306,15 +1664,16 @@ body[data-phase="VOTE"] .murder-stage::after {
 
 .story-panel {
     display: grid;
-    grid-template-rows: auto auto minmax(18rem, 1fr) auto;
-    width: min(46rem, calc(100vw - 2rem));
-    min-height: min(34rem, calc(100vh - 6rem));
-    max-height: min(42rem, calc(100vh - 4rem));
+    grid-template-rows: auto auto minmax(14rem, 1fr) auto;
+    width: min(39rem, calc(100vw - 2rem));
+    min-height: min(29rem, calc(100vh - 6rem));
+    max-height: min(38rem, calc(100vh - 4rem));
     overflow: hidden;
+    transform: translate(-50%, -50%) rotate(-0.2deg);
 }
 
 .story-panel .story-reader-body {
-    min-height: 18rem;
+    min-height: 14rem;
     max-height: none;
     overflow: auto;
 }
@@ -1336,9 +1695,10 @@ body[data-phase="VOTE"] .murder-stage::after {
 }
 
 .prologue-reader .story-reader-body {
-    min-height: 20rem;
-    max-height: 24rem;
+    min-height: 8rem;
+    max-height: 14rem;
     overflow: auto;
+    padding-inline: 0.4rem;
 }
 
 .prologue-reader .story-reader-controls {
@@ -1354,7 +1714,7 @@ body[data-phase="VOTE"] .murder-stage::after {
     z-index: 3;
     display: flex;
     justify-content: center;
-    margin: 0.8rem 0 0;
+    margin: 1.45rem 0 0;
     min-height: 2.9rem;
 }
 
@@ -1376,7 +1736,7 @@ body[data-phase="VOTE"] .murder-stage::after {
             radial-gradient(circle at 50% 78%, rgba(234, 216, 184, 0.13), transparent 26rem),
             repeating-conic-gradient(from 4deg at 50% 50%, rgba(234,216,184,0.08) 0 1deg, transparent 1deg 13deg),
             linear-gradient(rgba(4, 4, 5, 0.76), rgba(4, 4, 5, 0.95)),
-            url("/images/mansion-map.svg"),
+            url("/images/backgrounds/rabbit-invitation-bg.png"),
             #030405;
     background-position: center;
     background-repeat: no-repeat;
@@ -1386,6 +1746,42 @@ body[data-phase="VOTE"] .murder-stage::after {
 
 .ending-reveal[hidden] {
     display: none !important;
+}
+
+.phase-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 7;
+    display: grid;
+    place-items: center;
+    color: #f5ead6;
+    background:
+            radial-gradient(circle at 50% 50%, rgba(159, 29, 45, 0.18), transparent 16rem),
+            linear-gradient(180deg, rgba(1, 2, 2, 0.92), rgba(1, 2, 2, 0.98));
+    animation: curtainIn 360ms ease-out both;
+}
+
+.phase-curtain div {
+    display: grid;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.phase-curtain p {
+    margin: 0;
+    color: #fff4df;
+    font-size: clamp(2rem, 7vw, 4rem);
+    line-height: 1.1;
+    text-shadow: 0 0 1.8rem rgba(204, 49, 66, 0.46);
+}
+
+.phase-curtain span {
+    color: rgba(245, 234, 214, 0.72);
+    font-size: 0.98rem;
+}
+
+.phase-curtain.is-fading {
+    animation: curtainOut 520ms ease-in both;
 }
 
 .ending-page {
@@ -1494,7 +1890,11 @@ body[data-phase="VOTE"] .murder-stage::after {
 @keyframes pageTurn {
     from {
         opacity: 0;
-        transform: perspective(48rem) rotateY(-7deg) translateX(1rem);
+        filter: blur(0.18rem);
+        transform: perspective(48rem) rotateY(-9deg) translateX(1rem);
+    }
+    55% {
+        filter: blur(0);
     }
     to {
         opacity: 1;
@@ -1544,6 +1944,28 @@ body[data-phase="VOTE"] .murder-stage::after {
     }
 }
 
+@keyframes curtainIn {
+    from {
+        opacity: 0;
+        filter: blur(0.4rem);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+@keyframes curtainOut {
+    from {
+        opacity: 1;
+        filter: blur(0);
+    }
+    to {
+        opacity: 0;
+        filter: blur(0.35rem);
+    }
+}
+
 .share-button {
     justify-self: start;
     margin-top: 0.45rem;
@@ -1553,6 +1975,25 @@ body[data-phase="VOTE"] .murder-stage::after {
 .hint-note.compact .share-button {
     justify-self: end;
     margin-top: 0;
+}
+
+.share-area {
+    display: grid;
+    justify-items: end;
+    gap: 0.34rem;
+}
+
+.share-area p,
+.share-caution {
+    margin: 0;
+    color: rgba(245, 234, 214, 0.7);
+    font-size: 0.74rem;
+    line-height: 1.45;
+}
+
+.share-caution {
+    margin: -0.2rem 0 0.7rem;
+    color: #6f4b3c;
 }
 
 .panel-close {
@@ -1697,10 +2138,6 @@ body[data-phase="VOTE"] .murder-stage::after {
 }
 
 @media (max-width: 900px) {
-    .stage-mansion {
-        width: min(31rem, 82vw);
-    }
-
     .round-table {
         width: min(32rem, 88vw);
     }
@@ -1731,6 +2168,18 @@ body[data-phase="VOTE"] .murder-stage::after {
         max-height: 48vh;
     }
 
+    .hint-note.compact {
+        grid-template-columns: 1fr;
+    }
+
+    .share-area {
+        justify-items: start;
+    }
+
+    .hint-note.compact .share-button {
+        justify-self: start;
+    }
+
     .public-status-strip {
         right: 1rem;
         bottom: 4.2rem;
@@ -1755,10 +2204,6 @@ body[data-phase="VOTE"] .murder-stage::after {
         max-height: 11rem;
     }
 
-    .stage-floorplan {
-        width: min(26rem, 82vw);
-    }
-
     .evidence-admin-board,
     .hint-round-board {
         grid-template-columns: 1fr;
@@ -1767,4 +2212,1107 @@ body[data-phase="VOTE"] .murder-stage::after {
     .disclosure-board {
         grid-template-columns: 1fr;
     }
+}
+
+/* Object-style game skin: keeps UI minimal and makes panels feel like props in the scene. */
+.stage-body::before,
+.scene-game::before {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+    background:
+            radial-gradient(ellipse at 50% 54%, transparent 0 36%, rgba(0,0,0,0.46) 76%, rgba(0,0,0,0.86) 100%),
+            radial-gradient(circle at 57% 47%, rgba(130, 24, 36, 0.13), transparent 20rem),
+            linear-gradient(180deg, rgba(0,0,0,0.22), transparent 28%, rgba(0,0,0,0.48));
+}
+
+.stage-body::after,
+.scene-game::after {
+    position: fixed;
+    inset: -8%;
+    z-index: 1;
+    pointer-events: none;
+    content: "";
+    background:
+            radial-gradient(ellipse at 18% 55%, rgba(220, 214, 198, 0.1), transparent 24rem),
+            radial-gradient(ellipse at 82% 62%, rgba(220, 214, 198, 0.08), transparent 22rem),
+            radial-gradient(circle, rgba(235,222,196,0.2) 0 1px, transparent 1.4px);
+    background-size: auto, auto, 11rem 11rem;
+    opacity: 0.42;
+    filter: blur(0.45px);
+    animation: dustFloat 46s linear infinite;
+}
+
+.topbar.stage-topbar {
+    margin: 0.85rem auto 0;
+    width: min(74rem, calc(100vw - 2rem));
+    padding: 0.72rem 1rem;
+    background: linear-gradient(180deg, rgba(9, 7, 6, 0.48), rgba(9, 7, 6, 0.18));
+    border: 1px solid rgba(202, 160, 96, 0.12);
+    border-radius: 3px;
+    box-shadow: 0 1rem 2.2rem rgba(0,0,0,0.2);
+}
+
+.stage-topbar .topbar-note {
+    color: rgba(245,234,214,0.62);
+}
+
+.stage-topbar h1 {
+    color: #f0dfbf;
+    font-size: clamp(1.25rem, 3vw, 2.1rem);
+    text-shadow: 0 0 1.2rem rgba(159,29,45,0.26);
+}
+
+.button {
+    position: relative;
+    clip-path: polygon(0.45rem 0, calc(100% - 0.45rem) 0, 100% 50%, calc(100% - 0.45rem) 100%, 0.45rem 100%, 0 50%);
+    border-radius: 0;
+}
+
+.personal-dock .button,
+.board-header .button,
+.story-reader-controls .button,
+.ending-controls .button,
+.panel-close {
+    min-height: 1.9rem;
+    padding: 0.32rem 0.72rem;
+    color: #ead8b8;
+    background:
+            linear-gradient(90deg, rgba(255,255,255,0.06), transparent 18% 82%, rgba(255,255,255,0.05)),
+            linear-gradient(180deg, rgba(72, 28, 28, 0.94), rgba(34, 12, 15, 0.96));
+    border: 1px solid rgba(167, 88, 61, 0.38);
+    box-shadow:
+            inset 0 0 0 1px rgba(255,255,255,0.035),
+            0 0.45rem 0.9rem rgba(0,0,0,0.24);
+    font-size: 0.78rem;
+}
+
+.personal-dock {
+    right: 1.25rem;
+    gap: 0.38rem;
+    padding: 0.45rem;
+    background: linear-gradient(180deg, rgba(8,6,5,0.24), rgba(8,6,5,0.1));
+    border-left: 1px solid rgba(202,160,96,0.16);
+    box-shadow: -1rem 0 2.2rem rgba(0,0,0,0.14);
+}
+
+.personal-dock .button:hover,
+.board-header .button:hover,
+.story-reader-controls .button:hover,
+.ending-controls .button:hover {
+    transform: translateX(-0.08rem);
+    border-color: rgba(201,151,82,0.45);
+}
+
+.floating-panel,
+.story-panel,
+.dock-panel,
+.vote-form,
+.evidence-detail {
+    color: #2d1d16;
+    background:
+            radial-gradient(circle at 50% 0, rgba(255,255,255,0.22), transparent 12rem),
+            radial-gradient(circle at 9% 20%, rgba(61, 30, 19, 0.15), transparent 4rem),
+            radial-gradient(circle at 91% 86%, rgba(61, 30, 19, 0.18), transparent 4.5rem),
+            repeating-linear-gradient(0deg, rgba(88,52,24,0.06) 0 1px, transparent 1px 8px),
+            linear-gradient(180deg, rgba(232, 208, 164, 0.95), rgba(190, 146, 86, 0.94));
+    border: 1px solid rgba(65, 34, 22, 0.42);
+    border-radius: 2px;
+    clip-path: polygon(1.2% 2.2%, 9% 0.8%, 21% 2%, 33% 0.9%, 48% 1.8%, 61% 0.9%, 73% 2%, 88% 0.9%, 98.5% 2.5%, 99.2% 16%, 98.1% 31%, 99.4% 48%, 98.2% 63%, 99.1% 82%, 97.4% 98%, 83% 97%, 69% 98.4%, 54% 97.2%, 38% 98.5%, 24% 97.2%, 9% 98.5%, 1.5% 96%, 0.8% 79%, 1.9% 61%, 0.7% 44%, 1.8% 27%);
+    box-shadow:
+            0 1.2rem 1.6rem rgba(0,0,0,0.35),
+            0 2.6rem 5rem rgba(0,0,0,0.58),
+            inset 0 0 2.5rem rgba(70, 39, 24, 0.16),
+            inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+.floating-panel::before,
+.floating-panel::after {
+    background: rgba(66, 34, 22, 0.18);
+}
+
+.panel-close {
+    float: none;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin-left: auto;
+    clip-path: polygon(0.35rem 0, calc(100% - 0.35rem) 0, 100% 50%, calc(100% - 0.35rem) 100%, 0.35rem 100%, 0 50%);
+}
+
+.public-records,
+.evidence-board {
+    background:
+            linear-gradient(90deg, rgba(76,45,31,0.42) 0 0.4rem, transparent 0.42rem calc(100% - 0.42rem), rgba(76,45,31,0.42) calc(100% - 0.4rem)),
+            radial-gradient(circle at 50% 0, rgba(255, 226, 172, 0.14), transparent 11rem),
+            linear-gradient(180deg, rgba(30, 18, 14, 0.9), rgba(13, 9, 8, 0.88));
+    color: #ead8b8;
+    border: 1px solid rgba(126, 75, 42, 0.56);
+    border-radius: 2px;
+    box-shadow:
+            0 1.4rem 3rem rgba(0,0,0,0.66),
+            inset 0 0 0 1px rgba(255,255,255,0.035),
+            inset 0 0 2.4rem rgba(0,0,0,0.28);
+}
+
+.public-records::before,
+.evidence-board::before {
+    display: block;
+    height: 0.42rem;
+    margin: -0.35rem 0 0.55rem;
+    content: "";
+    background:
+            radial-gradient(circle, rgba(131, 29, 36, 0.95) 0 0.16rem, transparent 0.18rem) 14% 50% / 2rem 0.42rem no-repeat,
+            radial-gradient(circle, rgba(131, 29, 36, 0.95) 0 0.16rem, transparent 0.18rem) 86% 50% / 2rem 0.42rem no-repeat,
+            linear-gradient(90deg, transparent, rgba(118, 78, 42, 0.68), transparent);
+}
+
+.board-header .eyebrow {
+    color: #d1a85a;
+}
+
+.record-card,
+.evidence-card,
+.hint-note {
+    position: relative;
+    background:
+            repeating-linear-gradient(0deg, rgba(88,52,24,0.055) 0 1px, transparent 1px 7px),
+            rgba(230, 204, 156, 0.88);
+    border: 1px solid rgba(74, 41, 28, 0.35);
+    border-left: 0;
+    border-radius: 2px;
+    box-shadow:
+            0 0.55rem 0.9rem rgba(0,0,0,0.28),
+            inset 0 0 1.2rem rgba(80,45,35,0.1);
+    clip-path: polygon(1.5% 2%, 18% 0.8%, 38% 2%, 62% 1%, 84% 2%, 98.5% 1.5%, 99% 28%, 98% 52%, 99% 82%, 97.5% 98%, 78% 97%, 55% 99%, 31% 97.5%, 8% 98.5%, 1% 96%, 2% 68%, 1% 42%);
+}
+
+.record-card::before,
+.evidence-card::before,
+.hint-note::before {
+    position: absolute;
+    left: 0.42rem;
+    top: 0.42rem;
+    width: 0.42rem;
+    aspect-ratio: 1;
+    content: "";
+    background: radial-gradient(circle, #65121d 0 42%, rgba(101,18,29,0.18) 46%, transparent 70%);
+    border-radius: 50%;
+}
+
+.record-card span,
+.evidence-card small,
+.hint-note span {
+    color: #7c1722;
+}
+
+.evidence-mark {
+    color: #ead8b8;
+    background:
+            radial-gradient(circle at 50% 42%, rgba(255,255,255,0.12), transparent 38%),
+            linear-gradient(180deg, #4d2e20, #17100d);
+    border: 1px solid rgba(114, 78, 42, 0.5);
+    border-radius: 50%;
+}
+
+.shadow-tooltip {
+    background:
+            repeating-linear-gradient(0deg, rgba(88,52,24,0.055) 0 1px, transparent 1px 7px),
+            rgba(226, 199, 149, 0.94);
+    border-color: rgba(101, 18, 29, 0.45);
+    border-radius: 2px;
+    clip-path: polygon(2% 4%, 17% 1%, 39% 3%, 61% 1%, 82% 3%, 98% 2%, 97% 94%, 76% 98%, 51% 96%, 24% 99%, 2% 96%);
+}
+
+.character-shadow::after {
+    position: absolute;
+    left: 50%;
+    bottom: -0.15rem;
+    width: 5.8rem;
+    height: 1.2rem;
+    content: "";
+    background: radial-gradient(ellipse, rgba(0,0,0,0.58), transparent 70%);
+    transform: translateX(-50%);
+    filter: blur(0.2rem);
+}
+
+.silhouette-img {
+    opacity: 0.82;
+    filter:
+            brightness(0.72)
+            contrast(1.25)
+            drop-shadow(0 1.4rem 1.7rem rgba(0,0,0,0.86))
+            drop-shadow(0 0 0.65rem rgba(236,228,210,0.34))
+            drop-shadow(0 0 1.25rem rgba(133,24,36,0.3));
+}
+
+.character-shadow:hover .silhouette-img,
+.character-shadow.is-fixed .silhouette-img {
+    opacity: 0.96;
+    filter:
+            brightness(0.9)
+            contrast(1.28)
+            drop-shadow(0 1.4rem 1.7rem rgba(0,0,0,0.9))
+            drop-shadow(0 0 0.8rem rgba(236,228,210,0.44))
+            drop-shadow(0 0 1.45rem rgba(133,24,36,0.38));
+}
+
+.public-status-strip div {
+    background: rgba(10, 7, 6, 0.52);
+    border-color: rgba(126, 75, 42, 0.24);
+    border-radius: 2px;
+    clip-path: polygon(0.3rem 0, 100% 0, calc(100% - 0.3rem) 100%, 0 100%);
+}
+
+/* Dark fantasy object UI pass */
+body.stage-body::before,
+body.stage-body::after,
+body.scene-admin::before,
+body.scene-admin::after {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+}
+
+body.stage-body::before,
+body.scene-admin::before {
+    z-index: 0;
+    background:
+            radial-gradient(circle at 18% 78%, rgba(111, 18, 28, 0.2), transparent 24rem),
+            radial-gradient(circle at 78% 16%, rgba(224, 198, 148, 0.11), transparent 18rem),
+            linear-gradient(90deg, rgba(0,0,0,0.74), transparent 32%, transparent 68%, rgba(0,0,0,0.74)),
+            linear-gradient(180deg, rgba(0,0,0,0.5), transparent 38%, rgba(0,0,0,0.78));
+    mix-blend-mode: multiply;
+}
+
+body.stage-body::after,
+body.scene-admin::after {
+    z-index: 1;
+    opacity: 0.58;
+    background:
+            radial-gradient(ellipse at 28% 36%, rgba(210, 205, 190, 0.08), transparent 24rem),
+            radial-gradient(ellipse at 72% 62%, rgba(210, 205, 190, 0.06), transparent 22rem),
+            repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.045) 0 1px, transparent 1px 5px);
+    filter: blur(0.4px);
+}
+
+.stage-topbar,
+.murder-stage,
+.admin-grid {
+    position: relative;
+    z-index: 2;
+}
+
+.topbar.stage-topbar {
+    width: min(68rem, calc(100vw - 2.4rem));
+    padding: 0.58rem 0.95rem;
+    background:
+            linear-gradient(90deg, rgba(75, 47, 30, 0.24), transparent 18% 82%, rgba(75, 47, 30, 0.24)),
+            rgba(7, 5, 5, 0.28);
+    border: 0;
+    border-bottom: 1px solid rgba(174, 117, 56, 0.22);
+    clip-path: polygon(0.9rem 0, calc(100% - 0.9rem) 0, 100% 50%, calc(100% - 0.9rem) 100%, 0.9rem 100%, 0 50%);
+    box-shadow: 0 1.4rem 3rem rgba(0,0,0,0.38);
+}
+
+.stage-topbar h1 {
+    font-size: clamp(1.08rem, 2.3vw, 1.7rem);
+}
+
+.stage-topbar .topbar-note,
+.timer {
+    text-shadow: 0 0 0.8rem rgba(0,0,0,0.95);
+}
+
+.button,
+.share-button,
+.panel-close {
+    isolation: isolate;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.55);
+}
+
+.button::before,
+.share-button::before {
+    position: absolute;
+    inset: 0.18rem;
+    z-index: -1;
+    content: "";
+    border: 1px solid rgba(241, 200, 132, 0.12);
+    clip-path: inherit;
+}
+
+.button.primary,
+.button.danger,
+.personal-dock .button.primary {
+    background:
+            radial-gradient(circle at 50% 22%, rgba(255, 202, 151, 0.16), transparent 44%),
+            linear-gradient(180deg, rgba(121, 28, 32, 0.98), rgba(58, 13, 17, 0.98));
+    border-color: rgba(177, 74, 57, 0.58);
+    color: #f8e9cf;
+    box-shadow:
+            inset 0 0 0.55rem rgba(255, 216, 168, 0.08),
+            0 0.55rem 0.2rem rgba(25, 6, 7, 0.48),
+            0 0.8rem 1.7rem rgba(0,0,0,0.52);
+}
+
+.button.ghost,
+.personal-dock .button.ghost {
+    background:
+            linear-gradient(90deg, rgba(255,255,255,0.035), transparent 24% 76%, rgba(255,255,255,0.035)),
+            linear-gradient(180deg, rgba(58, 37, 26, 0.98), rgba(18, 12, 10, 0.98));
+    border-color: rgba(145, 95, 49, 0.5);
+}
+
+.personal-dock {
+    top: 52%;
+    right: 0.55rem;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    transform: translateY(-50%);
+}
+
+.personal-dock .button {
+    min-width: 5.25rem;
+    justify-content: flex-start;
+    padding: 0.46rem 0.68rem 0.46rem 0.92rem;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 0.42rem) 50%, 100% 100%, 0 100%, 0.26rem 50%);
+    transform-origin: right center;
+    box-shadow:
+            -0.2rem 0.32rem 0.7rem rgba(0,0,0,0.45),
+            inset 0.45rem 0 rgba(10, 7, 6, 0.22);
+}
+
+.personal-dock .button:nth-child(odd) {
+    transform: rotate(-1.2deg);
+}
+
+.personal-dock .button:nth-child(even) {
+    transform: rotate(1.1deg);
+}
+
+.personal-dock .button:hover {
+    transform: translateX(-0.18rem) rotate(0deg);
+}
+
+.floating-panel,
+.story-panel,
+.dock-panel,
+.vote-form,
+.evidence-detail {
+    transform: rotate(-0.35deg);
+}
+
+.floating-panel::before,
+.story-panel::before,
+.dock-panel::before,
+.evidence-detail::before {
+    position: absolute;
+    inset: 0.9rem;
+    pointer-events: none;
+    content: "";
+    background:
+            linear-gradient(90deg, transparent, rgba(86, 36, 26, 0.13), transparent),
+            repeating-linear-gradient(90deg, transparent 0 2.6rem, rgba(82, 45, 23, 0.035) 2.6rem 2.68rem);
+    border: 1px solid rgba(82, 43, 28, 0.11);
+    mix-blend-mode: multiply;
+}
+
+.story-panel {
+    max-width: min(43rem, calc(100vw - 2rem));
+}
+
+.story-reader-body,
+.story-body {
+    max-width: 34rem;
+    margin-inline: auto;
+    line-height: 1.95;
+}
+
+.panel-close {
+    min-width: auto;
+    background:
+            radial-gradient(circle at 50% 38%, rgba(255, 205, 151, 0.12), transparent 50%),
+            linear-gradient(180deg, #7c1d23, #3e0d12);
+    border-color: rgba(181, 78, 58, 0.55);
+    box-shadow:
+            0 0.45rem 1rem rgba(0,0,0,0.38),
+            inset 0 0 1rem rgba(255,255,255,0.04);
+}
+
+.public-records,
+.evidence-board {
+    padding: 0.85rem;
+    background:
+            linear-gradient(90deg, rgba(58, 30, 18, 0.9) 0 0.38rem, transparent 0.38rem calc(100% - 0.38rem), rgba(58, 30, 18, 0.9) calc(100% - 0.38rem)),
+            linear-gradient(180deg, rgba(53, 31, 22, 0.94), rgba(17, 11, 9, 0.94));
+    border: 1px solid rgba(134, 80, 39, 0.5);
+    clip-path: polygon(0.8% 1%, 98.8% 0.4%, 99.4% 98%, 1.4% 99.2%);
+}
+
+.public-records::after,
+.evidence-board::after {
+    display: block;
+    height: 1px;
+    margin-top: 0.6rem;
+    content: "";
+    background:
+            linear-gradient(90deg, transparent, rgba(117, 24, 33, 0.9), transparent),
+            linear-gradient(90deg, transparent 22%, rgba(206, 151, 86, 0.45) 22% 24%, transparent 24% 76%, rgba(206, 151, 86, 0.45) 76% 78%, transparent 78%);
+}
+
+.board-header {
+    margin-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(170, 116, 58, 0.16);
+}
+
+.record-list,
+.evidence-card-list {
+    gap: 0.62rem;
+}
+
+.record-card,
+.evidence-card,
+.hint-note {
+    transform-origin: 50% 0.5rem;
+}
+
+.record-card:nth-child(3n + 1),
+.evidence-card:nth-child(3n + 1),
+.hint-note:nth-child(3n + 1) {
+    transform: rotate(-0.75deg);
+}
+
+.record-card:nth-child(3n + 2),
+.evidence-card:nth-child(3n + 2),
+.hint-note:nth-child(3n + 2) {
+    transform: rotate(0.65deg);
+}
+
+.record-card:nth-child(3n),
+.evidence-card:nth-child(3n),
+.hint-note:nth-child(3n) {
+    transform: rotate(-0.25deg);
+}
+
+.record-card::after,
+.evidence-card::after,
+.hint-note::after {
+    position: absolute;
+    left: 0.62rem;
+    right: 0.62rem;
+    top: 0.62rem;
+    height: 1px;
+    content: "";
+    background: linear-gradient(90deg, transparent, rgba(95, 35, 27, 0.25), transparent);
+}
+
+.public-status-strip {
+    gap: 0.42rem;
+}
+
+.public-status-strip div {
+    padding: 0.42rem 0.62rem;
+    background:
+            linear-gradient(180deg, rgba(44, 28, 20, 0.72), rgba(10, 7, 6, 0.7));
+    box-shadow: 0 0.45rem 1rem rgba(0,0,0,0.35);
+}
+
+.character-shadow {
+    filter: drop-shadow(0 1.5rem 1.2rem rgba(0,0,0,0.82));
+}
+
+.character-shadow.self::before {
+    position: absolute;
+    inset: 0.3rem;
+    content: "";
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(141, 23, 34, 0.18), transparent 62%);
+    filter: blur(0.2rem);
+}
+
+.shadow-tooltip {
+    box-shadow:
+            0 0.75rem 1.4rem rgba(0,0,0,0.42),
+            inset 0 0 1.2rem rgba(86, 46, 26, 0.12);
+}
+
+.locked-panel {
+    background:
+            radial-gradient(circle at 50% 0, rgba(102, 17, 26, 0.08), transparent 12rem),
+            rgba(49, 29, 18, 0.12);
+    border: 1px dashed rgba(91, 42, 28, 0.42);
+    clip-path: polygon(1% 3%, 98% 1%, 99% 96%, 3% 99%);
+}
+
+@media (max-width: 760px) {
+    .personal-dock {
+        top: auto;
+        right: auto;
+        bottom: 0.85rem;
+        left: 50%;
+        flex-direction: row;
+        transform: translateX(-50%);
+    }
+
+    .personal-dock .button {
+        min-width: 4.5rem;
+        justify-content: center;
+        padding: 0.42rem 0.52rem;
+    }
+
+    .topbar.stage-topbar {
+        width: min(100% - 1rem, 68rem);
+    }
+}
+
+.scene-admin .topbar {
+    position: relative;
+    z-index: 2;
+    margin: 0.85rem auto 0;
+    width: min(76rem, calc(100vw - 2rem));
+    padding: 0.72rem 1rem;
+    background:
+            linear-gradient(90deg, rgba(75, 47, 30, 0.28), transparent 20% 80%, rgba(75, 47, 30, 0.28)),
+            rgba(7, 5, 5, 0.36);
+    border: 0;
+    border-bottom: 1px solid rgba(174, 117, 56, 0.22);
+    clip-path: polygon(0.9rem 0, calc(100% - 0.9rem) 0, 100% 50%, calc(100% - 0.9rem) 100%, 0.9rem 100%, 0 50%);
+    box-shadow: 0 1.4rem 3rem rgba(0,0,0,0.42);
+}
+
+.scene-admin .admin-grid {
+    align-items: start;
+}
+
+.scene-admin .parchment {
+    position: relative;
+    overflow: hidden;
+    background:
+            radial-gradient(circle at 50% 0, rgba(255, 231, 185, 0.18), transparent 12rem),
+            radial-gradient(circle at 8% 18%, rgba(78, 40, 25, 0.14), transparent 4rem),
+            repeating-linear-gradient(0deg, rgba(88,52,24,0.055) 0 1px, transparent 1px 7px),
+            linear-gradient(180deg, rgba(224, 198, 151, 0.93), rgba(177, 130, 76, 0.9));
+    border: 1px solid rgba(71, 39, 25, 0.42);
+    border-radius: 2px;
+    clip-path: polygon(1.4% 1%, 14% 2.2%, 28% 0.9%, 42% 1.8%, 58% 0.8%, 73% 1.9%, 88% 0.8%, 98.6% 2.4%, 99% 23%, 98.2% 48%, 99% 73%, 97.5% 97.5%, 82% 98.8%, 66% 97.2%, 50% 98.6%, 34% 97.5%, 18% 98.7%, 1.8% 97%, 0.8% 76%, 1.8% 51%, 0.9% 26%);
+    box-shadow:
+            0 1.2rem 2.4rem rgba(0,0,0,0.38),
+            0 2.8rem 5.2rem rgba(0,0,0,0.48),
+            inset 0 0 2.4rem rgba(67, 36, 22, 0.14);
+}
+
+.scene-admin .parchment::before {
+    position: absolute;
+    left: 0.7rem;
+    right: 0.7rem;
+    top: 0.7rem;
+    height: 0.16rem;
+    content: "";
+    background:
+            radial-gradient(circle, rgba(103, 17, 27, 0.92) 0 0.18rem, transparent 0.2rem) 8% 50% / 1rem 0.32rem no-repeat,
+            radial-gradient(circle, rgba(103, 17, 27, 0.92) 0 0.18rem, transparent 0.2rem) 92% 50% / 1rem 0.32rem no-repeat,
+            linear-gradient(90deg, transparent, rgba(83, 43, 24, 0.24), transparent);
+}
+
+.scene-admin .phase-list,
+.scene-admin .disclosure-board,
+.scene-admin .player-list,
+.scene-admin .record-list {
+    display: grid;
+    gap: 0.58rem;
+}
+
+.scene-admin .phase-list li,
+.scene-admin .disclosure-row,
+.scene-admin .player-list div,
+.scene-admin .global-status,
+.scene-admin .hint-round-card {
+    background:
+            linear-gradient(90deg, rgba(59, 35, 24, 0.16), transparent 28% 72%, rgba(59, 35, 24, 0.14)),
+            rgba(255, 242, 214, 0.16);
+    border: 1px solid rgba(80, 44, 28, 0.24);
+    border-radius: 2px;
+    box-shadow: inset 0 0 1.2rem rgba(79, 43, 24, 0.08);
+    clip-path: polygon(0.7% 4%, 98.8% 1%, 99.5% 96%, 1.2% 99%);
+}
+
+.scene-admin .phase-list li.active {
+    background:
+            radial-gradient(circle at 100% 50%, rgba(127, 23, 34, 0.18), transparent 9rem),
+            rgba(255, 238, 203, 0.24);
+    border-color: rgba(121, 29, 32, 0.46);
+}
+
+.scene-admin .giant-timer {
+    color: #2a1612;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.scene-admin input,
+.scene-admin select {
+    min-height: 2.1rem;
+    color: #f0dfbf;
+    background:
+            linear-gradient(180deg, rgba(11, 8, 7, 0.9), rgba(31, 20, 15, 0.9));
+    border: 1px solid rgba(103, 69, 39, 0.58);
+    border-radius: 2px;
+    box-shadow: inset 0 0.35rem 0.8rem rgba(0,0,0,0.42);
+}
+
+.scene-admin .status-light {
+    box-shadow: 0 0 0.75rem rgba(0,0,0,0.45);
+}
+
+.scene-admin .status-light.open {
+    box-shadow:
+            0 0 0.9rem rgba(126, 22, 32, 0.62),
+            0 0 0 1px rgba(255, 213, 158, 0.2);
+}
+
+/* Entry screen as a game scene, not a login card. */
+.scene-entry {
+    background-position: center;
+}
+
+.scene-entry::before {
+    background:
+            radial-gradient(ellipse at 42% 50%, transparent 0 30%, rgba(0,0,0,0.28) 58%, rgba(0,0,0,0.88) 100%),
+            linear-gradient(90deg, rgba(0,0,0,0.8), rgba(0,0,0,0.12) 34%, transparent 62%, rgba(0,0,0,0.54)),
+            linear-gradient(180deg, rgba(0,0,0,0.18), transparent 42%, rgba(0,0,0,0.72));
+}
+
+.scene-entry::after {
+    background:
+            radial-gradient(ellipse at 23% 68%, rgba(235, 222, 196, 0.1), transparent 28rem),
+            radial-gradient(circle at 63% 40%, rgba(129, 20, 31, 0.12), transparent 16rem),
+            linear-gradient(90deg, transparent 0 10%, rgba(231, 211, 176, 0.06) 18%, transparent 30%);
+    opacity: 0.72;
+}
+
+.scene-entry .entry-layout {
+    width: 100%;
+    min-height: 100vh;
+    padding: clamp(1.2rem, 4vw, 3rem);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    transform: none;
+}
+
+.entry-scene-menu {
+    position: relative;
+    width: min(29rem, 92vw);
+    margin: 0 0 clamp(2rem, 7vh, 4.8rem) clamp(0.2rem, 6vw, 6rem);
+    color: #f6ead2;
+    text-shadow:
+            0 0.16rem 0.38rem rgba(0,0,0,0.9),
+            0 0 1.4rem rgba(0,0,0,0.78);
+    animation: sceneMenuRise 720ms ease-out both;
+}
+
+.entry-scene-menu::before {
+    position: absolute;
+    left: -1.2rem;
+    top: -1rem;
+    bottom: -1.2rem;
+    width: 1px;
+    content: "";
+    background: linear-gradient(180deg, transparent, rgba(169, 112, 58, 0.56), rgba(112, 23, 31, 0.52), transparent);
+    box-shadow: 0 0 1rem rgba(112, 23, 31, 0.22);
+}
+
+.entry-scene-menu .invitation-head {
+    max-width: 29rem;
+    margin: 0;
+    justify-items: start;
+    text-align: left;
+}
+
+.entry-scene-menu .eyebrow {
+    color: rgba(222, 184, 112, 0.86);
+    font-size: 0.76rem;
+    letter-spacing: 0.16em;
+}
+
+.entry-scene-menu h1 {
+    margin: 0;
+    color: #f4e4c4;
+    font-family: "Cinzel", "Cormorant Garamond", "Times New Roman", "Noto Serif KR", serif;
+    font-size: clamp(2.65rem, 8vw, 5.8rem);
+    font-weight: 700;
+    line-height: 0.94;
+    letter-spacing: 0;
+    text-shadow:
+            0 0.2rem 0.28rem rgba(0,0,0,0.96),
+            0 0 1.8rem rgba(126, 22, 32, 0.24);
+}
+
+.entry-scene-menu .invitation-subtitle {
+    max-width: 24rem;
+    margin-top: 0.72rem;
+    color: rgba(244, 226, 191, 0.9);
+    font-size: clamp(0.96rem, 2vw, 1.12rem);
+    font-weight: 600;
+    line-height: 1.62;
+}
+
+.entry-scene-menu .invitation-copy {
+    max-width: 23rem;
+    margin: 1rem 0 1.15rem;
+    color: rgba(232, 216, 186, 0.76);
+    font-size: 0.92rem;
+    line-height: 1.82;
+    text-align: left;
+}
+
+.entry-code-form {
+    position: relative;
+    max-width: 20.5rem;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.58rem;
+    border: 0;
+}
+
+.entry-code-form::before {
+    position: absolute;
+    left: -0.65rem;
+    right: -0.65rem;
+    bottom: -0.62rem;
+    height: 4.2rem;
+    z-index: -1;
+    content: "";
+    background:
+            radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.62), transparent 70%),
+            linear-gradient(90deg, transparent, rgba(44, 24, 17, 0.42), transparent);
+    filter: blur(0.2rem);
+}
+
+.entry-code-form label {
+    grid-column: 1 / -1;
+    color: rgba(222, 184, 112, 0.78);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-align: left;
+}
+
+.entry-code-form input {
+    width: 100%;
+    min-height: 2.08rem;
+    padding: 0.36rem 0.65rem;
+    color: #f4e4c4;
+    background:
+            linear-gradient(90deg, rgba(255,255,255,0.04), transparent 18% 82%, rgba(255,255,255,0.035)),
+            linear-gradient(180deg, rgba(10, 7, 6, 0.84), rgba(29, 18, 13, 0.78));
+    border: 1px solid rgba(118, 79, 43, 0.54);
+    border-radius: 0;
+    clip-path: polygon(0.36rem 0, calc(100% - 0.36rem) 0, 100% 50%, calc(100% - 0.36rem) 100%, 0.36rem 100%, 0 50%);
+    box-shadow:
+            inset 0 0.38rem 0.8rem rgba(0,0,0,0.56),
+            0 0.42rem 0.9rem rgba(0,0,0,0.34);
+}
+
+.entry-code-form input:focus {
+    border-color: rgba(169, 112, 58, 0.86);
+    box-shadow:
+            inset 0 0.38rem 0.8rem rgba(0,0,0,0.56),
+            0 0 0 1px rgba(112, 23, 31, 0.22),
+            0 0.42rem 0.9rem rgba(0,0,0,0.34);
+}
+
+.entry-code-form .invitation-button {
+    min-width: 5.9rem;
+    min-height: 2.08rem;
+    margin: 0;
+    padding: 0.32rem 0.82rem;
+    color: #fff2da;
+    background:
+            radial-gradient(circle at 50% 28%, rgba(255, 210, 157, 0.2), transparent 42%),
+            linear-gradient(180deg, rgba(134, 24, 34, 0.96), rgba(66, 10, 16, 0.98));
+    border: 1px solid rgba(179, 82, 57, 0.62);
+    clip-path: polygon(0.48rem 0, calc(100% - 0.48rem) 0, 100% 50%, calc(100% - 0.48rem) 100%, 0.48rem 100%, 0 50%);
+    box-shadow:
+            inset 0 0 0 1px rgba(255,255,255,0.06),
+            inset 0 -0.34rem 0.7rem rgba(29, 3, 8, 0.3),
+            0 0.55rem 0.18rem rgba(24, 4, 7, 0.42),
+            0 0.75rem 1.4rem rgba(0,0,0,0.48);
+}
+
+.entry-code-form .invitation-button::after {
+    position: absolute;
+    inset: 0.28rem 0.44rem;
+    content: "";
+    border: 1px solid rgba(255, 218, 164, 0.12);
+    clip-path: inherit;
+}
+
+.entry-code-form .error {
+    grid-column: 1 / -1;
+    margin: 0.2rem 0 0;
+    color: #f4b1a6;
+}
+
+@keyframes sceneMenuRise {
+    from {
+        opacity: 0;
+        filter: blur(0.25rem);
+        transform: translateY(1rem);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 760px) {
+    .scene-entry .entry-layout {
+        align-items: flex-end;
+        justify-content: center;
+        padding: 1.1rem;
+    }
+
+    .entry-scene-menu {
+        width: min(100%, 28rem);
+        margin: 0 0 1.35rem;
+    }
+
+    .entry-scene-menu h1 {
+        font-size: clamp(2.25rem, 14vw, 4rem);
+    }
+
+    .entry-code-form {
+        max-width: 100%;
+        grid-template-columns: 1fr;
+    }
+
+    .entry-code-form .invitation-button {
+        justify-self: start;
+    }
+}
+
+/* Theatre stage simplification: no occult circle, only a table and a few story props. */
+.murder-stage::before {
+    background:
+            radial-gradient(ellipse at 50% 62%, rgba(222, 214, 196, 0.08), transparent 24rem),
+            radial-gradient(ellipse at 50% 74%, rgba(0,0,0,0.2), rgba(0,0,0,0.72) 72%, rgba(0,0,0,0.88) 100%),
+            linear-gradient(90deg, rgba(0,0,0,0.72), transparent 32% 68%, rgba(0,0,0,0.72));
+    opacity: 1;
+}
+
+.murder-stage::after {
+    background:
+            radial-gradient(ellipse at 32% 68%, rgba(210, 205, 190, 0.11), transparent 20rem),
+            radial-gradient(ellipse at 68% 68%, rgba(210, 205, 190, 0.09), transparent 20rem),
+            radial-gradient(ellipse at 50% 58%, rgba(113, 18, 28, 0.08), transparent 18rem),
+            linear-gradient(180deg, transparent 36%, rgba(0,0,0,0.44));
+    opacity: 0.82;
+    filter: blur(0.2px);
+}
+
+body[data-phase="FIRST_DISCUSSION"] .murder-stage::before,
+body[data-phase="FIRST_DISCUSSION"] .murder-stage::after,
+body[data-phase="FIRST_HINT"] .murder-stage::before,
+body[data-phase="FIRST_HINT"] .murder-stage::after,
+body[data-phase="SECOND_DISCUSSION"] .murder-stage::before,
+body[data-phase="SECOND_DISCUSSION"] .murder-stage::after,
+body[data-phase="SECOND_HINT"] .murder-stage::before,
+body[data-phase="SECOND_HINT"] .murder-stage::after,
+body[data-phase="THIRD_HINT"] .murder-stage::before,
+body[data-phase="THIRD_HINT"] .murder-stage::after,
+body[data-phase="FINAL_DISCUSSION"] .murder-stage::before,
+body[data-phase="FINAL_DISCUSSION"] .murder-stage::after,
+body[data-phase="VOTE"] .murder-stage::before,
+body[data-phase="VOTE"] .murder-stage::after {
+    opacity: 0.82;
+}
+
+.stage-circle::before {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    width: min(50rem, 78vw);
+    height: min(16rem, 28vw);
+    content: "";
+    background:
+            radial-gradient(ellipse, rgba(218, 213, 196, 0.12), transparent 66%),
+            radial-gradient(ellipse, rgba(0,0,0,0.46), transparent 72%);
+    transform: translate(-50%, -50%);
+    filter: blur(1.1rem);
+    pointer-events: none;
+}
+
+.round-table {
+    width: min(29rem, 54vw);
+    height: min(15.5rem, 29vw);
+    top: 58%;
+    transform: translate(-50%, -34%);
+    background:
+            radial-gradient(ellipse at 50% 28%, rgba(145, 92, 55, 0.28), transparent 30%),
+            linear-gradient(90deg, rgba(0,0,0,0.22), transparent 20% 80%, rgba(0,0,0,0.2)),
+            repeating-linear-gradient(9deg, rgba(145, 91, 52, 0.18) 0 0.18rem, rgba(37, 20, 15, 0.12) 0.18rem 0.52rem),
+            radial-gradient(ellipse at 50% 50%, rgba(55, 31, 22, 0.98), rgba(16, 10, 8, 0.98) 67%, transparent 68%);
+    border: 1px solid rgba(111, 72, 42, 0.55);
+    box-shadow:
+            inset 0 0 2.2rem rgba(0,0,0,0.78),
+            inset 0 0 0 0.18rem rgba(164, 105, 59, 0.12),
+            0 1.9rem 3.6rem rgba(0,0,0,0.82);
+}
+
+.round-table::before {
+    position: absolute;
+    left: 50%;
+    bottom: -2.2rem;
+    width: 54%;
+    height: 3rem;
+    content: "";
+    background:
+            linear-gradient(90deg, transparent, rgba(28, 16, 11, 0.88) 18% 82%, transparent),
+            linear-gradient(180deg, rgba(70, 40, 25, 0.9), rgba(12, 8, 7, 0.95));
+    transform: translateX(-50%);
+    clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+    filter: blur(0.15px);
+}
+
+.round-table::after {
+    inset: 17% 12%;
+    transform: none;
+    background:
+            radial-gradient(ellipse at 50% 45%, rgba(223, 191, 132, 0.08), transparent 48%),
+            repeating-linear-gradient(2deg, rgba(204, 151, 82, 0.08) 0 1px, transparent 1px 0.55rem);
+    border: 1px solid rgba(222, 184, 112, 0.07);
+    border-radius: 50%;
+}
+
+.stage-props {
+    top: 58%;
+    width: min(24rem, 44vw);
+    height: min(11rem, 21vw);
+    transform: translate(-50%, -36%);
+}
+
+.prop.candle {
+    left: 50%;
+    top: 7%;
+    width: 0.46rem;
+    height: 2.7rem;
+    box-shadow: 0 0 0.65rem rgba(255, 206, 132, 0.28);
+    transform: translateX(-50%);
+}
+
+.prop.candle::before {
+    width: 0.62rem;
+    height: 0.96rem;
+    background: radial-gradient(ellipse at 50% 70%, rgba(255, 217, 134, 0.82) 0 27%, rgba(162, 45, 39, 0.42) 54%, transparent 69%);
+}
+
+.prop.watch {
+    left: 56%;
+    top: 49%;
+    width: 2.45rem;
+    border-width: 0.2rem;
+    opacity: 0.82;
+}
+
+.prop.card {
+    width: 1.85rem;
+    height: 2.55rem;
+    opacity: 0.84;
+}
+
+.prop.card::after {
+    content: "";
+    left: 50%;
+    top: 50%;
+    width: 0.42rem;
+    aspect-ratio: 1;
+    background: radial-gradient(circle at 50% 34%, #7c1722 0 38%, transparent 40%);
+}
+
+.prop.card-one {
+    left: 31%;
+    top: 52%;
+    transform: rotate(-9deg);
+}
+
+.prop.card-two {
+    right: 28%;
+    top: 33%;
+    transform: rotate(8deg);
+}
+
+.prop.thread {
+    display: none;
+}
+
+.character-shadow {
+    width: 7.6rem;
+    height: 10.4rem;
+}
+
+.character-shadow:nth-of-type(1) { left: 30%; top: 37%; }
+.character-shadow:nth-of-type(2) { left: 70%; top: 37%; }
+.character-shadow:nth-of-type(3) { left: 30%; top: 73%; }
+.character-shadow:nth-of-type(4) { left: 70%; top: 73%; }
+
+.silhouette-img {
+    width: 6.8rem;
+    height: 9.6rem;
+    opacity: 0.86;
+    filter:
+            grayscale(0.35)
+            brightness(0.58)
+            contrast(1.55)
+            drop-shadow(0 1.5rem 1.5rem rgba(0,0,0,0.92))
+            drop-shadow(0 0 0.42rem rgba(230, 224, 207, 0.3));
+}
+
+.character-shadow:hover .silhouette-img,
+.character-shadow.is-fixed .silhouette-img {
+    opacity: 0.94;
+    filter:
+            grayscale(0.25)
+            brightness(0.72)
+            contrast(1.55)
+            drop-shadow(0 1.5rem 1.6rem rgba(0,0,0,0.94))
+            drop-shadow(0 0 0.54rem rgba(230, 224, 207, 0.38));
+}
+
+.character-shadow.self::before {
+    background: radial-gradient(ellipse, rgba(220, 214, 196, 0.12), transparent 62%);
+}
+
+.character-shadow.self .silhouette-img {
+    filter:
+            grayscale(0.2)
+            brightness(0.76)
+            contrast(1.55)
+            drop-shadow(0 1.5rem 1.6rem rgba(0,0,0,0.94))
+            drop-shadow(0 0 0.65rem rgba(230, 224, 207, 0.48));
+}
+
+@media (max-width: 900px) {
+    .round-table {
+        width: min(25rem, 70vw);
+        height: min(13rem, 38vw);
+    }
+
+    .stage-props {
+        width: min(20rem, 58vw);
+        height: min(9rem, 28vw);
+    }
+
+    .character-shadow:nth-of-type(1) { left: 27%; top: 38%; }
+    .character-shadow:nth-of-type(2) { left: 73%; top: 38%; }
+    .character-shadow:nth-of-type(3) { left: 27%; top: 73%; }
+    .character-shadow:nth-of-type(4) { left: 73%; top: 73%; }
 }

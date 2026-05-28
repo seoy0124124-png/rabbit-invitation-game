@@ -11,7 +11,7 @@ Spring Boot + Thymeleaf 기반의 정통 머더미스터리 웹게임 초안입�
 - 관리자 공개 제어: 개인 이야기, 1차 힌트, 2차 힌트를 전체 수신 가능 상태로 공개
 - 플레이어 공유: 관리자가 공개한 뒤 자기 개인 이야기/힌트를 전체 공개로 전환 가능
 - 관리자 확인: 입장 플레이어 목록, 투표 현황
-- 지도 이미지는 분위기 연출용으로만 사용
+- 장소/배경 이미지는 분위기 연출용으로만 사용
 - 장소 이동, 조사 횟수, 방탈출형 퍼즐 없이 토론과 정보 연결에 집중
 - 정보 비대칭 중심: 각 플레이어는 자신에게 공개된 힌트만 확인
 - 힌트 구조: 초반에는 의미가 애매한 감각/기억, 후반에는 기존 힌트를 재해석하게 만드는 연결 정보
@@ -44,4 +44,11 @@ macOS/Linux에서는 다음처럼 실행합니다.
 - 화면 템플릿: `src/main/resources/templates`
 - 분위기 스타일: `src/main/resources/static/css/game.css`
 - 상호작용 스크립트: `src/main/resources/static/js/game.js`
-- 저택 지도 자산: `src/main/resources/static/images/mansion-map.svg`
+- 기준 배경 자산: `src/main/resources/static/images/backgrounds/rabbit-invitation-bg.png`
+
+## 비주얼 기준
+
+- 기준 스타일은 `rabbit-invitation-bg.png`입니다.
+- 새 프롤로그/개인 이야기/장소 이미지는 SVG, 도형, 플랫 일러스트가 아니라 컨셉아트 품질의 다크 판타지 동화 장면으로 만듭니다.
+- 공통 요소는 검은 숲, 안개, 달빛, 붉은 포인트 조명, 회중시계, 카드, 장미, 낡은 저택입니다.
+- UI는 이미지 위에 최소한으로 얹고, 웹사이트 카드보다 게임 장면 속 종이/인장/기록물처럼 보이게 유지합니다.
