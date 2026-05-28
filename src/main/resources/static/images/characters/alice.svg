@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 260" role="img" aria-label="앨리스 실루엣">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f2eee4"/>
+      <stop offset="1" stop-color="#817d75"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#glow)" fill="url(#body)" stroke="#fff8e8" stroke-width="3" stroke-linejoin="round" opacity=".92">
+    <path d="M55 44 C60 21 120 21 125 44 C113 32 68 32 55 44Z"/>
+    <circle cx="90" cy="62" r="23"/>
+    <path d="M70 86 C77 99 103 99 111 86 C128 119 143 177 161 236 C118 219 62 219 19 236 C37 177 52 119 70 86Z"/>
+    <path d="M62 107 C42 123 36 151 31 180" fill="none" stroke-linecap="round"/>
+    <path d="M119 107 C139 123 145 151 150 180" fill="none" stroke-linecap="round"/>
+    <path d="M45 218 C67 203 113 203 136 218" fill="none" stroke="#ded7c6"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 260" role="img" aria-label="피노키오 실루엣">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#eee9dc"/>
+      <stop offset="1" stop-color="#77736b"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#glow)" stroke="#fff8e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".92">
+    <path d="M55 8 L74 84 M125 8 L106 84 M88 8 L90 51" fill="none" stroke="#ded6c5" opacity=".8"/>
+    <circle cx="90" cy="57" r="24" fill="url(#body)"/>
+    <path d="M113 58 L143 65 L113 72Z" fill="url(#body)"/>
+    <rect x="62" y="84" width="56" height="74" rx="11" fill="url(#body)"/>
+    <path d="M62 100 L33 138 L49 151 L70 120" fill="url(#body)"/>
+    <path d="M118 100 L147 138 L132 151 L110 120" fill="url(#body)"/>
+    <path d="M78 158 L67 226 L86 226 L92 160" fill="url(#body)"/>
+    <path d="M102 158 L111 226 L130 226 L108 160" fill="url(#body)"/>
+    <path d="M69 91 H111 M72 119 H108 M78 151 H103" stroke="#6f6b63" opacity=".45"/>
+  </g>
+</svg>

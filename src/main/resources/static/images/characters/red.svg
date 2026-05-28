@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 260" role="img" aria-label="빨간망토 실루엣">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f4efe4"/>
+      <stop offset="1" stop-color="#8e8a82"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#glow)" fill="url(#body)" stroke="#fff8e8" stroke-width="3" stroke-linejoin="round" opacity=".92">
+    <path d="M91 18 C67 22 52 42 52 67 C37 84 30 118 26 161 C22 199 12 232 7 250 C47 232 71 244 91 250 C112 242 135 232 174 250 C167 220 158 191 154 158 C149 116 142 83 129 67 C130 41 115 22 91 18Z"/>
+    <path d="M61 75 C78 92 104 92 121 75 C115 113 122 168 139 220 C111 207 73 207 45 220 C61 168 67 113 61 75Z" fill="#d9d5ca" opacity=".82"/>
+    <circle cx="91" cy="54" r="22"/>
+    <path d="M44 112 C25 130 20 159 24 192" fill="none" stroke-linecap="round"/>
+    <path d="M138 112 C158 130 162 159 157 192" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

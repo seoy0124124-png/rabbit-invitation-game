@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>토끼의 초대장</title>
+    <link rel="stylesheet" href="/css/game.css">
+</head>
+<body class="scene scene-entry">
+<div class="snow" aria-hidden="true"></div>
+<main class="entry-layout">
+    <section class="parchment entry-card invitation-card">
+        <div class="invitation-head">
+            <p class="eyebrow">눈 속에서 도착한 봉투</p>
+            <h1>토끼의 초대장</h1>
+            <p class="invitation-subtitle">붉은 설산의 저택으로 당신을 초대합니다.</p>
+        </div>
+
+        <p class="lead invitation-copy">붉은 밀랍 봉인은 아직 따뜻합니다. 종이 안쪽에서는 작은 회중시계 소리가 아주 낮게, 그러나 분명하게 울립니다.</p>
+
+        <form class="stack invitation-form" action="/enter" method="post">
+            <label for="code">초대장 암호</label>
+            <input id="code" name="code" autocomplete="off" autofocus placeholder="입장코드">
+            <button class="button primary invitation-button" type="submit">초대장을 연다</button>
+            <p class="error" th:if="${error}" th:text="${error}"></p>
+        </form>
+    </section>
+</main>
+</body>
+</html>

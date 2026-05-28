@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 260" role="img" aria-label="성냥팔이 소녀 실루엣">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="flame" cx=".5" cy=".35" r=".65">
+      <stop offset="0" stop-color="#fff0b6"/>
+      <stop offset=".55" stop-color="#cc3142"/>
+      <stop offset="1" stop-color="#77111d"/>
+    </radialGradient>
+    <linearGradient id="body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f1eadc"/>
+      <stop offset="1" stop-color="#7b766e"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#glow)" stroke="#fff8e8" stroke-width="3" stroke-linejoin="round" opacity=".93">
+    <circle cx="88" cy="59" r="22" fill="url(#body)"/>
+    <path d="M65 84 C82 100 101 100 116 84 C128 119 132 172 140 232 C112 217 67 217 39 232 C47 172 52 119 65 84Z" fill="url(#body)"/>
+    <path d="M60 107 L29 174" fill="none" stroke-linecap="round"/>
+    <path d="M29 174 L24 226" stroke="#d8d1bf" stroke-width="6" stroke-linecap="round"/>
+    <path d="M122 102 L151 133" fill="none" stroke-linecap="round"/>
+    <path d="M151 133 C168 108 151 91 157 73 C133 86 131 112 151 133Z" fill="url(#flame)" stroke="#ffd9a8"/>
+    <path d="M71 222 C89 211 113 211 132 222" fill="none" stroke="#ded7c6"/>
+  </g>
+</svg>

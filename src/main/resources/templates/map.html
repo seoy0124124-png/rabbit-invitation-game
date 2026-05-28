@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>붉은 설산의 저택</title>
+    <link rel="stylesheet" href="/css/game.css">
+    <script defer src="/js/game.js"></script>
+</head>
+<body class="scene scene-game">
+<div class="snow" aria-hidden="true"></div>
+<header class="topbar">
+    <div>
+        <p class="eyebrow" th:text="${player.name}">플레이어</p>
+        <h1 data-phase-label th:text="${state.phase.label}">대기실</h1>
+    </div>
+    <div class="topbar-actions">
+        <form action="/leave" method="post">
+            <button class="button danger small" type="submit">입장 화면으로 나가기</button>
+        </form>
+        <div class="timer" data-timer>00:00</div>
+    </div>
+</header>
+
+<main class="atmosphere-map">
+    <img class="mansion-map ambient-large" src="/images/mansion-map.svg" alt="붉은 설산의 저택">
+    <a class="button ghost" href="/lobby">메인으로 돌아가기</a>
+</main>
+</body>
+</html>

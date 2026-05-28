@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>관리자</title>
+    <link rel="stylesheet" href="/css/game.css">
+    <script defer src="/js/game.js"></script>
+</head>
+<body class="scene scene-admin">
+<div class="snow" aria-hidden="true"></div>
+<header class="topbar">
+    <div>
+        <p class="eyebrow">관리자 콘솔</p>
+        <h1 data-phase-label th:text="${state.phase.label}">대기실</h1>
+        <p class="topbar-note" data-phase-description th:text="${state.phase.description}"></p>
+    </div>
+    <div class="topbar-actions">
+        <form action="/leave" method="post">
+            <button class="button danger small" type="submit">입장 화면으로 나가기</button>
+        </form>
+        <div class="timer" data-timer>00:00</div>
+    </div>
+</header>
+
+<main class="admin-grid">
+    <section class="parchment">
+        <p class="eyebrow">진행 제어</p>
+        <ol class="phase-list">
+            <li th:each="phase : ${phases}" th:classappend="${phase == state.phase} ? 'active'">
+                <strong th:text="${phase.label}">대기실</strong>
+                <span th:text="${phase.description}">설명</span>
+            </li>
+        </ol>
+        <div class="button-row">
+            <form action="/admin/phase/previous" method="post"><button class="button ghost" type="submit">이전 단계</button></form>
+            <form action="/admin/phase/next" method="post"><button class="button primary" type="submit">다음 단계</button></form>
+            <form action="/admin/reveal/ending" method="post">
+                <button class="button danger" type="submit" th:disabled="${endingRevealed}">
+                    <span th:if="${!endingRevealed}">엔딩 진실 공개</span>
+                    <span th:if="${endingRevealed}">엔딩 공개됨</span>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <section class="parchment">
+        <p class="eyebrow">타이머</p>
+        <div class="giant-timer" data-timer>00:00</div>
+        <form class="timer-form" action="/admin/timer/set" method="post">
+            <label>분 <input name="minutes" type="number" min="0" max="120" value="10"></label>
+            <label>초 <input name="seconds" type="number" min="0" max="59" value="0"></label>
+            <button class="button ghost" type="submit">설정</button>
+        </form>
+        <div class="button-row">
+            <form action="/admin/timer/start" method="post"><button class="button primary" type="submit">시작</button></form>
+            <form action="/admin/timer/stop" method="post"><button class="button ghost" type="submit">정지</button></form>
+            <form action="/admin/timer/reset" method="post"><button class="button danger" type="submit">초기화</button></form>
+        </div>
+    </section>
+
+    <section class="parchment disclosure-section">
+        <p class="eyebrow">힌트 라운드 운영판</p>
+        <div class="global-release-row">
+            <form action="/admin/reveal/story" method="post">
+                <button class="button primary" type="submit" th:disabled="${globalDisclosure.storyUnlocked}">
+                    <span th:if="${!globalDisclosure.storyUnlocked}">개인 이야기 열람 허용</span>
+                    <span th:if="${globalDisclosure.storyUnlocked}">개인 이야기 공개됨</span>
+                </button>
+            </form>
+        </div>
+        <div class="global-status">
+            <span><i class="status-light" th:classappend="${globalDisclosure.storyUnlocked} ? ' open'"></i>개인 이야기/연기 힌트</span>
+            <span><i class="status-light" th:classappend="${globalDisclosure.firstHintsRevealed > 0} ? ' open'"></i>현재 <b th:text="${globalDisclosure.firstHintsRevealed}">0</b>차 힌트까지 지급</span>
+            <span>지급 항목 <b th:text="${globalDisclosure.secondHintsRevealed}">0</b>/<b th:text="${globalDisclosure.secondHintsTotal}">0</b></span>
+        </div>
+
+        <div class="hint-round-board">
+            <article class="hint-round-card" th:each="round : ${hintRounds}" th:classappend="${round.released} ? 'open'">
+                <header>
+                    <strong th:text="${round.round + '차 힌트 공개'}">1차 힌트 공개</strong>
+                    <span th:text="${round.itemCount + '개 지급'}">0개 지급</span>
+                </header>
+                <form action="/admin/release/hints" method="post">
+                    <input type="hidden" name="phase" th:value="${round.phase.name()}">
+                    <button class="button primary small" type="submit" th:disabled="${round.released}">
+                        <span th:if="${!round.released}">지급하기</span>
+                        <span th:if="${round.released}">이미 공개됨</span>
+                    </button>
+                </form>
+            </article>
+        </div>
+
+        <div class="disclosure-board">
+            <article class="disclosure-row" th:each="item : ${disclosures}">
+                <header>
+                    <strong th:text="${item.player.name}">빨간망토</strong>
+                    <span th:text="${item.player.role}">숲길의 목격자</span>
+                </header>
+                <div class="disclosure-item" th:classappend="${item.storyRevealed} ? 'open'">
+                    <span><i class="status-light" th:classappend="${item.storyRevealed} ? ' open'"></i>개인 이야기/연기 힌트</span>
+                    <b th:if="${item.storyRevealed}">열람 가능</b>
+                    <em th:if="${!item.storyRevealed}">잠김</em>
+                </div>
+                <div class="disclosure-item" th:classappend="${item.hintsShared} ? 'open'">
+                    <span><i class="status-light" th:classappend="${item.hintsShared} ? ' open'"></i>플레이어 직접 공개</span>
+                    <b th:if="${item.hintsShared}">공개 기록 있음</b>
+                    <em th:if="${!item.hintsShared}">공개 전</em>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="parchment">
+        <p class="eyebrow">입장 플레이어</p>
+        <div class="player-list" th:if="${not #lists.isEmpty(players)}">
+            <div th:each="entry : ${players}">
+                <strong th:text="${entry.player.name}">빨간망토</strong>
+                <span th:text="${entry.player.role}">숲길의 목격자</span>
+            </div>
+        </div>
+        <p th:if="${#lists.isEmpty(players)}">아직 입장한 플레이어가 없습니다.</p>
+    </section>
+
+    <section class="parchment">
+        <p class="eyebrow">공개된 증언 기록</p>
+        <div class="record-list" th:if="${not #lists.isEmpty(publicRecords)}">
+            <article class="record-card" th:each="record : ${publicRecords}">
+                <span th:text="${record.playerName + ' 공개 · ' + record.type + ' · ' + record.phaseLabel}">ALICE 공개 · 힌트 · 1차 힌트 공개</span>
+                <h3 th:text="${record.title}">시계는 이미 멈춰 있었다</h3>
+                <p th:text="${record.body}">공개된 내용</p>
+            </article>
+        </div>
+        <p th:if="${#lists.isEmpty(publicRecords)}">아직 플레이어가 공개한 정보가 없습니다.</p>
+    </section>
+
+    <section class="parchment">
+        <p class="eyebrow">투표 현황</p>
+        <div class="player-list" th:if="${not #lists.isEmpty(votes)}">
+            <div th:each="vote : ${votes}">
+                <strong th:text="${vote.voter.name}">앨리스</strong>
+                <span th:text="${vote.suspect.name}">빨간망토</span>
+            </div>
+        </div>
+        <p th:if="${#lists.isEmpty(votes)}">아직 제출된 투표가 없습니다.</p>
+    </section>
+</main>
+</body>
+</html>

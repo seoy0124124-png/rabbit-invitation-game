@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-label="눈 내리는 숲속 낡은 저택 지도">
+  <defs>
+    <linearGradient id="night" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#121917"/>
+      <stop offset="0.58" stop-color="#24201d"/>
+      <stop offset="1" stop-color="#090b0b"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#4b1d22"/>
+      <stop offset="1" stop-color="#16090b"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="900" height="620" rx="24" fill="url(#night)"/>
+  <path d="M0 500 C160 450 250 515 390 475 C535 435 650 510 900 455 L900 620 L0 620 Z" fill="#e8eef0" opacity="0.16"/>
+  <g opacity="0.32" stroke="#dce8e8" stroke-width="2">
+    <path d="M83 448 l34 -94 l34 94"/>
+    <path d="M128 452 l48 -132 l48 132"/>
+    <path d="M735 452 l43 -122 l43 122"/>
+    <path d="M655 460 l35 -96 l35 96"/>
+  </g>
+  <g transform="translate(155 92)">
+    <path d="M80 208 L295 52 L510 208 Z" fill="url(#roof)" stroke="#8c3541" stroke-width="8"/>
+    <path d="M118 208 h354 v260 h-354 z" fill="#29211d" stroke="#5c473c" stroke-width="8"/>
+    <path d="M195 247 h84 v80 h-84 zM314 247 h84 v80 h-84 z" fill="#171312" stroke="#7b6658" stroke-width="5"/>
+    <path d="M248 362 h96 v106 h-96 z" fill="#120e0d" stroke="#7b6658" stroke-width="6"/>
+    <path d="M74 282 h80 v186 h-80 zM436 282 h80 v186 h-80 z" fill="#211a18" stroke="#5c473c" stroke-width="7"/>
+    <path d="M56 282 l58 -72 l58 72 zM418 282 l58 -72 l58 72 z" fill="url(#roof)" stroke="#8c3541" stroke-width="7"/>
+    <circle cx="296" cy="170" r="34" fill="#171312" stroke="#c6a769" stroke-width="6"/>
+    <path d="M296 170 v-22M296 170 h19" stroke="#c6a769" stroke-width="5" stroke-linecap="round"/>
+    <g filter="url(#glow)" fill="#f0bf63">
+      <rect x="215" y="266" width="16" height="42" rx="4"/>
+      <rect x="360" y="266" width="16" height="42" rx="4"/>
+      <rect x="279" y="386" width="11" height="45" rx="4"/>
+    </g>
+  </g>
+  <g fill="#efe9dd" opacity="0.75">
+    <circle cx="94" cy="92" r="3"/>
+    <circle cx="183" cy="55" r="2"/>
+    <circle cx="782" cy="102" r="3"/>
+    <circle cx="830" cy="252" r="2"/>
+    <circle cx="476" cy="47" r="3"/>
+    <circle cx="611" cy="530" r="2"/>
+    <circle cx="236" cy="534" r="3"/>
+  </g>
+  <path d="M358 560 C386 510 411 498 451 470 C494 500 518 517 542 560" fill="none" stroke="#ead8b8" stroke-width="4" opacity="0.36" stroke-dasharray="8 12"/>
+</svg>
