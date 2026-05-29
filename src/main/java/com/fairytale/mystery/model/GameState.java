@@ -7,6 +7,7 @@ public class GameState {
     private int timerSeconds = 600;
     private Instant timerEndsAt;
     private boolean timerRunning;
+    private boolean investigationOpen;
 
     public GamePhase getPhase() {
         return phase;
@@ -38,6 +39,14 @@ public class GameState {
 
     public void setTimerRunning(boolean timerRunning) {
         this.timerRunning = timerRunning;
+    }
+
+    public boolean isInvestigationOpen() {
+        return investigationOpen;
+    }
+
+    public void setInvestigationOpen(boolean investigationOpen) {
+        this.investigationOpen = investigationOpen;
     }
 
 }

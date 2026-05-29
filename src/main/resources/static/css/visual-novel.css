@@ -247,6 +247,48 @@ button.button,
     background-position: center !important;
 }
 
+.scene-investigation {
+    background:
+            linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,0,0,0.32) 44%, rgba(0,0,0,0.86)),
+            linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.92)),
+            url("/images/backgrounds/lobby-stage.png"),
+            var(--vn-black) !important;
+    background-size: auto, auto, cover, auto !important;
+    background-position: center !important;
+}
+
+.scene-file,
+.scene-document {
+    color: var(--vn-ink);
+    border-color: transparent !important;
+}
+
+.scene-file {
+    background: url("/images/ui/parchment-note-wide.png") center / 100% 100% no-repeat !important;
+    clip-path: none !important;
+}
+
+.scene-document {
+    background: url("/images/ui/parchment-large.png") center / 100% 100% no-repeat !important;
+    clip-path: none !important;
+}
+
+.scene-file.is-active {
+    border-color: rgba(143, 23, 40, 0.72) !important;
+}
+
+.scene-document h2,
+.scene-columns h3 {
+    font-family: var(--vn-title-font);
+}
+
+.scene-columns section,
+.scene-document blockquote {
+    background:
+            radial-gradient(circle at 70% 0, rgba(255,255,255,0.12), transparent 7rem),
+            rgba(255, 239, 203, 0.28) !important;
+}
+
 .topbar,
 .topbar.stage-topbar {
     width: min(72rem, calc(100vw - 2rem));
@@ -369,6 +411,59 @@ button.button,
             linear-gradient(90deg, rgba(43, 28, 20, 0.92), rgba(8, 6, 5, 0.94)) !important;
 }
 
+.stage-hints {
+    bottom: 1rem !important;
+    z-index: 7 !important;
+}
+
+.record-folder,
+.stage-hint-token {
+    color: var(--vn-ink);
+    background:
+            radial-gradient(circle at 50% 0, rgba(255,255,255,0.14), transparent 5rem),
+            repeating-linear-gradient(0deg, rgba(70, 36, 18, 0.06) 0 1px, transparent 1px 7px),
+            rgba(216, 189, 130, 0.88) !important;
+    border-color: rgba(61, 31, 20, 0.34) !important;
+    clip-path: polygon(3% 8%, 20% 2%, 47% 5%, 77% 2%, 97% 6%, 95% 93%, 72% 98%, 45% 95%, 17% 98%, 2% 92%) !important;
+    box-shadow: 0 0.9rem 1.8rem rgba(0,0,0,0.58) !important;
+}
+
+.record-folder.is-readable:hover,
+.stage-hint-token.is-readable:hover {
+    transform: translateY(-2px) rotate(calc((var(--token-index) - 4) * 0.45deg));
+}
+
+.record-folder.is-locked,
+.stage-hint-token.is-locked {
+    filter: saturate(0.55) brightness(0.72);
+}
+
+.record-folder span,
+.record-folder em,
+.stage-hint-token span,
+.stage-hint-token em {
+    color: var(--vn-red) !important;
+}
+
+.bundle-entry {
+    color: var(--vn-ink);
+    background:
+            repeating-linear-gradient(0deg, rgba(70, 36, 18, 0.06) 0 1px, transparent 1px 7px),
+            rgba(216, 189, 130, 0.9) !important;
+    border: 1px solid rgba(61, 31, 20, 0.3);
+    border-left: 3px solid var(--vn-red);
+}
+
+.bundle-entry h3 {
+    color: #2b1714;
+    font-family: var(--vn-title-font);
+}
+
+.detail-share {
+    justify-self: start;
+    margin-top: 0.85rem;
+}
+
 /* ==================================================
    5. Boards / Testimony / Evidence
    ================================================== */
@@ -404,9 +499,25 @@ button.button,
 
 .record-card span,
 .evidence-card small,
-.hint-note span {
+.hint-note span,
+.hint-note small {
     color: var(--vn-red) !important;
     font-weight: 800;
+}
+
+.hint-note.compact {
+    min-height: auto !important;
+    padding: 0.72rem 0.82rem !important;
+}
+
+.hint-note.compact.is-shared {
+    border-color: rgba(143, 23, 40, 0.58) !important;
+    box-shadow: inset 0 0 1.2rem rgba(143, 23, 40, 0.08);
+}
+
+.hint-open small {
+    margin-top: 0.18rem;
+    color: rgba(74, 13, 24, 0.72) !important;
 }
 
 .share-caution {

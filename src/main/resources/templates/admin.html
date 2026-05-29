@@ -61,35 +61,25 @@
     </section>
 
     <section class="parchment disclosure-section">
-        <p class="eyebrow">힌트 라운드 운영판</p>
+        <p class="eyebrow">기록 공개</p>
         <div class="global-release-row">
             <form action="/admin/reveal/story" method="post">
-                <button class="button primary" type="submit" th:disabled="${globalDisclosure.storyUnlocked}">
-                    <span th:if="${!globalDisclosure.storyUnlocked}">개인 이야기 열람 허용</span>
-                    <span th:if="${globalDisclosure.storyUnlocked}">개인 이야기 공개됨</span>
+                <button class="button primary" type="submit" th:disabled="${globalDisclosure.storyUnlocked()}">
+                    <span th:if="${!globalDisclosure.storyUnlocked()}">개인 이야기 열람 허용</span>
+                    <span th:if="${globalDisclosure.storyUnlocked()}">개인 이야기 공개됨</span>
+                </button>
+            </form>
+            <form th:each="act : ${investigationActs}" action="/admin/open/investigation-act" method="post">
+                <input type="hidden" name="act" th:value="${act.act}">
+                <button class="button primary" type="submit" th:disabled="${act.open}">
+                    <span th:if="${!act.open}" th:text="${act.label} + ' 공개'">1막 기록 공개</span>
+                    <span th:if="${act.open}" th:text="${act.label} + ' 공개됨'">1막 기록 공개됨</span>
                 </button>
             </form>
         </div>
         <div class="global-status">
-            <span><i class="status-light" th:classappend="${globalDisclosure.storyUnlocked} ? ' open'"></i>개인 이야기/연기 힌트</span>
-            <span><i class="status-light" th:classappend="${globalDisclosure.firstHintsRevealed > 0} ? ' open'"></i>현재 <b th:text="${globalDisclosure.firstHintsRevealed}">0</b>차 힌트까지 지급</span>
-            <span>지급 항목 <b th:text="${globalDisclosure.secondHintsRevealed}">0</b>/<b th:text="${globalDisclosure.secondHintsTotal}">0</b></span>
-        </div>
-
-        <div class="hint-round-board">
-            <article class="hint-round-card" th:each="round : ${hintRounds}" th:classappend="${round.released} ? 'open'">
-                <header>
-                    <strong th:text="${round.round + '차 힌트 공개'}">1차 힌트 공개</strong>
-                    <span th:text="${round.itemCount + '개 지급'}">0개 지급</span>
-                </header>
-                <form action="/admin/release/hints" method="post">
-                    <input type="hidden" name="phase" th:value="${round.phase.name()}">
-                    <button class="button primary small" type="submit" th:disabled="${round.released}">
-                        <span th:if="${!round.released}">지급하기</span>
-                        <span th:if="${round.released}">이미 공개됨</span>
-                    </button>
-                </form>
-            </article>
+            <span><i class="status-light" th:classappend="${globalDisclosure.storyUnlocked()} ? ' open'"></i><b th:text="${globalDisclosure.storyUnlockedCount} + ' / ' + ${globalDisclosure.storyTotalCount}">0 / 4</b> 개인 이야기</span>
+            <span><i class="status-light" th:classappend="${state.investigationOpen} ? ' open'"></i>사건 장소</span>
         </div>
 
         <div class="disclosure-board">
@@ -101,12 +91,10 @@
                 <div class="disclosure-item" th:classappend="${item.storyRevealed} ? 'open'">
                     <span><i class="status-light" th:classappend="${item.storyRevealed} ? ' open'"></i>개인 이야기/연기 힌트</span>
                     <b th:if="${item.storyRevealed}">열람 가능</b>
-                    <em th:if="${!item.storyRevealed}">잠김</em>
-                </div>
-                <div class="disclosure-item" th:classappend="${item.hintsShared} ? 'open'">
-                    <span><i class="status-light" th:classappend="${item.hintsShared} ? ' open'"></i>플레이어 직접 공개</span>
-                    <b th:if="${item.hintsShared}">공개 기록 있음</b>
-                    <em th:if="${!item.hintsShared}">공개 전</em>
+                    <form th:if="${!item.storyRevealed}" action="/admin/reveal/player-story" method="post">
+                        <input type="hidden" name="playerCode" th:value="${item.player.code}">
+                        <button class="button primary small" type="submit">이 캐릭터 공개</button>
+                    </form>
                 </div>
             </article>
         </div>
@@ -123,16 +111,55 @@
         <p th:if="${#lists.isEmpty(players)}">아직 입장한 플레이어가 없습니다.</p>
     </section>
 
-    <section class="parchment">
-        <p class="eyebrow">공개된 증언 기록</p>
-        <div class="record-list" th:if="${not #lists.isEmpty(publicRecords)}">
-            <article class="record-card" th:each="record : ${publicRecords}">
-                <span th:text="${record.playerName + ' 공개 · ' + record.type + ' · ' + record.phaseLabel}">ALICE 공개 · 힌트 · 1차 힌트 공개</span>
-                <h3 th:text="${record.title}">시계는 이미 멈춰 있었다</h3>
-                <p th:text="${record.body}">공개된 내용</p>
-            </article>
+    <section class="parchment admin-evidence-source">
+        <p class="eyebrow">장소 점유 상태</p>
+        <div class="player-list">
+            <div th:each="item : ${investigationLocations}">
+                <strong th:text="${item.location.name}">중앙 홀</strong>
+                <span th:if="${!item.open}">잠김</span>
+                <span th:if="${item.open && item.occupant == null}">비어 있음</span>
+                <span th:if="${item.occupant != null}" th:text="${item.occupant.name} + ' 조사 중'">빨간망토 조사 중</span>
+                <form th:if="${item.occupant != null}" action="/admin/investigation/location/release" method="post">
+                    <input type="hidden" name="locationId" th:value="${item.location.id}">
+                    <button class="button danger small" type="submit">점유 강제 해제</button>
+                </form>
+            </div>
         </div>
-        <p th:if="${#lists.isEmpty(publicRecords)}">아직 플레이어가 공개한 정보가 없습니다.</p>
+    </section>
+
+    <section class="parchment admin-evidence-source">
+        <p class="eyebrow">비공개 보관함 확인</p>
+        <details th:each="entry : ${privateEvidenceByPlayer}">
+            <summary th:text="${entry.player.name} + '의 비공개 보관함'">빨간망토의 비공개 보관함</summary>
+            <p th:if="${#lists.isEmpty(entry.evidenceItems)}">비공개 증거가 없습니다.</p>
+            <div class="player-list" th:if="${not #lists.isEmpty(entry.evidenceItems)}">
+                <div th:each="evidence : ${entry.evidenceItems}">
+                    <strong th:text="${evidence.title}">젖은 늑대 털</strong>
+                    <span th:text="${evidence.locationName} + ' - ' + ${evidence.detailLocation}">중앙 홀 - 긴 식탁 아래</span>
+                    <form action="/admin/investigation/evidence/publish" method="post">
+                        <input type="hidden" name="evidenceId" th:value="${evidence.id}">
+                        <button class="button primary small" type="submit">강제 공개</button>
+                    </form>
+                </div>
+            </div>
+        </details>
+    </section>
+
+    <section class="parchment admin-evidence-source">
+        <p class="eyebrow">사건 기록 원본</p>
+        <details th:each="evidence : ${investigationEvidence}">
+            <summary>
+                <strong th:text="${evidence.act} + '막 · ' + ${evidence.title}">1막 · 젖은 늑대 털</strong>
+                <span th:text="${evidence.locationName} + ' - ' + ${evidence.detailLocation}">중앙 홀 - 긴 식탁 아래</span>
+            </summary>
+            <p class="admin-evidence-common" th:text="${evidence.commonDescription}">공용 설명</p>
+            <div class="admin-interpretation-list">
+                <article th:each="entry : ${evidence.interpretations}">
+                    <b th:text="${entry.key}">RED</b>
+                    <p th:text="${entry.value}">개인 해석</p>
+                </article>
+            </div>
+        </details>
     </section>
 
     <section class="parchment">

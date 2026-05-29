@@ -26,6 +26,13 @@ const escapeHtml = (value) => String(value ?? "")
     .replaceAll("\"", "&quot;")
     .replaceAll("'", "&#039;");
 
+const paragraphsHtml = (value) => String(value ?? "")
+    .split(/\n+/)
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .map((text) => `<p>${escapeHtml(text)}</p>`)
+    .join("");
+
 const postForm = async (url, data) => {
     const response = await fetch(url, {
         method: "POST",
@@ -49,6 +56,242 @@ let evidenceInitialized = false;
 
 const seenHintIds = new Set(JSON.parse(window.sessionStorage.getItem("mysterySeenHints") || "[]"));
 const seenEvidenceIds = new Set(JSON.parse(window.sessionStorage.getItem("mysterySeenEvidence") || "[]"));
+
+const openMemoryEvidence = (button) => {
+    const modal = document.querySelector("[data-memory-modal]");
+    if (!modal || !button) {
+        return;
+    }
+    modal.querySelector("[data-memory-title]").textContent = button.dataset.memoryTitle || "";
+    modal.querySelector("[data-memory-location]").textContent = button.dataset.memoryLocation || "";
+    modal.querySelector("[data-memory-common]").innerHTML = paragraphsHtml(button.dataset.memoryCommon || "");
+    modal.querySelector("[data-memory-personal]").innerHTML = paragraphsHtml(button.dataset.memoryPersonal || "이 장면에서 당신에게 떠오르는 해석은 아직 없습니다.");
+
+    const recalledWrap = modal.querySelector("[data-memory-recalled-wrap]");
+    const recalled = button.dataset.memoryRecalled || "";
+    modal.querySelector("[data-memory-recalled]").innerHTML = paragraphsHtml(recalled);
+    if (recalledWrap) {
+        recalledWrap.hidden = !recalled.trim();
+    }
+    modal.hidden = false;
+    document.body.classList.add("memory-modal-open");
+};
+
+const closeMemoryEvidence = () => {
+    const modal = document.querySelector("[data-memory-modal]");
+    if (modal) {
+        modal.hidden = true;
+    }
+    document.body.classList.remove("memory-modal-open");
+};
+
+const investigationState = {
+    locations: window.investigationInitialState?.locations || [],
+    privateEvidence: window.investigationInitialState?.privateEvidence || [],
+    publicEvidence: window.investigationInitialState?.publicEvidence || [],
+    activeLocationId: "",
+    menuEvidenceId: "",
+    pendingPublishId: ""
+};
+
+const openMemoryEvidenceDetail = (evidence) => {
+    const modal = document.querySelector("[data-memory-modal]");
+    if (!modal || !evidence) {
+        return;
+    }
+    modal.querySelector("[data-memory-title]").textContent = evidence.title || "";
+    modal.querySelector("[data-memory-location]").textContent = evidence.location || "";
+    modal.querySelector("[data-memory-common]").innerHTML = paragraphsHtml(evidence.commonDescription || "");
+    modal.querySelector("[data-memory-personal]").innerHTML = paragraphsHtml(evidence.personalInterpretation || "이 장면에서 당신에게 떠오르는 해석은 아직 없습니다.");
+
+    const recalledWrap = modal.querySelector("[data-memory-recalled-wrap]");
+    const recalled = evidence.recalledLine || "";
+    modal.querySelector("[data-memory-recalled]").innerHTML = paragraphsHtml(recalled);
+    if (recalledWrap) {
+        recalledWrap.hidden = !recalled.trim();
+    }
+    modal.hidden = false;
+    document.body.classList.add("memory-modal-open");
+};
+
+const refreshInvestigation = async () => {
+    const root = document.querySelector("[data-investigation-root]");
+    const hasLedger = document.querySelector("[data-private-evidence]") || document.querySelector("[data-public-evidence]");
+    if (!root && !hasLedger) {
+        return;
+    }
+    const response = await fetch("/api/investigation");
+    if (!response.ok) {
+        return;
+    }
+    const data = await response.json();
+    if (!data.success) {
+        return;
+    }
+    investigationState.locations = data.locations || [];
+    investigationState.privateEvidence = data.privateEvidence || [];
+    investigationState.publicEvidence = data.publicEvidence || [];
+    if (!investigationState.locations.some((location) => location.id === investigationState.activeLocationId && location.occupiedBySelf)) {
+        const ownLocation = investigationState.locations.find((location) => location.occupiedBySelf);
+        investigationState.activeLocationId = ownLocation?.id || "";
+    }
+    renderInvestigation();
+};
+
+const renderInvestigation = () => {
+    const root = document.querySelector("[data-investigation-root]");
+    if (!root) {
+        renderEvidenceLedger("[data-private-evidence]", investigationState.privateEvidence, "private");
+        renderEvidenceLedger("[data-public-evidence]", investigationState.publicEvidence, "public");
+        return;
+    }
+    const locationWrap = root.querySelector(".investigation-locations");
+    if (locationWrap) {
+        locationWrap.innerHTML = investigationState.locations.map((location) => `
+            <article class="scene-file investigation-location ${location.occupiedBySelf ? "is-active" : ""}" data-location-id="${escapeHtml(location.id)}">
+                <span>${escapeHtml(location.act)}막 장면</span>
+                <strong>${escapeHtml(location.name)}</strong>
+                <em>${escapeHtml(location.description)}</em>
+                <p class="location-state">${locationText(location)}</p>
+                <button class="button primary small" type="button" data-location-enter data-location-id="${escapeHtml(location.id)}" ${location.canEnter ? "" : "disabled"}>
+                    ${location.occupiedBySelf ? "다시 들어가기" : "조사하기"}
+                </button>
+            </article>
+        `).join("");
+    }
+
+    const active = investigationState.locations.find((location) => location.id === investigationState.activeLocationId && location.occupiedBySelf);
+    const room = root.querySelector("[data-investigation-room]");
+    if (room) {
+        room.querySelector("[data-room-kicker]").textContent = active ? `${active.act}막 장면` : "사건 장면";
+        room.querySelector("[data-room-title]").textContent = active ? active.name : "조사할 장면을 선택하세요";
+        room.querySelector("[data-room-summary]").textContent = active ? active.description : "한 장면에는 한 명만 들어갈 수 있습니다. 조사 중 발견한 증거는 먼저 내 손에 남습니다.";
+        const evidenceWrap = room.querySelector("[data-room-evidence]");
+        evidenceWrap.innerHTML = active ? (active.evidenceItems || []).map((evidence) => `
+            <button class="memory-evidence-card ${evidence.privateFound ? "is-private-found" : ""} ${evidence.publicItem ? "is-public" : ""}"
+                    type="button"
+                    data-investigation-evidence
+                    data-evidence-id="${escapeHtml(evidence.id)}">
+                <span>${evidence.publicItem ? "공개된 흔적" : evidence.privateFound ? "내가 발견한 흔적" : "남겨진 흔적"}</span>
+                <strong>${escapeHtml(evidence.title)}</strong>
+                <em>${escapeHtml(evidence.detailLocation)}</em>
+            </button>
+        `).join("") : "";
+        const leave = room.querySelector("[data-location-leave]");
+        leave.hidden = !active;
+        if (active) {
+            leave.dataset.locationId = active.id;
+        }
+    }
+
+    renderEvidenceLedger("[data-private-evidence]", investigationState.privateEvidence, "private");
+    renderEvidenceLedger("[data-public-evidence]", investigationState.publicEvidence, "public");
+};
+
+const locationText = (location) => {
+    if (!location.open) {
+        return "아직 공개되지 않음";
+    }
+    if (location.occupiedBySelf) {
+        return "내가 조사 중";
+    }
+    if (location.occupied) {
+        return `현재 ${escapeHtml(location.occupiedByName || "다른 플레이어")} 조사 중`;
+    }
+    return "조사 가능";
+};
+
+const renderEvidenceLedger = (selector, items, type) => {
+    const wrap = document.querySelector(selector);
+    if (!wrap) {
+        return;
+    }
+    wrap.innerHTML = (items || []).map((evidence) => `
+        <button class="ledger-evidence ${type === "public" ? "is-public" : ""}"
+                type="button"
+                ${type === "private" ? "data-private-evidence-card" : "data-public-evidence-card"}
+                data-evidence-id="${escapeHtml(evidence.id)}">
+            <strong>${escapeHtml(evidence.title)}</strong>
+            <span>${escapeHtml(evidence.locationName)} - ${escapeHtml(evidence.detailLocation)}</span>
+        </button>
+    `).join("");
+};
+
+const fetchEvidenceDetail = async (evidenceId, discover = false) => {
+    const response = discover
+        ? await postForm("/api/investigation/evidence/discover", {evidenceId})
+        : await fetch(`/api/investigation/evidence/detail?evidenceId=${encodeURIComponent(evidenceId)}`).then((item) => item.json());
+    if (!response.success) {
+        showToast(response.message || "증거를 펼칠 수 없습니다.");
+        return null;
+    }
+    return response.evidence;
+};
+
+const openEvidenceContextMenu = (evidenceId, x, y) => {
+    const menu = document.querySelector("[data-evidence-menu]");
+    if (!menu) {
+        return;
+    }
+    investigationState.menuEvidenceId = evidenceId;
+    menu.hidden = false;
+    const width = menu.offsetWidth || 150;
+    const height = menu.offsetHeight || 120;
+    menu.style.left = `${Math.min(x, window.innerWidth - width - 12)}px`;
+    menu.style.top = `${Math.min(y, window.innerHeight - height - 12)}px`;
+};
+
+const closeEvidenceContextMenu = () => {
+    const menu = document.querySelector("[data-evidence-menu]");
+    if (menu) {
+        menu.hidden = true;
+    }
+    investigationState.menuEvidenceId = "";
+};
+
+const openPublishConfirm = (evidenceId) => {
+    const modal = document.querySelector("[data-publish-confirm]");
+    const evidence = investigationState.privateEvidence.find((item) => item.id === evidenceId);
+    if (!modal || !evidence) {
+        return;
+    }
+    investigationState.pendingPublishId = evidenceId;
+    modal.querySelector("[data-confirm-title]").textContent = `[${evidence.title}]을 공개하시겠습니까?`;
+    modal.hidden = false;
+};
+
+const closePublishConfirm = () => {
+    const modal = document.querySelector("[data-publish-confirm]");
+    if (modal) {
+        modal.hidden = true;
+    }
+    investigationState.pendingPublishId = "";
+};
+
+const openStoryPdf = (button) => {
+    const modal = document.querySelector("[data-story-pdf-modal]");
+    if (!modal || !button || button.disabled) {
+        return;
+    }
+    modal.querySelector("[data-story-pdf-title]").textContent = button.dataset.storyPdfTitle || "개인 이야기";
+    const frame = modal.querySelector("[data-story-pdf-frame]");
+    frame.src = button.dataset.storyPdfSrc || "";
+    modal.hidden = false;
+    document.body.classList.add("story-pdf-open");
+};
+
+const closeStoryPdf = () => {
+    const modal = document.querySelector("[data-story-pdf-modal]");
+    if (!modal) {
+        return;
+    }
+    modal.hidden = true;
+    const frame = modal.querySelector("[data-story-pdf-frame]");
+    if (frame) {
+        frame.removeAttribute("src");
+    }
+    document.body.classList.remove("story-pdf-open");
+};
 
 const storyReaderState = {
     source: "",
@@ -309,8 +552,8 @@ const initStaticReader = () => {
 };
 
 const renderHints = async () => {
-    const lists = document.querySelectorAll("[data-hint-list]");
-    if (lists.length === 0) {
+    const stage = document.querySelector("[data-stage-hints]");
+    if (!stage) {
         return;
     }
     const response = await fetch("/api/hints", {headers: {"Accept": "application/json"}});
@@ -329,34 +572,72 @@ const renderHints = async () => {
             }
         });
     }
-    const renderGroup = (title, typeCode, list) => {
-        const items = personalHints.filter((hint) => hint.typeCode === typeCode);
-        list.innerHTML = `
-            ${items.map((hint) => {
-                const isNew = !seenHintIds.has(hint.id);
-                return `
-                <article class="hint-note compact ${isNew ? "is-new" : ""}" data-hint-id="${escapeHtml(hint.id)}">
-                    <button class="hint-open" data-hint-open="${escapeHtml(hint.id)}" type="button">
-                        <span>${escapeHtml(hint.roundLabel)} · ${escapeHtml(hint.type)} ${isNew ? `<b class="new-badge">NEW</b>` : ""}</span>
-                        <strong>${escapeHtml(hint.title)}</strong>
-                    </button>
-                    <div class="share-area">
-                        <p>공개하면 되돌릴 수 없습니다.</p>
-                        <button class="button ghost small share-button" data-share-hint="${escapeHtml(hint.id)}" ${hint.shared ? "disabled" : ""} type="button">
-                            ${hint.shared ? "공개됨" : `${title} 공개`}
-                        </button>
-                    </div>
-                </article>`;
-            }).join("")}
-        `;
-        document.querySelectorAll(`[data-empty-type="${typeCode}"]`).forEach((node) => {
-            node.hidden = items.length > 0;
-        });
-    };
-    lists.forEach((list) => {
-        const typeCode = list.dataset.hintType || "TESTIMONY";
-        renderGroup(typeCode === "EVIDENCE" ? "물증" : "증언", typeCode, list);
+    const groups = new Map();
+    personalHints.forEach((hint) => {
+        if (!groups.has(hint.playerCode)) {
+            groups.set(hint.playerCode, {
+                code: hint.playerCode,
+                name: hint.playerName,
+                self: hint.self,
+                items: []
+            });
+        }
+        groups.get(hint.playerCode).items.push(hint);
     });
+    const bundleCards = [...groups.values()].map((group, index) => {
+        const readableItems = group.items.filter((hint) => hint.self && hint.readable);
+        const newCount = readableItems.filter((hint) => !seenHintIds.has(hint.id)).length;
+        const testimonyCount = group.items.filter((hint) => hint.typeCode === "TESTIMONY").length;
+        const evidenceCount = group.items.filter((hint) => hint.typeCode === "EVIDENCE").length;
+        const openable = readableItems.length > 0;
+        return `
+            <button class="record-folder ${openable ? "is-readable" : "is-locked"} ${group.self ? "is-self" : ""}"
+                    ${openable ? `data-hint-bundle="${escapeHtml(group.code)}"` : ""}
+                    style="--token-index:${index}"
+                    type="button">
+                <span>${escapeHtml(group.name)} 기록</span>
+                <strong>${testimonyCount} 증언 · ${evidenceCount} 물증</strong>
+                <em>${openable ? "펼쳐볼 수 있음" : "봉인된 기록철"}</em>
+                ${newCount > 0 ? `<b class="new-badge">새 단서 ${newCount}개</b>` : ""}
+            </button>`;
+    }).join("");
+    const sharedItems = personalHints.filter((hint) => hint.shared);
+    const sharedNewCount = sharedItems.filter((hint) => !seenHintIds.has(hint.id)).length;
+    stage.innerHTML = `
+        <div class="stage-hints-private" aria-label="캐릭터 기록철">
+            ${bundleCards}
+        </div>
+        <aside class="stage-hints-shared" aria-label="전체 공개 단서">
+            <button class="record-folder shared-folder ${sharedItems.length > 0 ? "is-readable is-shared" : "is-locked"}"
+                    ${sharedItems.length > 0 ? "data-shared-bundle" : ""}
+                    type="button">
+                <span>전체 공개 단서</span>
+                <strong>${sharedItems.length}개 기록</strong>
+                <em>${sharedItems.length > 0 ? "모두 열람 가능" : "아직 없음"}</em>
+                ${sharedNewCount > 0 ? `<b class="new-badge">새 단서 ${sharedNewCount}개</b>` : ""}
+            </button>
+        </aside>
+    `;
+};
+
+const shareHint = async (hintId) => {
+    const hint = personalHints.find((entry) => entry.id === hintId);
+    if (!hint) {
+        return;
+    }
+    if (hint.shared) {
+        showToast("이미 전체 공개된 기록입니다.");
+        return;
+    }
+    if (!window.confirm("전체 공개하면 모든 플레이어가 볼 수 있으며 되돌릴 수 없습니다. 공개할까요?")) {
+        return;
+    }
+    const result = await postForm("/api/share/hint", {hintId});
+    showToast(result.message);
+    await renderHints();
+    await renderPublicStatuses();
+    await renderPublicRecords();
+    await renderEvidence();
 };
 
 const openHintDetail = (hint) => {
@@ -364,12 +645,50 @@ const openHintDetail = (hint) => {
     if (!hint || !panel) {
         return;
     }
+    if (!hint.readable) {
+        return;
+    }
     rememberSeen("mysterySeenHints", seenHintIds, hint.id);
     panel.querySelector("[data-evidence-meta]").textContent = `${hint.roundLabel} · ${hint.type}`;
     panel.querySelector("[data-evidence-title]").textContent = hint.title;
-    panel.querySelector("[data-evidence-short]").textContent = hint.shared ? "공개된 항목입니다." : "아직 다른 플레이어에게 공개하지 않았습니다.";
+    panel.querySelector("[data-evidence-short]").textContent = hint.shared ? "전체 공개된 기록입니다." : "아직 다른 플레이어에게 공개하지 않았습니다.";
     panel.querySelector("[data-evidence-keywords]").innerHTML = `<em>${escapeHtml(hint.type)}</em><em>${escapeHtml(hint.roundLabel)}</em>`;
     panel.querySelector("[data-evidence-body]").textContent = hint.body;
+    const shareButton = panel.querySelector("[data-detail-share]");
+    if (shareButton) {
+        shareButton.hidden = !(hint.self && !hint.shared);
+        shareButton.dataset.shareHint = hint.id;
+    }
+    panel.hidden = false;
+};
+
+const openHintBundle = (items, title, subtitle) => {
+    const panel = document.querySelector("[data-evidence-detail]");
+    if (!panel || items.length === 0) {
+        return;
+    }
+    items.forEach((hint) => {
+        if (hint.readable) {
+            rememberSeen("mysterySeenHints", seenHintIds, hint.id);
+        }
+    });
+    panel.querySelector("[data-evidence-meta]").textContent = subtitle;
+    panel.querySelector("[data-evidence-title]").textContent = title;
+    panel.querySelector("[data-evidence-short]").textContent = "기록철 안의 단서를 펼쳐 확인합니다.";
+    panel.querySelector("[data-evidence-keywords]").innerHTML = `<em>증언</em><em>물증</em><em>공개 여부</em>`;
+    panel.querySelector("[data-evidence-body]").innerHTML = items.map((hint) => `
+        <article class="bundle-entry ${hint.shared ? "is-shared" : ""}">
+            <span>${escapeHtml(hint.roundLabel)} · ${escapeHtml(hint.type)} · ${hint.shared ? "전체 공개" : "비공개"}</span>
+            <h3>${escapeHtml(hint.title)}</h3>
+            <p>${escapeHtml(hint.body)}</p>
+            ${hint.self && !hint.shared ? `<button class="button ghost small" data-bundle-share="${escapeHtml(hint.id)}" type="button">전체 공개</button>` : ""}
+        </article>
+    `).join("");
+    const shareButton = panel.querySelector("[data-detail-share]");
+    if (shareButton) {
+        shareButton.hidden = true;
+        shareButton.removeAttribute("data-share-hint");
+    }
     panel.hidden = false;
 };
 
@@ -378,7 +697,7 @@ const renderStory = async () => {
     const content = document.querySelector("[data-story-content]");
     const actingLocked = document.querySelector("[data-acting-locked]");
     const actingContent = document.querySelector("[data-acting-content]");
-    if (!locked || !content) {
+    if (!actingLocked || !actingContent) {
         return;
     }
     const response = await fetch("/api/story", {headers: {"Accept": "application/json"}});
@@ -386,8 +705,6 @@ const renderStory = async () => {
         return;
     }
     const story = await response.json();
-    locked.hidden = story.revealed;
-    content.hidden = !story.revealed;
     if (actingLocked) {
         actingLocked.hidden = story.revealed;
     }
@@ -395,16 +712,6 @@ const renderStory = async () => {
         actingContent.hidden = !story.revealed;
     }
     if (story.revealed) {
-        const source = JSON.stringify([story.personalStory, story.secret]);
-        if (storyReaderState.source !== source) {
-            storyReaderState.source = source;
-            storyReaderState.pages = splitReaderPages([
-                {title: "개인 이야기", body: story.personalStory},
-                {title: "비밀 정보", body: story.secret}
-            ]);
-            storyReaderState.page = Math.min(storyReaderState.page, storyReaderState.pages.length - 1);
-        }
-        paintStoryPage();
         const actingSource = story.actingHint || "아직 별도의 연기 힌트가 없습니다.";
         if (actingReaderState.source !== actingSource) {
             actingReaderState.source = actingSource;
@@ -415,7 +722,6 @@ const renderStory = async () => {
         }
         paintActingPage();
     } else {
-        document.querySelector("[data-story-controls]")?.setAttribute("hidden", "");
         document.querySelector("[data-acting-controls]")?.setAttribute("hidden", "");
     }
 };
@@ -612,8 +918,14 @@ const refreshState = async () => {
     document.querySelectorAll("[data-phase-description]").forEach((node) => {
         node.textContent = state.phaseDescription;
     });
+    document.querySelectorAll(".investigation-link").forEach((link) => {
+        link.hidden = !state.investigationOpen;
+    });
     document.querySelectorAll("[data-story-locked]").forEach((node) => {
         node.hidden = state.personalStoryRevealed;
+    });
+    document.querySelectorAll("[data-story-pdf-button]").forEach((button) => {
+        button.disabled = !state.personalStoryRevealed;
     });
     document.querySelectorAll("[data-vote]").forEach((node) => {
         node.hidden = state.phase !== "VOTE";
@@ -686,18 +998,168 @@ document.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("click", async (event) => {
+    if (!event.target.closest("[data-evidence-menu]")) {
+        closeEvidenceContextMenu();
+    }
+
+    const storyPdfButton = event.target.closest("[data-story-pdf-open]");
+    if (storyPdfButton) {
+        openStoryPdf(storyPdfButton);
+        return;
+    }
+
+    if (event.target.closest("[data-story-pdf-close]")) {
+        closeStoryPdf();
+        return;
+    }
+
+    const bundleShareButton = event.target.closest("[data-bundle-share]");
+    if (bundleShareButton) {
+        await shareHint(bundleShareButton.dataset.bundleShare);
+        const ownerCode = personalHints.find((hint) => hint.id === bundleShareButton.dataset.bundleShare)?.playerCode;
+        if (ownerCode) {
+            const ownItems = personalHints.filter((hint) => hint.playerCode === ownerCode && hint.self && hint.readable);
+            openHintBundle(ownItems, `${ownItems[0]?.playerName || "내"} 기록`, "내 기록철");
+        }
+        return;
+    }
+
+    const detailShareButton = event.target.closest("[data-detail-share]");
+    if (detailShareButton) {
+        await shareHint(detailShareButton.dataset.shareHint);
+        return;
+    }
+
     const hintShareButton = event.target.closest("[data-share-hint]");
     if (hintShareButton) {
-        if (!window.confirm("공개하면 모든 플레이어가 볼 수 있으며 되돌릴 수 없습니다. 공개할까요?")) {
+        await shareHint(hintShareButton.dataset.shareHint);
+        return;
+    }
+
+    const hintToken = event.target.closest("[data-hint-token]");
+    if (hintToken) {
+        openHintDetail(personalHints.find((hint) => hint.id === hintToken.dataset.hintToken));
+        return;
+    }
+
+    const bundleButton = event.target.closest("[data-hint-bundle]");
+    if (bundleButton) {
+        const items = personalHints.filter((hint) => hint.playerCode === bundleButton.dataset.hintBundle && hint.self && hint.readable);
+        openHintBundle(items, `${items[0]?.playerName || "내"} 기록`, "내 기록철");
+        return;
+    }
+
+    if (event.target.closest("[data-shared-bundle]")) {
+        const items = personalHints.filter((hint) => hint.shared && hint.readable);
+        openHintBundle(items, "전체 공개 단서", "공개된 기록철");
+        return;
+    }
+
+    const sceneButton = event.target.closest("[data-scene-target]");
+    if (sceneButton) {
+        document.querySelectorAll("[data-scene-target]").forEach((button) => {
+            button.classList.toggle("is-active", button === sceneButton);
+        });
+        document.querySelectorAll("[data-scene-document]").forEach((documentNode) => {
+            documentNode.classList.toggle("is-active", documentNode.id === sceneButton.dataset.sceneTarget);
+        });
+        return;
+    }
+
+    const locationEnter = event.target.closest("[data-location-enter]");
+    if (locationEnter) {
+        const result = await postForm("/api/investigation/location/enter", {locationId: locationEnter.dataset.locationId});
+        showToast(result.message || (result.success ? "조사를 시작합니다." : "입장할 수 없습니다."));
+        if (result.success) {
+            investigationState.activeLocationId = locationEnter.dataset.locationId;
+        }
+        await refreshInvestigation();
+        return;
+    }
+
+    const locationLeave = event.target.closest("[data-location-leave]");
+    if (locationLeave) {
+        const ownPrivate = investigationState.privateEvidence.filter((item) => item.locationId === locationLeave.dataset.locationId);
+        const ownPublic = investigationState.publicEvidence.filter((item) => item.locationId === locationLeave.dataset.locationId);
+        if (ownPrivate.length && !ownPublic.length && !window.confirm("아직 공개한 증거가 없습니다. 이대로 나가면 다른 플레이어들은 이 장면에서 발견한 증거를 알 수 없습니다.\n\n그래도 나가시겠습니까?")) {
             return;
         }
-        postForm("/api/share/hint", {hintId: hintShareButton.dataset.shareHint}).then(async (result) => {
-            showToast(result.message);
-            await renderHints();
-            await renderPublicStatuses();
-            await renderPublicRecords();
-            await renderEvidence();
-        });
+        const result = await postForm("/api/investigation/location/leave", {locationId: locationLeave.dataset.locationId});
+        showToast(result.message || "조사를 종료했습니다.");
+        investigationState.activeLocationId = "";
+        await refreshInvestigation();
+        return;
+    }
+
+    const investigationEvidence = event.target.closest("[data-investigation-evidence]");
+    if (investigationEvidence) {
+        const detail = await fetchEvidenceDetail(investigationEvidence.dataset.evidenceId, true);
+        if (detail) {
+            openMemoryEvidenceDetail(detail);
+            await refreshInvestigation();
+        }
+        return;
+    }
+
+    const privateEvidenceCard = event.target.closest("[data-private-evidence-card]");
+    if (privateEvidenceCard) {
+        const detail = await fetchEvidenceDetail(privateEvidenceCard.dataset.evidenceId, false);
+        if (detail) {
+            openMemoryEvidenceDetail(detail);
+        }
+        return;
+    }
+
+    const publicEvidenceCard = event.target.closest("[data-public-evidence-card]");
+    if (publicEvidenceCard) {
+        const detail = await fetchEvidenceDetail(publicEvidenceCard.dataset.evidenceId, false);
+        if (detail) {
+            openMemoryEvidenceDetail(detail);
+        }
+        return;
+    }
+
+    if (event.target.closest("[data-menu-publish]")) {
+        openPublishConfirm(investigationState.menuEvidenceId);
+        closeEvidenceContextMenu();
+        return;
+    }
+
+    if (event.target.closest("[data-menu-detail]")) {
+        const detail = await fetchEvidenceDetail(investigationState.menuEvidenceId, false);
+        closeEvidenceContextMenu();
+        if (detail) {
+            openMemoryEvidenceDetail(detail);
+        }
+        return;
+    }
+
+    if (event.target.closest("[data-menu-close]")) {
+        closeEvidenceContextMenu();
+        return;
+    }
+
+    if (event.target.closest("[data-confirm-publish]")) {
+        const result = await postForm("/api/investigation/evidence/publish", {evidenceId: investigationState.pendingPublishId});
+        showToast(result.message || "증거를 공개했습니다.");
+        closePublishConfirm();
+        await refreshInvestigation();
+        return;
+    }
+
+    if (event.target.closest("[data-confirm-cancel]")) {
+        closePublishConfirm();
+        return;
+    }
+
+    const memoryEvidence = event.target.closest("[data-memory-evidence]");
+    if (memoryEvidence) {
+        openMemoryEvidence(memoryEvidence);
+        return;
+    }
+
+    if (event.target.closest("[data-memory-close]")) {
+        closeMemoryEvidence();
         return;
     }
 
@@ -707,10 +1169,16 @@ document.addEventListener("click", async (event) => {
         return;
     }
 
+    const hintNote = event.target.closest("[data-hint-id]");
+    if (hintNote) {
+        openHintDetail(personalHints.find((hint) => hint.id === hintNote.dataset.hintId));
+        return;
+    }
+
     const panelButton = event.target.closest("[data-panel-target]");
     if (panelButton) {
         const target = document.getElementById(panelButton.dataset.panelTarget);
-        if (target && (target.id === "story-panel" || target.id === "acting-panel")) {
+        if (target && target.id === "acting-panel") {
             await renderStory();
         }
         document.querySelectorAll("[data-panel]").forEach((panel) => {
@@ -718,9 +1186,6 @@ document.addEventListener("click", async (event) => {
         });
         if (target) {
             target.hidden = false;
-            if (target.id === "story-panel") {
-                paintStoryPage();
-            }
             if (target.id === "acting-panel") {
                 paintActingPage();
             }
@@ -784,18 +1249,6 @@ document.addEventListener("click", async (event) => {
         return;
     }
 
-    if (event.target.closest("[data-story-prev]")) {
-        storyReaderState.page = Math.max(0, storyReaderState.page - 1);
-        paintStoryPage();
-        return;
-    }
-
-    if (event.target.closest("[data-story-next]")) {
-        storyReaderState.page = Math.min(storyReaderState.pages.length - 1, storyReaderState.page + 1);
-        paintStoryPage();
-        return;
-    }
-
     if (event.target.closest("[data-acting-prev]")) {
         actingReaderState.page = Math.max(0, actingReaderState.page - 1);
         paintActingPage();
@@ -825,6 +1278,41 @@ document.addEventListener("click", async (event) => {
     }
 });
 
+document.addEventListener("contextmenu", (event) => {
+    const card = event.target.closest("[data-private-evidence-card]");
+    if (!card) {
+        return;
+    }
+    event.preventDefault();
+    openEvidenceContextMenu(card.dataset.evidenceId, event.clientX, event.clientY);
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        closeEvidenceContextMenu();
+        closePublishConfirm();
+        closeMemoryEvidence();
+        closeStoryPdf();
+    }
+});
+
+let longPressTimer = null;
+document.addEventListener("pointerdown", (event) => {
+    const card = event.target.closest("[data-private-evidence-card]");
+    if (!card || event.pointerType === "mouse") {
+        return;
+    }
+    longPressTimer = window.setTimeout(() => {
+        openEvidenceContextMenu(card.dataset.evidenceId, event.clientX, event.clientY);
+    }, 620);
+});
+
+document.addEventListener("pointerup", () => {
+    window.clearTimeout(longPressTimer);
+});
+
 initStaticReader();
+refreshInvestigation();
 refreshState();
 window.setInterval(refreshState, 1000);
+window.setInterval(refreshInvestigation, 5000);

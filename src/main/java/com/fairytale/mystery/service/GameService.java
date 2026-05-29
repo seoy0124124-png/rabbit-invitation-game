@@ -35,11 +35,15 @@ public class GameService {
     private final Set<String> revealedHintIds = new LinkedHashSet<>();
     private final Set<String> revealedEvidenceIds = new LinkedHashSet<>();
     private final Set<String> sharedHintIds = new LinkedHashSet<>();
+    private final Set<String> unlockedPersonalStoryCodes = new LinkedHashSet<>();
     private final Set<GamePhase> releasedHintPhases = new LinkedHashSet<>();
+    private final Set<Integer> openedInvestigationActs = new LinkedHashSet<>();
+    private final Map<String, LocationOccupancy> investigationOccupancies = new LinkedHashMap<>();
+    private final Map<String, PlayerEvidenceState> playerEvidenceStates = new LinkedHashMap<>();
+    private final Map<String, PublishedEvidence> publishedEvidence = new LinkedHashMap<>();
     private final List<PublicRecord> publicRecords = new java.util.ArrayList<>();
     private final Map<String, Instant> enteredPlayers = new LinkedHashMap<>();
     private final Map<String, String> votes = new LinkedHashMap<>();
-    private boolean personalStoriesUnlocked;
     private boolean endingRevealed;
 
     public GameService() {
@@ -628,6 +632,10 @@ public class GameService {
         return code == null ? Optional.empty() : Optional.ofNullable(players.get(code.toString()));
     }
 
+    public Optional<Player> playerByCode(String code) {
+        return Optional.ofNullable(players.get(code));
+    }
+
     public void leave(HttpSession session) {
         currentPlayer(session).ifPresent(player -> enteredPlayers.remove(player.code()));
         session.invalidate();
@@ -687,11 +695,33 @@ public class GameService {
     }
 
     public void unlockPersonalStories() {
-        personalStoriesUnlocked = true;
+        playableCharacters().stream()
+                .map(Player::code)
+                .forEach(unlockedPersonalStoryCodes::add);
+    }
+
+    public void unlockPersonalStory(String playerCode) {
+        Player player = players.get(playerCode == null ? "" : playerCode.trim().toUpperCase());
+        if (player != null && !player.code().equals("ADMIN")) {
+            unlockedPersonalStoryCodes.add(player.code());
+        }
+    }
+
+    public void openInvestigationScenes() {
+        openedInvestigationActs.add(1);
+        state.setInvestigationOpen(true);
+    }
+
+    public void openInvestigationAct(int act) {
+        if (act < 1 || act > 3) {
+            return;
+        }
+        openedInvestigationActs.add(act);
+        state.setInvestigationOpen(true);
     }
 
     public boolean isPersonalStoryRevealedFor(Player player) {
-        return personalStoriesUnlocked && !player.code().equals("ADMIN");
+        return player != null && !player.code().equals("ADMIN") && unlockedPersonalStoryCodes.contains(player.code());
     }
 
     public void revealHint(String hintId) {
@@ -743,6 +773,1082 @@ public class GameService {
         return evidenceItems.values().stream()
                 .filter(evidence -> revealedEvidenceIds.contains(evidence.id()))
                 .collect(Collectors.toList());
+    }
+
+    public List<InvestigationScene> investigationScenes() {
+        return List.of(
+                new InvestigationScene(
+                        "central-hall",
+                        "중앙 홀 기록",
+                        "멈춘 시계와 핏자국이 처음으로 모두의 기억을 갈라놓은 장소.",
+                        List.of("11시 47분", "벽의 발톱 자국", "끊긴 핏자국", "젖은 늑대 털"),
+                        List.of(
+                                "RED는 이곳의 흔적이 자신을 향해 너무 친절하게 놓여 있다고 느낍니다.",
+                                "ALICE는 시계 소리가 벽 안쪽에서 들렸다고 말할 수 있습니다.",
+                                "MATCH는 피 냄새보다 누군가 급히 지나간 젖은 연기 냄새를 먼저 떠올립니다.",
+                                "PINO는 이 장소의 시간이 한 번이 아니라 여러 번 말해진 것처럼 느낍니다."
+                        ),
+                        "이 장면의 핵심은 범행 흔적보다, 모두가 같은 시간을 다르게 기억한다는 사실입니다."
+                ),
+                new InvestigationScene(
+                        "alice-room",
+                        "앨리스의 방 기록",
+                        "그림과 낙서, 들리지 않는 목소리가 남아 있는 작은 방.",
+                        List.of("붉게 칠해진 토끼 그림", "미래 날짜가 적힌 메모", "번져 있는 얼굴", "이름을 부르는 목소리"),
+                        List.of(
+                                "ALICE는 자신이 환각을 본 것이 아니라 너무 이른 진실을 본 것일지도 모른다고 느낍니다.",
+                                "다른 플레이어는 이 기록을 살해 예고나 광기의 흔적으로 의심할 수 있습니다.",
+                                "PINO는 이름을 부르는 목소리 이야기가 나오면 짧게 숨을 멈출 수 있습니다.",
+                                "이 방의 기록은 진실을 말하지만, 말하는 방식이 너무 이상해서 쉽게 믿기 어렵습니다."
+                        ),
+                        "이 장면은 앨리스가 이상한 아이인지, 진실을 가장 먼저 들은 사람인지 흔들리게 만듭니다."
+                ),
+                new InvestigationScene(
+                        "rabbit-room",
+                        "토끼의 방 기록",
+                        "피해자의 방처럼 보이지만, 사실 모두를 구하려던 흔적이 남아 있는 장소.",
+                        List.of("토끼의 방에 남은 기록", "책상 서랍의 기록", "방향이 이상한 토끼 발자국", "끊어진 실 조각"),
+                        List.of(
+                                "기록은 토끼가 네 사람을 괴물로 보지 않았다는 사실을 암시합니다.",
+                                "하지만 정체를 직접 밝히지는 않습니다. 진실은 엔딩까지 남겨두어야 합니다.",
+                                "PINO는 이 방의 문장을 읽을수록 버려질 공포와 죄책감이 함께 올라옵니다.",
+                                "다른 플레이어들은 토끼가 단순 피해자가 아니라 사건을 설계한 존재일지도 모른다고 의심할 수 있습니다."
+                        ),
+                        "이 장면은 범인을 찾는 장면이 아니라, 토끼가 왜 이들을 모았는지 묻는 장면입니다."
+                ),
+                new InvestigationScene(
+                        "hidden-workshop",
+                        "숨겨진 작업실 기록",
+                        "목각 가루와 설계도, 실이 남아 있는 가장 조용하고 위험한 장소.",
+                        List.of("나무 가루", "태워진 설계도", "금 간 인형 눈", "반복된 문장"),
+                        List.of(
+                                "MATCH는 자신이 태운 것이 단순한 종이가 아니라 누군가를 움직이는 설계였을지도 모른다고 느낍니다.",
+                                "PINO는 이곳의 물증이 자신을 직접 가리키지 않는데도 몸이 먼저 굳습니다.",
+                                "RED에게는 이 장소가 자신을 범인처럼 꾸민 손의 존재를 떠올리게 합니다.",
+                                "ALICE에게는 실과 나무가 살아 있는 기억처럼 보일 수 있습니다."
+                        ),
+                        "이 장면은 PINO를 향한 의심을 키우지만, 동시에 그 역시 만들어진 피해자였음을 남깁니다."
+                )
+        );
+    }
+
+    public List<InvestigationSceneView> investigationScenesFor(Player player) {
+        return investigationScenes().stream()
+                .map(scene -> new InvestigationSceneView(
+                        scene.id(),
+                        scene.title(),
+                        scene.summary(),
+                        scene.clues(),
+                        sceneInterpretationsFor(scene.id(), player.code())
+                ))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> sceneInterpretationsFor(String sceneId, String playerCode) {
+        return switch (sceneId + ":" + playerCode) {
+            case "central-hall:RED" -> List.of("발톱 자국이 너무 일정합니다. 누군가 당신을 닮은 괴물을 현장에 남겨둔 것 같습니다.");
+            case "central-hall:ALICE" -> List.of("시계 소리는 시계에서 난 것이 아니라 벽 안쪽에서 울렸던 것 같습니다.");
+            case "central-hall:PINO" -> List.of("이 장소의 시간은 한 번이 아니라 여러 번 말해진 것처럼 머릿속에서 겹칩니다.");
+            case "central-hall:MATCH" -> List.of("피 냄새보다 젖은 연기 냄새가 먼저 떠오릅니다. 누군가 지나간 뒤에 남은 냄새였습니다.");
+            case "alice-room:RED" -> List.of("앨리스의 그림은 예고처럼 보이지만, 이상하게도 누군가 이미 본 장면을 따라 그린 것 같습니다.");
+            case "alice-room:ALICE" -> List.of("당신은 환각을 본 것이 아니라 너무 이른 진실을 들은 것일지도 모릅니다.");
+            case "alice-room:PINO" -> List.of("이름을 부르는 목소리 이야기가 나오면, 당신은 자신도 모르게 숨을 멈추게 됩니다.");
+            case "alice-room:MATCH" -> List.of("앨리스가 장난처럼 말한 문장마다 손끝이 차가웠습니다. 거짓말을 하는 사람의 손은 아니었습니다.");
+            case "rabbit-room:RED" -> List.of("토끼의 기록은 당신을 괴물로 부르지 않습니다. 그래서 더 믿기 어렵습니다.");
+            case "rabbit-room:ALICE" -> List.of("이 방의 문장들은 환각처럼 흔들리지 않습니다. 누군가 정말로 모두를 돌아오게 하려 했습니다.");
+            case "rabbit-room:PINO" -> List.of("혼자 두지 않겠다는 말이 너무 늦게 도착한 말처럼 느껴집니다.");
+            case "rabbit-room:MATCH" -> List.of("불 속에서도 누군가 자신을 기다렸다는 문장이 남아 있습니다. 그게 더 무섭습니다.");
+            case "hidden-workshop:RED" -> List.of("이곳의 물건들은 당신의 흔적을 꾸며낸 손이 실제로 있었을지도 모른다는 생각을 남깁니다.");
+            case "hidden-workshop:ALICE" -> List.of("실과 나무가 살아 있는 기억처럼 보입니다. 누군가 움직였고, 누군가 움직여졌습니다.");
+            case "hidden-workshop:PINO" -> List.of("물증은 당신의 이름을 말하지 않는데도, 몸이 먼저 굳습니다.");
+            case "hidden-workshop:MATCH" -> List.of("당신이 태운 것은 종이가 아니라 누군가를 움직이는 방법이었을지도 모릅니다.");
+            default -> List.of();
+        };
+    }
+
+    public List<InvestigationActStatus> investigationActStatuses() {
+        return List.of(1, 2, 3).stream()
+                .map(act -> new InvestigationActStatus(
+                        act,
+                        act + "막 기록",
+                        openedInvestigationActs.contains(act),
+                        investigationEvidenceItems().stream().filter(item -> item.act() == act).count()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<InvestigationLocationView> investigationLocationsFor(Player player) {
+        Map<String, InvestigationLocationBuilder> locations = new LinkedHashMap<>();
+        investigationEvidenceItems().stream()
+                .filter(item -> openedInvestigationActs.contains(item.act()))
+                .forEach(item -> {
+                    String key = item.act() + ":" + item.locationName();
+                    InvestigationLocationBuilder builder = locations.computeIfAbsent(key, ignored ->
+                            new InvestigationLocationBuilder(
+                                    item.act(),
+                                    "act-" + item.act() + "-" + slug(item.locationName()),
+                                    item.locationName(),
+                                    item.act() + "막에서 펼쳐진 " + item.locationName() + "의 남겨진 흔적"
+                            ));
+                    builder.add(new InvestigationEvidenceView(
+                            item.id(),
+                            item.act(),
+                            item.title(),
+                            item.locationName(),
+                            item.detailLocation(),
+                            item.commonDescription(),
+                            item.interpretations().getOrDefault(player.code(), ""),
+                            item.recalledLine()
+                    ));
+                });
+        return locations.values().stream()
+                .map(InvestigationLocationBuilder::build)
+                .collect(Collectors.toList());
+    }
+
+    public List<InvestigationLocationStatus> investigationLocationStatusesFor(Player player) {
+        return investigationLocationDefinitions().stream()
+                .filter(location -> openedInvestigationActs.contains(location.act()))
+                .map(location -> {
+                    LocationOccupancy occupancy = investigationOccupancies.get(location.id());
+                    Player occupant = occupancy == null ? null : players.get(occupancy.playerCode());
+                    boolean occupiedBySelf = occupancy != null && occupancy.playerCode().equals(player.code());
+                    boolean canEnter = occupancy == null || occupiedBySelf;
+                    return new InvestigationLocationStatus(
+                            location.id(),
+                            location.act(),
+                            location.name(),
+                            location.description(),
+                            true,
+                            occupancy != null,
+                            occupiedBySelf,
+                            canEnter,
+                            occupant == null ? "" : occupant.name(),
+                            occupancy == null ? null : occupancy.occupiedAt(),
+                            evidenceSummariesFor(location.id(), player)
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public InvestigationActionResult enterInvestigationLocation(Player player, String locationId) {
+        InvestigationLocation location = investigationLocation(locationId);
+        if (location == null || !openedInvestigationActs.contains(location.act())) {
+            return new InvestigationActionResult(false, "아직 공개되지 않은 장면입니다.");
+        }
+        LocationOccupancy occupancy = investigationOccupancies.get(locationId);
+        if (occupancy == null) {
+            investigationOccupancies.entrySet().removeIf(entry -> entry.getValue().playerCode().equals(player.code()));
+            investigationOccupancies.put(locationId, new LocationOccupancy(locationId, player.code(), Instant.now()));
+            return new InvestigationActionResult(true, location.name() + " 조사를 시작합니다.");
+        }
+        if (occupancy.playerCode().equals(player.code())) {
+            return new InvestigationActionResult(true, location.name() + "에 다시 들어갑니다.");
+        }
+        Player occupant = players.get(occupancy.playerCode());
+        String name = occupant == null ? "다른 플레이어" : occupant.name();
+        return new InvestigationActionResult(false, "현재 " + name + "가 이 장면을 조사 중입니다.");
+    }
+
+    public InvestigationActionResult leaveInvestigationLocation(Player player, String locationId) {
+        LocationOccupancy occupancy = investigationOccupancies.get(locationId);
+        if (occupancy == null) {
+            return new InvestigationActionResult(true, "이미 비어 있는 장면입니다.");
+        }
+        if (!occupancy.playerCode().equals(player.code())) {
+            return new InvestigationActionResult(false, "현재 조사자만 조사를 종료할 수 있습니다.");
+        }
+        investigationOccupancies.remove(locationId);
+        return new InvestigationActionResult(true, "조사를 종료했습니다.");
+    }
+
+    public void forceReleaseInvestigationLocation(String locationId) {
+        investigationOccupancies.remove(locationId);
+    }
+
+    public EvidenceDetailResult discoverInvestigationEvidence(Player player, String evidenceId) {
+        InvestigationEvidence evidence = investigationEvidenceById(evidenceId);
+        if (evidence == null) {
+            return new EvidenceDetailResult(false, "존재하지 않는 증거입니다.", null);
+        }
+        String locationId = locationIdFor(evidence);
+        if (!publishedEvidence.containsKey(evidenceId)) {
+            LocationOccupancy occupancy = investigationOccupancies.get(locationId);
+            if (occupancy == null || !occupancy.playerCode().equals(player.code())) {
+                return new EvidenceDetailResult(false, "이 장면을 조사 중인 플레이어만 발견할 수 있습니다.", null);
+            }
+            playerEvidenceStates.putIfAbsent(playerEvidenceKey(player.code(), evidenceId),
+                    new PlayerEvidenceState(player.code(), evidenceId, EvidenceDiscoveryStatus.PRIVATE_FOUND, Instant.now(), null));
+        }
+        return new EvidenceDetailResult(true, "증거를 펼쳤습니다.", evidenceDetailFor(evidence, player));
+    }
+
+    public EvidenceDetailResult evidenceDetail(Player player, String evidenceId) {
+        InvestigationEvidence evidence = investigationEvidenceById(evidenceId);
+        if (evidence == null) {
+            return new EvidenceDetailResult(false, "존재하지 않는 증거입니다.", null);
+        }
+        if (!publishedEvidence.containsKey(evidenceId)
+                && !playerEvidenceStates.containsKey(playerEvidenceKey(player.code(), evidenceId))) {
+            return new EvidenceDetailResult(false, "아직 발견하지 않은 증거입니다.", null);
+        }
+        return new EvidenceDetailResult(true, "증거를 펼쳤습니다.", evidenceDetailFor(evidence, player));
+    }
+
+    public InvestigationActionResult publishInvestigationEvidence(Player player, String evidenceId) {
+        InvestigationEvidence evidence = investigationEvidenceById(evidenceId);
+        if (evidence == null) {
+            return new InvestigationActionResult(false, "존재하지 않는 증거입니다.");
+        }
+        String key = playerEvidenceKey(player.code(), evidenceId);
+        PlayerEvidenceState state = playerEvidenceStates.get(key);
+        if (state == null && !publishedEvidence.containsKey(evidenceId)) {
+            return new InvestigationActionResult(false, "먼저 이 증거를 발견해야 공개할 수 있습니다.");
+        }
+        if (publishedEvidence.containsKey(evidenceId)) {
+            return new InvestigationActionResult(true, "이미 모두의 기록에 올라간 증거입니다.");
+        }
+        Instant now = Instant.now();
+        playerEvidenceStates.put(key, new PlayerEvidenceState(player.code(), evidenceId, EvidenceDiscoveryStatus.PUBLIC, state.discoveredAt(), now));
+        publishedEvidence.put(evidenceId, new PublishedEvidence(evidenceId, player.code(), locationIdFor(evidence), now));
+        return new InvestigationActionResult(true, evidence.title() + "을 모두의 기록에 공개했습니다.");
+    }
+
+    public InvestigationActionResult adminPublishInvestigationEvidence(String evidenceId) {
+        InvestigationEvidence evidence = investigationEvidenceById(evidenceId);
+        if (evidence == null) {
+            return new InvestigationActionResult(false, "존재하지 않는 증거입니다.");
+        }
+        publishedEvidence.putIfAbsent(evidenceId, new PublishedEvidence(evidenceId, "ADMIN", locationIdFor(evidence), Instant.now()));
+        return new InvestigationActionResult(true, evidence.title() + "을 강제로 공개했습니다.");
+    }
+
+    public List<PlayerEvidenceView> privateEvidenceFor(Player player) {
+        return playerEvidenceStates.values().stream()
+                .filter(state -> state.playerCode().equals(player.code()))
+                .filter(state -> state.status() == EvidenceDiscoveryStatus.PRIVATE_FOUND)
+                .map(state -> playerEvidenceView(state, player))
+                .collect(Collectors.toList());
+    }
+
+    public List<PlayerEvidenceView> publicInvestigationEvidenceFor(Player player) {
+        return publishedEvidence.values().stream()
+                .map(item -> {
+                    InvestigationEvidence evidence = investigationEvidenceById(item.evidenceId());
+                    Player publisher = players.get(item.publishedByPlayerCode());
+                    return new PlayerEvidenceView(
+                            evidence.id(),
+                            evidence.title(),
+                            evidence.locationName(),
+                            evidence.detailLocation(),
+                            item.sourceLocationId(),
+                            publisher == null ? "관리자" : publisher.name(),
+                            item.publishedAt(),
+                            EvidenceDiscoveryStatus.PUBLIC
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<AdminLocationStatus> adminLocationStatuses() {
+        return investigationLocationDefinitions().stream()
+                .map(location -> {
+                    LocationOccupancy occupancy = investigationOccupancies.get(location.id());
+                    Player occupant = occupancy == null ? null : players.get(occupancy.playerCode());
+                    return new AdminLocationStatus(
+                            location,
+                            openedInvestigationActs.contains(location.act()),
+                            occupant,
+                            occupancy == null ? null : occupancy.occupiedAt()
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<AdminPrivateEvidenceStatus> adminPrivateEvidenceStatuses() {
+        return playableCharacters().stream()
+                .map(player -> new AdminPrivateEvidenceStatus(player, privateEvidenceFor(player)))
+                .collect(Collectors.toList());
+    }
+
+    private List<InvestigationEvidenceSummary> evidenceSummariesFor(String locationId, Player player) {
+        return investigationEvidenceItems().stream()
+                .filter(evidence -> locationIdFor(evidence).equals(locationId))
+                .map(evidence -> {
+                    boolean publicItem = publishedEvidence.containsKey(evidence.id());
+                    boolean privateFound = playerEvidenceStates.containsKey(playerEvidenceKey(player.code(), evidence.id()));
+                    return new InvestigationEvidenceSummary(
+                            evidence.id(),
+                            evidence.title(),
+                            evidence.detailLocation(),
+                            publicItem,
+                            privateFound
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    private PlayerEvidenceView playerEvidenceView(PlayerEvidenceState state, Player viewer) {
+        InvestigationEvidence evidence = investigationEvidenceById(state.evidenceId());
+        return new PlayerEvidenceView(
+                evidence.id(),
+                evidence.title(),
+                evidence.locationName(),
+                evidence.detailLocation(),
+                locationIdFor(evidence),
+                viewer.name(),
+                state.discoveredAt(),
+                state.status()
+        );
+    }
+
+    private EvidenceDetailView evidenceDetailFor(InvestigationEvidence evidence, Player player) {
+        PublishedEvidence published = publishedEvidence.get(evidence.id());
+        Player publisher = published == null ? null : players.get(published.publishedByPlayerCode());
+        return new EvidenceDetailView(
+                evidence.id(),
+                evidence.title(),
+                evidence.locationName(),
+                evidence.detailLocation(),
+                evidence.commonDescription(),
+                evidence.interpretations().getOrDefault(player.code(), ""),
+                evidence.recalledLine(),
+                published != null,
+                publisher == null ? "" : publisher.name()
+        );
+    }
+
+    private InvestigationEvidence investigationEvidenceById(String evidenceId) {
+        return investigationEvidenceItems().stream()
+                .filter(evidence -> evidence.id().equals(evidenceId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private InvestigationLocation investigationLocation(String locationId) {
+        return investigationLocationDefinitions().stream()
+                .filter(location -> location.id().equals(locationId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String locationIdFor(InvestigationEvidence evidence) {
+        return "act-" + evidence.act() + "-" + slug(evidence.locationName());
+    }
+
+    private String playerEvidenceKey(String playerCode, String evidenceId) {
+        return playerCode + ":" + evidenceId;
+    }
+
+    private List<InvestigationLocation> investigationLocationDefinitions() {
+        Map<String, InvestigationLocation> locations = new LinkedHashMap<>();
+        investigationEvidenceItems().forEach(evidence -> {
+            String id = locationIdFor(evidence);
+            locations.putIfAbsent(id, new InvestigationLocation(
+                    id,
+                    evidence.act(),
+                    evidence.locationName(),
+                    sceneDescription(evidence.locationName())
+            ));
+        });
+        return List.copyOf(locations.values());
+    }
+
+    private String sceneDescription(String locationName) {
+        return switch (locationName) {
+            case "중앙 홀" -> "핏자국과 멈춘 시간이 가장 먼저 남겨진 장면.";
+            case "토끼의 방" -> "버려진 아이들이 잠시 쉬어가던 작은 방.";
+            case "복도" -> "시체가 놓여 있던 자리와 발소리의 기억이 겹치는 길.";
+            case "앨리스의 방" -> "멈춘 시계와 현실의 틈이 벽에 남은 방.";
+            case "멈춘 회중시계 내부" -> "시간보다 기억이 먼저 멈춘 듯한 작은 장치 안.";
+            case "멈춘 회중시계 내부 금속판" -> "멈춰 달라는 말이 금속 안쪽에 긁힌 곳.";
+            case "숨겨진 작업실" -> "실과 나무 가루, 태워진 기록이 남은 가장 조용한 방.";
+            default -> "누군가의 기억이 접힌 채 남아 있는 장면.";
+        };
+    }
+
+    public List<InvestigationEvidence> investigationEvidenceItems() {
+        return List.of(
+                investigationEvidence("wet-wolf-fur", 1, "젖은 늑대 털", "중앙 홀", "긴 식탁 아래",
+                        """
+                                식탁 아래,
+                                물기가 마르지 않은 회색 털 몇 올이 떨어져 있다.
+
+                                털 끝에는 눈 녹은 물방울이 남아 있고,
+                                저택 안 먼지와는 다른 흙냄새가 섞여 있다.
+
+                                처음 보면 짐승이 남긴 흔적처럼 보인다.
+
+                                하지만 자세히 보면,
+                                일부 털은 가느다란 실 조각에 얽혀 있다.
+
+                                털 일부는 칼날 같은 것으로 잘린 흔적이 남아 있으며,
+                                바닥에 자연스럽게 떨어진 것이라기보다
+                                누군가 손으로 급히 흩뿌린 것처럼 보인다.
+                                """,
+                        """
+                                털 냄새를 맡는 순간,
+                                눈 덮인 숲속에서 들리던 거친 숨소리가 떠오른다.
+
+                                젖은 털 냄새.
+                                눈을 짓밟는 발소리.
+                                가까워지던 낮은 숨.
+
+                                무언가 자신을 쫓아온 것 같기도 하고,
+                                반대로 자신이 누군가를 쫓고 있었던 것 같기도 하다.
+
+                                목덜미의 오래된 상처가 아주 짧게 욱신거린다.
+                                """,
+                        """
+                                앨리스는 털보다
+                                그 사이에 얽힌 실 조각이 먼저 눈에 들어온다.
+
+                                짐승의 흔적인데도,
+                                어쩐지 장난감 무대 위에 올려진 소품처럼 느껴진다.
+
+                                진짜 늑대의 흔적이라기보다,
+                                누군가 “늑대가 있었던 장면”을 따라 꾸며놓은 것 같다.
+
+                                아까 자신이 보았던
+                                토끼 같기도 하고,
+                                사람 같기도 했던 흔적이 떠오른다.
+                                """,
+                        """
+                                실 끝에 묻은 나무 가루를 보는 순간,
+                                머릿속에서 무언가 끊어지는 감각이 스친다.
+
+                                그것은 털의 흔적보다
+                                실이 억지로 뜯겨나간 흔적처럼 보인다.
+
+                                누군가 짐승을 흉내 내려 한 것인지,
+                                아니면 누군가의 몸에서 무언가가 떨어져 나온 것인지는 알 수 없다.
+                                """,
+                        """
+                                성냥팔이 소녀는 젖은 털 냄새보다,
+                                털 끝에 묻은 아주 희미한 탄내를 먼저 느낀다.
+
+                                불에 탄 냄새라고 하기엔 약하지만,
+                                불 가까이에 오래 두었던 물건에서 나는 냄새와 비슷하다.
+
+                                누군가 불 가까이에서 이것을 말렸거나,
+                                불에 그을린 손으로 만졌던 것 같다.
+                                """,
+                        """
+                                아까 빨간망토가 낮게 말했던 것이 떠오른다.
+
+                                “나는 가끔 모르겠어.
+
+                                내가 쫓기고 있는 건지,
+                                아니면 누군가를 쫓고 있는 건지.”
+                                """),
+                investigationEvidence("claw-marks", 1, "벽의 발톱 자국", "중앙 홀", "출입문 옆 벽면",
+                        """
+                                중앙 홀 벽면에는 누군가 깊게 긁어낸 듯한 흔적이 남아 있다.
+
+                                처음 보면 짐승이 벽을 찢은 것처럼 보인다.
+
+                                하지만 긁힌 깊이가 지나치게 일정하고, 간격도 거의 비슷하며, 시작 방향도 어색하다.
+
+                                마치 누군가 일부러 “늑대의 흔적”을 흉내 낸 것처럼 보인다.
+
+                                긁힌 자국 주변에는 벽지가 아주 얇게 벗겨져 있으며,
+                                가까이 보면 손으로 여러 번 덧그은 듯한 흔적도 남아 있다.
+                                """,
+                        """
+                                그 자국을 보는 순간, 목덜미 상처가 욱신거린다.
+
+                                눈밭 위로 쓰러졌던 순간, 등을 덮치던 무게,
+                                목덜미를 파고들던 고통이 떠오른다.
+
+                                하지만 이상하다.
+
+                                진짜 늑대라면 저렇게 일정하게 긁지 않았을 것이다.
+
+                                누군가 자신의 기억을 흉내 내고 있다면,
+                                그건 자신을 향한 덫일지도 모른다.
+                                """,
+                        """
+                                앨리스는 자국의 간격을 한참 바라본다.
+
+                                진짜 짐승이라면 저렇게 긁지 않았을 거라는 생각이 든다.
+
+                                마치 누군가 그림책 속 괴물을 보고,
+                                괴물이 남겼을 법한 흔적을 따라 그린 것 같다.
+
+                                그 장면은 실제 사건이라기보다,
+                                누군가가 모두에게 보여주고 싶었던 장면처럼 느껴진다.
+                                """,
+                        """
+                                자국을 바라보고 있자 손끝이 이유 없이 떨린다.
+
+                                발톱 자국이라기보다,
+                                나무 표면을 억지로 긁어낸 흔적처럼 보인다.
+
+                                손끝 안쪽에서 무언가가 갈라지는 듯한 감각이 스친다.
+                                """,
+                        """
+                                성냥팔이 소녀는 긁힌 자국 가장자리의 작은 검은 얼룩을 먼저 본다.
+
+                                불에 탄 흔적은 아니다.
+
+                                하지만 누군가 무언가를 급히 문질러 지운 자국처럼 느껴진다.
+
+                                흔적을 만들고, 다시 숨기려 한 손길.
+
+                                그게 이상하게 낯설지 않다.
+                                """,
+                        ""),
+                investigationEvidence("overturned-chair", 1, "뒤집힌 의자", "중앙 홀", "식탁 끝자리",
+                        """
+                                식탁 의자 하나만 크게 뒤로 밀려 있다.
+
+                                누군가 급하게 일어난 흔적처럼 보인다.
+
+                                의자 다리 한쪽에는 아주 희미하게 검은 재가 묻어 있다.
+
+                                바닥에는 의자가 끌린 자국이 남아 있지만, 그 방향이 조금 이상하다.
+
+                                누군가 앉아 있다가 놀라 일어난 것인지,
+                                아니면 누군가 일부러 장면을 만들기 위해 밀어둔 것인지는 알 수 없다.
+                                """,
+                        """
+                                의자가 뒤로 밀린 방향을 보는 순간,
+                                눈밭 위로 등을 덮치던 무게가 떠오른다.
+
+                                누군가에게 밀쳐진 것인지,
+                                자신이 무언가를 밀쳐낸 것인지는 알 수 없다.
+
+                                몸이 먼저 반응한다.
+                                손끝이 차갑게 굳고, 숨이 짧아진다.
+                                """,
+                        """
+                                몸싸움 흔적이라기보다,
+                                누군가 일부러 남긴 장면처럼 느껴진다.
+
+                                의자가 넘어져 있어야 한다는 사실을 누군가 뒤늦게 깨닫고,
+                                그 장면을 맞춰놓은 것 같다.
+
+                                앨리스는 의자 다리의 각도가 지나치게 정확하다고 느낀다.
+                                """,
+                        """
+                                눈밭에서 무언가 쓰러지던 장면이 스친다.
+
+                                붉은색이 아주 잠깐 보였던 것 같다.
+
+                                그것이 사람인지, 망토인지,
+                                자신이 보고 싶지 않았던 장면인지는 기억나지 않는다.
+
+                                다만 의자가 밀려난 자리를 보고 있자,
+                                자신이 방 안에서 더는 기다릴 수 없었던 순간이 떠오른다.
+                                """,
+                        """
+                                의자 다리에 묻은 재 냄새가 이상하게 익숙하다.
+
+                                아주 오래된 재가 아니다.
+
+                                누군가가 작은 불을 켰고,
+                                그 불이 꺼진 뒤 손끝에 남은 냄새와 비슷하다.
+                                """,
+                        """
+                                아까 성냥팔이 소녀가 웃으며 했던 말이 떠오른다.
+
+                                “태우면 없어질 줄 알았어.
+
+                                그런데 냄새는 남더라.”
+                                """),
+                investigationEvidence("broken-teacup", 1, "깨진 찻잔", "중앙 홀", "벽난로 앞 바닥",
+                        """
+                                벽난로 앞 바닥에는 깨진 찻잔 조각이 흩어져 있다.
+
+                                조각 대부분은 바깥쪽으로 크게 튀어 있고,
+                                손잡이 부분만 유난히 멀리 떨어져 있다.
+
+                                단순히 떨어뜨린 모양이라기보다,
+                                누군가 급하게 밀쳐낸 것처럼 보인다.
+
+                                찻잔 조각 아래에는 아주 희미한 그을음과
+                                말라붙은 액체 자국이 함께 남아 있다.
+                                """,
+                        """
+                                깨진 조각을 보는 순간,
+                                눈 위로 무언가 흩어지던 장면이 떠오른다.
+
+                                붉은 것.
+                                하얀 것.
+                                그리고 자신이 끝까지 바라보지 못했던 장면.
+
+                                깨진 조각의 날카로운 끝을 보고 있자,
+                                목덜미의 상처가 다시 욱신거린다.
+                                """,
+                        """
+                                찻잔 조각 배치가 이상하다.
+
+                                마치 누군가 일부러 깨진 방향을 바꿔놓은 것처럼 느껴진다.
+
+                                앨리스는 자신도 모르게 찻잔 조각의 개수를 세기 시작한다.
+
+                                하나, 둘, 셋.
+
+                                개수를 세면 진정될 줄 알았지만,
+                                오히려 이 장면이 아직 꿈인지 확인하고 싶어진다.
+                                """,
+                        """
+                                깨지는 소리를 떠올리는 순간,
+                                나무 관절 안쪽에서 무언가 금 가는 감각이 스친다.
+
+                                그것이 찻잔이 깨진 소리였는지,
+                                자기 안에서 무언가 부러진 소리였는지 구분하기 어렵다.
+
+                                그는 소리보다 그 뒤에 찾아온 침묵이 더 불편하다.
+                                """,
+                        """
+                                성냥팔이 소녀는 찻잔 아래의 희미한 탄 자국을 먼저 본다.
+
+                                식탁 위로 뜨거운 액체가 튀던 감각이 떠오르고,
+                                아주 잠깐 누군가 식탁을 강하게 내려치던 장면이 스친다.
+
+                                하지만 그 장면이 실제 기억인지,
+                                자신이 불안할 때마다 만들어내는 장난 같은 기억인지는 알 수 없다.
+                                """,
+                        ""),
+                investigationEvidence("red-rabbit-painting", 1, "붉게 칠해진 토끼 그림", "중앙 홀", "벽난로 위 낡은 액자 아래",
+                        """
+                                토끼 그림의 목 부분만 붉게 덧칠되어 있다.
+
+                                붉은 부분은 물감이라기보다 말라붙은 액체처럼 보인다.
+
+                                칠해진 선은 일정하지 않고, 중간중간 흔들려 있다.
+
+                                누군가 장난처럼 칠한 것이라기엔 선 끝에 망설임이 남아 있다.
+                                """,
+                        """
+                                그림을 보는 순간, 눈 위에 번지던 피가 떠오른다.
+
+                                하얀 눈 위에서 붉은색은 너무 선명했다.
+
+                                자신은 그 색을 잊고 싶었지만,
+                                그 색은 언제나 제일 먼저 떠오른다.
+                                """,
+                        """
+                                붉은 선의 흔들림이 울면서 그린 그림처럼 보인다.
+
+                                앨리스는 그 선이 목을 가르는 선이라기보다,
+                                무언가를 멈추게 해달라고 매달리는 선처럼 느낀다.
+
+                                그림 속 토끼는 웃고 있는 것 같기도 하고,
+                                울고 있는 것 같기도 하다.
+                                """,
+                        """
+                                그림을 보는 순간, 가슴 한쪽이 조여오는 느낌이 든다.
+
+                                그 붉은 선은 피처럼 보이지만,
+                                어쩐지 자신이 마지막으로 보고 싶지 않았던 얼굴을 가리기 위한 선처럼 느껴진다.
+
+                                그는 그림을 오래 바라보지 못한다.
+                                """,
+                        """
+                                붉은 선은 피처럼 보이지만,
+                                동시에 누군가 지워버리고 싶었던 기억처럼 느껴진다.
+
+                                무언가를 덧칠하면 아래에 있던 것이 사라질 줄 알았던 사람의 흔적.
+
+                                하지만 덧칠된 색은 오히려 가장 숨기고 싶은 부분을 더 선명하게 만든다.
+                                """,
+                        ""),
+                investigationEvidence("torn-record", 2, "찢어진 기록 일부", "토끼의 방", "책상 서랍 안",
+                        """
+                                토끼가 남긴 기록 일부가 거칠게 찢겨 있다.
+
+                                “…기억이 다시 흔들리기 시작했다.”
+
+                                라는 문장만 남아 있다.
+
+                                이상하게도 기억과 관련된 부분만 사라져 있다.
+
+                                종이의 찢긴 끝부분에는 손으로 급히 잡아뜯은 흔적과
+                                아주 희미한 그을림이 함께 남아 있다.
+                                """,
+                        """
+                                자신의 기억 역시 곳곳이 비어 있다는 사실이 떠오른다.
+
+                                쓰러졌던 밤.
+                                목덜미의 고통.
+                                토끼 발자국.
+
+                                중요한 장면일수록, 기억은 꼭 중간에서 끊겨 있다.
+                                """,
+                        """
+                                앨리스는 이 기록이 단순히 찢긴 것이 아니라,
+                                누군가 급하게 숨긴 흔적처럼 보인다고 느낀다.
+
+                                기억과 관련된 부분만 사라진 것이 이상하다.
+
+                                마치 누군가 기억 자체를 지우려 한 것이 아니라,
+                                기억을 읽을 수 있는 문장만 골라 없앤 것 같다.
+                                """,
+                        """
+                                문장을 읽는 순간, 누군가 계속 “잊어.”라고 속삭이는 느낌이 든다.
+
+                                그 목소리는 밖에서 들리는 것 같지 않다.
+
+                                오히려 자신의 안쪽,
+                                나무 관절 사이 깊은 곳에서 울리는 것 같다.
+                                """,
+                        """
+                                종이 끝부분에는 불에 그을린 흔적이 남아 있다.
+
+                                완전히 태우려다 멈춘 것 같다.
+
+                                성냥팔이 소녀는 그 흔적을 보고,
+                                자신이 태우지 못하고 남겨둔 것들이 언제나 더 오래 남는다는 사실을 떠올린다.
+                                """,
+                        ""),
+                investigationEvidence("wood-shavings", 2, "나무 가루", "복도", "시체가 놓여 있던 자리 근처",
+                        """
+                                미세한 나무 가루가 흩어져 있다.
+
+                                피 냄새 대신 마른 목각 냄새가 희미하게 남아 있다.
+
+                                누군가는 단순 먼지라고 말하지만,
+                                오래된 인형 공방을 떠올린 사람도 있었다.
+
+                                나무 가루는 시체가 놓였던 자리 근처에만 남아 있으며,
+                                바닥을 따라 아주 짧게 끌린 흔적이 보인다.
+                                """,
+                        """
+                                피 냄새보다 이상하게 나무 냄새가 먼저 느껴진다.
+
+                                그 냄새는 숲의 나무 냄새와 다르다.
+                                살아 있는 나무가 아니라, 깎이고 말라버린 나무의 냄새다.
+
+                                빨간망토는 자신이 쫓던 것이 짐승이었는지,
+                                아니면 전혀 다른 무언가였는지 잠시 헷갈린다.
+                                """,
+                        """
+                                나무 가루를 보는 순간, 벽 안쪽에서 들리던 기계음이 떠오른다.
+
+                                똑딱.
+
+                                그 소리는 시계 소리처럼 들렸지만,
+                                어쩌면 나무와 금속이 맞물리며 나는 소리였을지도 모른다.
+
+                                현실이 아주 얇게 갈라지는 느낌이 든다.
+                                """,
+                        """
+                                손끝에 묻은 나무 가루가 잘 떨어지지 않는 기분이 든다.
+
+                                아무것도 만지지 않았는데도,
+                                손가락 사이가 마른 나무 냄새로 가득 찬 것 같다.
+
+                                가끔 자신의 몸에서는 아무도 만지지 않았는데도 나무 가루 냄새가 났다.
+
+                                누군가 자신을 고치려 했던 것인지,
+                                다시 묶어두려 했던 것인지는 알 수 없다.
+                                """,
+                        """
+                                불에 타기 전 목재 냄새와 비슷하다.
+
+                                성냥팔이 소녀는 그 냄새를 알고 있다.
+
+                                아직 타지 않았지만,
+                                불이 닿으면 너무 쉽게 사라질 것 같은 냄새.
+
+                                그래서 더 불안하다.
+                                """,
+                        ""),
+                investigationEvidence("stopped-watch-sketch", 2, "멈춘 시계 스케치", "앨리스의 방", "침대 맞은편 벽면",
+                        """
+                                멈춘 회중시계 그림이 반복해서 그려져 있다.
+
+                                모든 시계 초침은 같은 위치를 가리키고 있다.
+
+                                덧칠과 지운 흔적이 반복되어 있다.
+
+                                처음 보면 낙서처럼 보이지만,
+                                자세히 보면 모든 그림의 초침은 정확히 같은 위치에서 멈춰 있다.
+                                """,
+                        """
+                                숫자를 보는 순간, 멈춰 있던 숲 공기가 떠오른다.
+
+                                늑대들의 숨소리도, 눈 위의 발자국도,
+                                자신의 심장 소리도 그 순간만은 모두 멈춰 있었던 것 같다.
+                                """,
+                        """
+                                그 그림을 볼 때마다, 초침 소리가 들리는 것 같다.
+
+                                하지만 무서운 것은 시계가 멈춘 순간이 아니다.
+
+                                멈춘 뒤에도 들리는 소리다.
+
+                                똑딱.
+                                벽 안쪽에서, 아직 무언가가 돌아가고 있었다.
+                                """,
+                        """
+                                심장이 이유 없이 빠르게 뛴다.
+
+                                자신에게 심장이 있는지도 확신할 수 없는데,
+                                그 숫자를 보는 순간 무언가가 안쪽에서 세게 두드리는 느낌이 든다.
+
+                                그것은 두려움인지, 기억인지,
+                                아니면 멈추지 못한 어떤 장치인지 알 수 없다.
+                                """,
+                        """
+                                벽 일부는 손으로 여러 번 문질러 지운 흔적이 남아 있다.
+
+                                성냥팔이 소녀는 그것이 불에 탄 흔적은 아니지만,
+                                무언가를 지우려고 애쓴 흔적이라는 점에서 이상하게 익숙하다고 느낀다.
+                                """,
+                        ""),
+                investigationEvidence("broken-thread", 2, "끊어진 실", "멈춘 회중시계 내부", "시계 내부",
+                        """
+                                가느다란 실 조각 하나가 발견되었다.
+
+                                옷감용이라기엔 지나치게 질기고 균일한 실이다.
+
+                                일부는 억지로 뜯긴 듯 끊어져 있고,
+                                끝부분에는 아주 미세한 나무 가루가 묻어 있다.
+
+                                시계 안에 왜 실이 들어 있었는지는 알 수 없다.
+
+                                다만 이 실은 단순한 장식이 아니라,
+                                무언가를 움직이거나 붙잡기 위해 쓰인 것처럼 보인다.
+                                """,
+                        """
+                                누군가 자신을 붙잡고 있었다는 느낌이 스친다.
+
+                                도망치던 밤,
+                                자신이 숲에서 빠져나온 것이 아니라 누군가에게 이끌려 나온 것 같았던 감각이 떠오른다.
+
+                                그것이 구원이었는지, 덫이었는지는 아직도 알 수 없다.
+                                """,
+                        """
+                                단순 천 조각이 아니라, 무언가를 움직이기 위한 장치처럼 느껴진다.
+
+                                앨리스는 실을 보는 순간, 이상한 나라의 무대 뒤편을 떠올린다.
+
+                                앞에서는 모두가 웃고 있었지만,
+                                뒤에서는 누군가 실을 당기고 있었다.
+                                """,
+                        """
+                                실 끝을 보는 순간, 손가락 끝이 차갑게 굳는다.
+
+                                실이 끊어지는 소리는 자유처럼 들릴 수도 있지만,
+                                그에게는 버려지는 소리처럼 들렸다.
+
+                                누군가 실을 당기면 움직이고, 놓으면 멈추는 것.
+
+                                그 문장이 다시 떠오른다.
+                                """,
+                        """
+                                오래된 목재 냄새와 금속 냄새가 함께 난다.
+
+                                성냥팔이 소녀는 이 실이 불에 잘 타지 않을 것 같다고 생각한다.
+
+                                무언가를 태워 없애려 해도,
+                                이런 것은 끝까지 남을 것 같은 기분이 든다.
+                                """,
+                        ""),
+                investigationEvidence("watch-inscription", 3, "시계 안쪽의 글자", "멈춘 회중시계 내부 금속판", "긁힌 금속판",
+                        """
+                                금속판 안쪽에 작은 글자가 긁혀 있다.
+
+                                “멈춰.”
+
+                                급하게 새긴 듯 글씨가 깊게 흔들려 있다.
+
+                                글자 주변에는 손톱이나 날카로운 물건으로
+                                몇 번이고 긁어낸 듯한 흔적이 남아 있다.
+
+                                부탁처럼 보이기도 하고,
+                                명령처럼 보이기도 하며,
+                                절규처럼 보이기도 한다.
+                                """,
+                        """
+                                누군가 울면서 무언가를 붙잡고 있던 모습이 떠오른다.
+
+                                그 장면이 자신의 기억인지,
+                                누군가의 감정이 묻어 들어온 것인지는 알 수 없다.
+
+                                하지만 그 말은 공격의 말처럼 느껴지지 않는다.
+
+                                오히려 더 이상 잃고 싶지 않은 사람이
+                                마지막으로 붙잡은 말처럼 느껴진다.
+                                """,
+                        """
+                                “멈춰”라는 글씨는 부탁이라기보다 절규처럼 느껴진다.
+
+                                앨리스는 시계가 멈춘 것이 아니라,
+                                누군가 멈추길 바랐던 장면만 남은 것 같다고 생각한다.
+
+                                시간은 멈추지 않았고,
+                                기억만 그 순간에 걸려 있는 것 같다.
+                                """,
+                        """
+                                “멈춰”라는 글자를 보는 순간,
+                                손끝이 자기 것이 아닌 것처럼 떨린다.
+
+                                누군가 실을 당기던 힘이,
+                                아직 손가락 끝에 남아 있는 것 같다.
+
+                                그 말은 토끼에게 한 말이었는지,
+                                자기 자신에게 한 말이었는지 알 수 없다.
+                                """,
+                        """
+                                글씨 끝부분에는 손톱으로 긁어낸 듯한 거친 흔적이 남아 있다.
+
+                                성냥팔이 소녀는 그 흔적을 보고
+                                무언가를 지우려는 손보다, 무언가를 붙잡으려는 손을 떠올린다.
+
+                                불로 태워 지우는 것과는 다른 흔적이다.
+                                그래서 더 무섭다.
+                                """,
+                        ""),
+                investigationEvidence("repeated-sentence", 3, "반복된 문장", "숨겨진 작업실", "불탄 종이 더미",
+                        """
+                                구겨진 종이 여러 장에 같은 문장이 반복되어 적혀 있다.
+
+                                “기억하지 마.”
+                                “기억하지 마.”
+                                “기억하지 마.”
+
+                                마지막 줄로 갈수록 글씨가 무너져 있고,
+                                종이 끝에는 검게 그을린 자국이 남아 있다.
+
+                                급하게 태우려 한 흔적이 있지만,
+                                이상하게도 문장만은 끝까지 남아 있다.
+                                """,
+                        """
+                                자신도 무언가를 잊고 있다는 기분이 든다.
+
+                                기억이 끊긴 밤마다,
+                                자신은 늘 같은 질문 앞에 돌아왔다.
+
+                                내가 했을까.
+                                또 기억을 잃은 사이에,
+                                내가 정말 괴물이 되어버린 걸까.
+
+                                이 문장은 자신에게도 향하는 말처럼 느껴진다.
+                                """,
+                        """
+                                누군가 기억을 억지로 붙잡다가 망가진 것처럼 보인다.
+
+                                앨리스는 글씨가 반복될수록
+                                그 문장이 명령이 아니라 주문처럼 느껴진다.
+
+                                잊으려 할수록,
+                                오히려 더 선명해지는 종류의 기억이 있다.
+                                """,
+                        """
+                                문장을 보는 순간, 숨이 막히는 느낌이 든다.
+
+                                기억하지 말라는 말은 잊고 싶다는 말과 다르다.
+
+                                그건 기억하고 있다는 사실을 알고 있는 사람이
+                                스스로에게 내리는 명령처럼 보인다.
+
+                                그는 종이를 오래 바라보지 못한다.
+                                """,
+                        """
+                                누군가 급하게 태우려다 멈춘 흔적이다.
+
+                                성냥팔이 소녀는 그을린 종이 끝을 바라본다.
+
+                                태우면 없어질 줄 알았다.
+
+                                하지만 재는 늘 정직했다.
+
+                                무엇을 태웠는지 말하지는 않았지만,
+                                무언가를 태웠다는 사실만큼은 끝까지 숨기지 않았다.
+                                """,
+                        ""),
+                investigationEvidence("cracked-doll-eye", 3, "금 간 인형 눈", "숨겨진 작업실", "인형 진열장 맨 안쪽",
+                        """
+                                오래된 목각 인형의 눈동자에 깊은 금이 가 있다.
+
+                                깨진 틈 사이에는 검은 먼지와 나무 가루가 끼어 있다.
+
+                                이상하게도, 누구도 그 인형을 오래 바라보지 못한다.
+
+                                인형의 눈은 움직이지 않지만,
+                                고개를 돌린 뒤에도 마치 누군가 계속 자신을 바라보고 있는 듯한 기분이 남는다.
+
+                                금 간 틈 사이에는 아주 오래된 실 조각 하나가 끼어 있다.
+                                """,
+                        """
+                                인형 눈을 바라보는 순간,
+                                숲속에서 자신을 바라보던 거대한 시선이 떠오른다.
+
+                                하지만 그 눈이 늑대의 것이었는지,
+                                다른 누군가의 것이었는지는 기억나지 않는다.
+
+                                그 시선에는 굶주림보다 오래된 슬픔이 섞여 있었던 것 같다.
+                                """,
+                        """
+                                금 간 눈동자가 울고 있는 것처럼 보인다.
+
+                                그리고 아주 잠깐,
+                                인형 눈이 자신을 따라 움직인 것 같은 착각이 든다.
+
+                                앨리스는 그것이 환각인지,
+                                아니면 자신만 본 진실의 틈인지 확신하지 못한다.
+                                """,
+                        """
+                                인형 얼굴을 보는 순간, 숨이 막히는 느낌이 든다.
+
+                                고개를 돌리고 싶지만, 이상하게도 눈을 떼기 어렵다.
+
+                                마치 오래전부터 저 눈이 자신을 알고 있었던 것처럼 느껴진다.
+
+                                금 간 눈동자는 자신이 흉내 내던 얼굴이 아니라,
+                                끝내 숨기지 못한 얼굴처럼 보인다.
+                                """,
+                        """
+                                인형 안쪽 나무 냄새에서는 희미하게 탄 흔적이 섞여 있다.
+
+                                그리고 금 간 틈 사이에,
+                                아주 오래된 실 조각 하나가 끼어 있는 것을 발견한다.
+
+                                성냥팔이 소녀는 그것을 보며 생각한다.
+
+                                태워도 남는 것이 있고,
+                                끊어져도 남는 것이 있다.
+                                """,
+                        "")
+        );
+    }
+
+    private InvestigationEvidence investigationEvidence(String id,
+                                                        int act,
+                                                        String title,
+                                                        String locationName,
+                                                        String detailLocation,
+                                                        String commonDescription,
+                                                        String redInterpretation,
+                                                        String aliceInterpretation,
+                                                        String pinoInterpretation,
+                                                        String matchInterpretation,
+                                                        String recalledLine) {
+        return new InvestigationEvidence(
+                id,
+                act,
+                title,
+                locationName,
+                detailLocation,
+                commonDescription.strip(),
+                Map.of(
+                        "RED", redInterpretation.strip(),
+                        "ALICE", aliceInterpretation.strip(),
+                        "PINO", pinoInterpretation.strip(),
+                        "MATCH", matchInterpretation.strip()
+                ),
+                recalledLine == null ? "" : recalledLine.strip()
+        );
+    }
+
+    private String slug(String text) {
+        return text.toLowerCase()
+                .replace(" ", "-")
+                .replaceAll("[^a-z0-9가-힣-]", "");
     }
 
     public List<PersonalHint> sharedEvidenceHints() {
@@ -913,7 +2019,7 @@ public class GameService {
         return playableCharacters().stream()
                 .map(player -> new PlayerDisclosureStatus(
                         player,
-                        personalStoriesUnlocked,
+                        isPersonalStoryRevealedFor(player),
                         hintStatusFor(player, GamePhase.FIRST_HINT),
                         hintStatusFor(player, GamePhase.SECOND_HINT),
                         evidenceStatusesFor(player),
@@ -927,6 +2033,16 @@ public class GameService {
                 .filter(hint -> hint.playerCode().equals(player.code()))
                 .filter(hint -> revealedHintIds.contains(hint.id()))
                 .collect(Collectors.toList());
+    }
+
+    public List<PersonalHint> stageHintsFor(Player viewer) {
+        return hints.values().stream()
+                .filter(hint -> revealedHintIds.contains(hint.id()) || sharedHintIds.contains(hint.id()))
+                .collect(Collectors.toList());
+    }
+
+    public boolean canReadHint(Player viewer, PersonalHint hint) {
+        return hint.playerCode().equals(viewer.code()) || sharedHintIds.contains(hint.id());
     }
 
     public List<PublicInfoStatus> publicInfoStatusesFor(Player viewer) {
@@ -1020,7 +2136,14 @@ public class GameService {
         long releasedHints = hints.values().stream()
                 .filter(hint -> revealedHintIds.contains(hint.id()))
                 .count();
-        return new GlobalDisclosureStatus(personalStoriesUnlocked, releasedHintRoundCount(), hintReleasePhases().size(), releasedHints, hints.size());
+        return new GlobalDisclosureStatus(
+                unlockedPersonalStoryCodes.size(),
+                playableCharacters().size(),
+                releasedHintRoundCount(),
+                hintReleasePhases().size(),
+                releasedHints,
+                hints.size()
+        );
     }
 
     private boolean hasSharedHint(Player player) {
@@ -1089,7 +2212,191 @@ public class GameService {
     public record EvidenceStatus(EvidenceItem evidence, boolean revealed) {
     }
 
-    public record GlobalDisclosureStatus(boolean storyUnlocked, long firstHintsRevealed, long firstHintsTotal, long secondHintsRevealed, long secondHintsTotal) {
+    public record InvestigationScene(
+            String id,
+            String title,
+            String summary,
+            List<String> clues,
+            List<String> interpretations,
+            String emotionalQuestion
+    ) {
+    }
+
+    public record InvestigationSceneView(
+            String id,
+            String title,
+            String summary,
+            List<String> clues,
+            List<String> personalInterpretations
+    ) {
+    }
+
+    public record InvestigationActStatus(int act, String label, boolean open, long itemCount) {
+    }
+
+    public record InvestigationEvidence(
+            String id,
+            int act,
+            String title,
+            String locationName,
+            String detailLocation,
+            String commonDescription,
+            Map<String, String> interpretations,
+            String recalledLine
+    ) {
+    }
+
+    public record InvestigationEvidenceView(
+            String id,
+            int act,
+            String title,
+            String locationName,
+            String detailLocation,
+            String commonDescription,
+            String personalInterpretation,
+            String recalledLine
+    ) {
+    }
+
+    public record InvestigationLocationView(
+            int act,
+            String id,
+            String title,
+            String summary,
+            List<InvestigationEvidenceView> evidenceItems
+    ) {
+    }
+
+    public enum EvidenceDiscoveryStatus {
+        PRIVATE_FOUND,
+        PUBLIC
+    }
+
+    public record InvestigationLocation(
+            String id,
+            int act,
+            String name,
+            String description
+    ) {
+    }
+
+    public record LocationOccupancy(
+            String locationId,
+            String playerCode,
+            Instant occupiedAt
+    ) {
+    }
+
+    public record PlayerEvidenceState(
+            String playerCode,
+            String evidenceId,
+            EvidenceDiscoveryStatus status,
+            Instant discoveredAt,
+            Instant publishedAt
+    ) {
+    }
+
+    public record PublishedEvidence(
+            String evidenceId,
+            String publishedByPlayerCode,
+            String sourceLocationId,
+            Instant publishedAt
+    ) {
+    }
+
+    public record InvestigationEvidenceSummary(
+            String id,
+            String title,
+            String detailLocation,
+            boolean publicItem,
+            boolean privateFound
+    ) {
+    }
+
+    public record InvestigationLocationStatus(
+            String id,
+            int act,
+            String name,
+            String description,
+            boolean open,
+            boolean occupied,
+            boolean occupiedBySelf,
+            boolean canEnter,
+            String occupiedByName,
+            Instant occupiedAt,
+            List<InvestigationEvidenceSummary> evidenceItems
+    ) {
+    }
+
+    public record EvidenceDetailView(
+            String id,
+            String title,
+            String locationName,
+            String detailLocation,
+            String commonDescription,
+            String personalInterpretation,
+            String recalledLine,
+            boolean publicItem,
+            String publishedByName
+    ) {
+    }
+
+    public record EvidenceDetailResult(boolean success, String message, EvidenceDetailView evidence) {
+    }
+
+    public record InvestigationActionResult(boolean success, String message) {
+    }
+
+    public record PlayerEvidenceView(
+            String id,
+            String title,
+            String locationName,
+            String detailLocation,
+            String locationId,
+            String ownerName,
+            Instant foundAt,
+            EvidenceDiscoveryStatus status
+    ) {
+    }
+
+    public record AdminLocationStatus(
+            InvestigationLocation location,
+            boolean open,
+            Player occupant,
+            Instant occupiedAt
+    ) {
+    }
+
+    public record AdminPrivateEvidenceStatus(Player player, List<PlayerEvidenceView> evidenceItems) {
+    }
+
+    private static class InvestigationLocationBuilder {
+        private final int act;
+        private final String id;
+        private final String title;
+        private final String summary;
+        private final List<InvestigationEvidenceView> evidenceItems = new java.util.ArrayList<>();
+
+        InvestigationLocationBuilder(int act, String id, String title, String summary) {
+            this.act = act;
+            this.id = id;
+            this.title = title;
+            this.summary = summary;
+        }
+
+        void add(InvestigationEvidenceView evidence) {
+            evidenceItems.add(evidence);
+        }
+
+        InvestigationLocationView build() {
+            return new InvestigationLocationView(act, id, title, summary, List.copyOf(evidenceItems));
+        }
+    }
+
+    public record GlobalDisclosureStatus(long storyUnlockedCount, long storyTotalCount, long firstHintsRevealed, long firstHintsTotal, long secondHintsRevealed, long secondHintsTotal) {
+        public boolean storyUnlocked() {
+            return storyTotalCount > 0 && storyUnlockedCount >= storyTotalCount;
+        }
     }
 
     public record EndingText(String title, String body) {

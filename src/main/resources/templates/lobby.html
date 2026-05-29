@@ -52,82 +52,27 @@
     </section>
 
     <aside class="personal-dock" aria-label="개인 기능">
-        <button class="button primary small" data-panel-target="testimony-panel" type="button">증언</button>
-        <button class="button primary small" data-panel-target="evidence-hint-panel" type="button">물증</button>
+        <a class="button ghost small investigation-link" href="/map" th:hidden="${!investigationOpen}">사건 장소</a>
         <button class="button ghost small" data-panel-target="acting-panel" type="button">연기 힌트</button>
-        <button class="button ghost small" data-panel-target="story-panel" type="button">개인 이야기</button>
+        <button class="button ghost small"
+                type="button"
+                data-story-pdf-open
+                data-story-pdf-button
+                th:disabled="${!storyRevealed}"
+                th:data-story-pdf-title="${player.name} + ' 개인 이야기'"
+                th:data-story-pdf-src="@{'/docs/' + ${#strings.toLowerCase(player.code)} + '-private-story.pdf#toolbar=0&navpanes=0&scrollbar=1'}">개인 이야기</button>
     </aside>
 
-    <aside class="public-status-strip" data-public-statuses aria-label="공개 상태">
-        <div th:each="status : ${publicStatuses}" th:classappend="${status.self} ? ' self'">
-            <strong th:text="${status.player.name}">빨간망토</strong>
-            <span th:classappend="${status.hintsShared} ? ' open'" title="개인 힌트">힌트</span>
-        </div>
+    <aside class="investigation-ledger lobby-ledger">
+        <section class="ledger-section">
+            <p class="eyebrow">내가 쥔 단서</p>
+            <div class="ledger-list" data-private-evidence></div>
+        </section>
+        <section class="ledger-section">
+            <p class="eyebrow">모두의 기록</p>
+            <div class="ledger-list" data-public-evidence></div>
+        </section>
     </aside>
-
-    <section class="public-records parchment collapsible-board" data-public-records aria-label="공개된 증언">
-        <header class="board-header">
-            <p class="eyebrow">공개된 증언</p>
-            <button class="button ghost small" data-collapse-target="public-records" type="button">접기</button>
-        </header>
-        <div class="record-list" data-public-record-list data-collapsible-content>
-            <article class="record-card" th:each="record : ${publicRecords}">
-                <span th:text="${record.playerName + ' 공개 · ' + record.type + ' · ' + record.phaseLabel}">ALICE 공개 · 힌트 · 1차 힌트 공개</span>
-                <h3 th:text="${record.title}">시계는 이미 멈춰 있었다</h3>
-                <p th:text="${record.body}">공개된 내용</p>
-            </article>
-        </div>
-        <p class="empty-records" data-empty-records data-collapsible-content th:hidden="${!#lists.isEmpty(publicRecords)}">아직 공개된 증언이 없습니다.</p>
-    </section>
-
-    <section class="evidence-board collapsible-board" data-evidence-board aria-label="공개된 증거 보드">
-        <header class="board-header">
-            <p class="eyebrow">공개된 물증</p>
-            <button class="button ghost small" data-collapse-target="evidence-board" type="button">접기</button>
-        </header>
-        <div class="evidence-card-list" data-evidence-list data-collapsible-content></div>
-        <p class="empty-evidence" data-empty-evidence data-collapsible-content>아직 공개된 물증이 없습니다.</p>
-    </section>
-
-    <section class="floating-panel parchment evidence-detail" id="evidence-detail" data-evidence-detail hidden>
-        <button class="panel-close" data-evidence-close type="button">닫기</button>
-        <img class="evidence-detail-image" data-evidence-image src="/images/evidence/sealed-letter.png" alt="" aria-hidden="true">
-        <p class="eyebrow" data-evidence-meta>물증</p>
-        <h2 data-evidence-title>벽의 발톱 자국</h2>
-        <p data-evidence-short>짧은 설명</p>
-        <div class="evidence-keywords" data-evidence-keywords></div>
-        <div class="story-body" data-evidence-body></div>
-    </section>
-
-    <section class="floating-panel parchment dock-panel" id="testimony-panel" data-panel hidden>
-        <button class="panel-close" data-panel-close type="button">닫기</button>
-        <p class="eyebrow">내가 받은 증언</p>
-        <p class="share-caution">공개하면 모든 플레이어가 볼 수 있으며 되돌릴 수 없습니다.</p>
-        <div class="hint-list" data-hint-list data-hint-type="TESTIMONY">
-            <section class="hint-note" th:each="hint : ${hints}" th:if="${hint.type.name() == 'TESTIMONY'}" th:data-hint-id="${hint.id}">
-                <span th:text="${hint.roundLabel + ' · ' + hint.type.label}">ROUND 1 증언 · 증언</span>
-                <h3 th:text="${hint.title}">힌트 제목</h3>
-                <p th:text="${hint.body}">힌트 내용</p>
-                <button class="button ghost small share-button" th:data-share-hint="${hint.id}" type="button">이 힌트 공개</button>
-            </section>
-        </div>
-        <p class="empty-hints" data-empty-hints data-empty-type="TESTIMONY">아직 받은 증언이 없습니다.</p>
-    </section>
-
-    <section class="floating-panel parchment dock-panel" id="evidence-hint-panel" data-panel hidden>
-        <button class="panel-close" data-panel-close type="button">닫기</button>
-        <p class="eyebrow">내가 받은 물증</p>
-        <p class="share-caution">공개하면 모든 플레이어가 볼 수 있으며 되돌릴 수 없습니다.</p>
-        <div class="hint-list" data-hint-list data-hint-type="EVIDENCE">
-            <section class="hint-note" th:each="hint : ${hints}" th:if="${hint.type.name() == 'EVIDENCE'}" th:data-hint-id="${hint.id}">
-                <span th:text="${hint.roundLabel + ' · ' + hint.type.label}">ROUND 1 물증 · 물증</span>
-                <h3 th:text="${hint.title}">힌트 제목</h3>
-                <p th:text="${hint.body}">힌트 내용</p>
-                <button class="button ghost small share-button" th:data-share-hint="${hint.id}" type="button">이 물증 공개</button>
-            </section>
-        </div>
-        <p class="empty-hints" data-empty-hints data-empty-type="EVIDENCE">아직 받은 물증이 없습니다. 관리자가 힌트 단계를 공개하면 확인할 수 있습니다.</p>
-    </section>
 
     <section class="floating-panel parchment story-panel" id="acting-panel" data-panel hidden>
         <button class="panel-close" data-panel-close type="button">닫기</button>
@@ -141,21 +86,6 @@
             <button class="button ghost small" data-acting-prev type="button">뒤로가기</button>
             <span data-acting-page-indicator>1 / 1</span>
             <button class="button primary small" data-acting-next type="button">다음 장</button>
-        </div>
-    </section>
-
-    <section class="floating-panel parchment story-panel" id="story-panel" data-panel hidden>
-        <button class="panel-close" data-panel-close type="button">닫기</button>
-        <div class="locked-panel" data-story-locked th:hidden="${storyRevealed}">
-            <span>잠김</span>
-            <p>아직 공개되지 않았습니다. 관리자가 공개하면 확인할 수 있습니다.</p>
-        </div>
-        <div class="story-body story-reader-body" data-story-content th:if="${storyRevealed}"></div>
-        <div class="story-body" data-story-content th:unless="${storyRevealed}" hidden></div>
-        <div class="ending-controls story-reader-controls" data-story-controls hidden>
-            <button class="button ghost small" data-story-prev type="button">뒤로가기</button>
-            <span data-story-page-indicator>1 / 1</span>
-            <button class="button primary small" data-story-next type="button">다음 장</button>
         </div>
     </section>
 
@@ -181,6 +111,53 @@
         </div>
     </section>
 </main>
+<section class="story-pdf-modal" data-story-pdf-modal hidden>
+    <div class="story-pdf-backdrop" data-story-pdf-close></div>
+    <article class="story-pdf-dialog" role="dialog" aria-modal="true" aria-labelledby="story-pdf-title">
+        <header>
+            <h2 id="story-pdf-title" data-story-pdf-title>개인 이야기</h2>
+            <button class="button ghost small" type="button" data-story-pdf-close>닫기</button>
+        </header>
+        <iframe class="story-pdf-frame" data-story-pdf-frame title="개인 이야기"></iframe>
+    </article>
+</section>
+<section class="evidence-context-menu" data-evidence-menu hidden>
+    <button type="button" data-menu-publish>증거 공개하기</button>
+    <button type="button" data-menu-detail>상세 보기</button>
+    <button type="button" data-menu-close>닫기</button>
+</section>
+<section class="evidence-confirm-modal" data-publish-confirm hidden>
+    <div class="memory-backdrop" data-confirm-cancel></div>
+    <article class="memory-paper confirm-paper">
+        <p class="eyebrow">공개 확인</p>
+        <h2 data-confirm-title>증거를 공개하시겠습니까?</h2>
+        <p>공용 설명은 모든 플레이어가 볼 수 있습니다. 개인 해석은 각자의 캐릭터에 맞는 내용만 표시됩니다.</p>
+        <div class="button-row">
+            <button class="button danger" type="button" data-confirm-publish>공개하기</button>
+            <button class="button ghost" type="button" data-confirm-cancel>취소</button>
+        </div>
+    </article>
+</section>
+<section class="evidence-memory-modal" data-memory-modal hidden>
+    <div class="memory-backdrop" data-memory-close></div>
+    <article class="memory-paper" role="dialog" aria-modal="true" aria-labelledby="memory-title">
+        <button class="button ghost small memory-close" type="button" data-memory-close>접기</button>
+        <p class="eyebrow" data-memory-location>사건 장소</p>
+        <h2 id="memory-title" data-memory-title>증거</h2>
+        <section class="memory-section">
+            <h3>공용 기록</h3>
+            <div class="memory-text" data-memory-common></div>
+        </section>
+        <section class="memory-section">
+            <h3>개인 해석</h3>
+            <div class="memory-text" data-memory-personal></div>
+        </section>
+        <section class="memory-section recalled-memory" data-memory-recalled-wrap hidden>
+            <h3>떠오른 말</h3>
+            <div class="memory-text" data-memory-recalled></div>
+        </section>
+    </article>
+</section>
 <div class="phase-curtain" data-phase-curtain hidden>
     <div>
         <p>눈을 감습니다.</p>
