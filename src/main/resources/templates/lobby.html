@@ -52,7 +52,7 @@
     </section>
 
     <aside class="personal-dock" aria-label="개인 기능">
-        <a class="button ghost small investigation-link" href="/map" th:hidden="${!investigationOpen}">사건 장소</a>
+        <a class="button ghost small evidence-board-link" href="/map">증거판</a>
         <button class="button ghost small" data-panel-target="acting-panel" type="button">연기 힌트</button>
         <button class="button ghost small"
                 type="button"
@@ -61,17 +61,6 @@
                 th:disabled="${!storyRevealed}"
                 th:data-story-pdf-title="${player.name} + ' 개인 이야기'"
                 th:data-story-pdf-src="@{'/docs/' + ${#strings.toLowerCase(player.code)} + '-private-story.pdf#toolbar=0&navpanes=0&scrollbar=1'}">개인 이야기</button>
-    </aside>
-
-    <aside class="investigation-ledger lobby-ledger">
-        <section class="ledger-section">
-            <p class="eyebrow">내가 쥔 단서</p>
-            <div class="ledger-list" data-private-evidence></div>
-        </section>
-        <section class="ledger-section">
-            <p class="eyebrow">모두의 기록</p>
-            <div class="ledger-list" data-public-evidence></div>
-        </section>
     </aside>
 
     <section class="floating-panel parchment story-panel" id="acting-panel" data-panel hidden>
@@ -83,9 +72,9 @@
         </div>
         <div class="story-body story-reader-body" data-acting-content hidden></div>
         <div class="ending-controls story-reader-controls" data-acting-controls hidden>
-            <button class="button ghost small" data-acting-prev type="button">뒤로가기</button>
+            <button class="button ghost small" data-acting-prev type="button">뒤로</button>
             <span data-acting-page-indicator>1 / 1</span>
-            <button class="button primary small" data-acting-next type="button">다음 장</button>
+            <button class="button primary small" data-acting-next type="button">다음</button>
         </div>
     </section>
 
@@ -104,13 +93,14 @@
             <h2 data-ending-title>토끼가 남긴 마지막 시간</h2>
             <div class="ending-body" data-ending-body></div>
             <div class="ending-controls">
-                <button class="button ghost small" data-ending-prev type="button">이전 장</button>
+                <button class="button ghost small" data-ending-prev type="button">이전</button>
                 <span data-ending-page-indicator>1 / 1</span>
-                <button class="button primary small" data-ending-next type="button">다음 장</button>
+                <button class="button primary small" data-ending-next type="button">다음</button>
             </div>
         </div>
     </section>
 </main>
+
 <section class="story-pdf-modal" data-story-pdf-modal hidden>
     <div class="story-pdf-backdrop" data-story-pdf-close></div>
     <article class="story-pdf-dialog" role="dialog" aria-modal="true" aria-labelledby="story-pdf-title">
@@ -121,43 +111,7 @@
         <iframe class="story-pdf-frame" data-story-pdf-frame title="개인 이야기"></iframe>
     </article>
 </section>
-<section class="evidence-context-menu" data-evidence-menu hidden>
-    <button type="button" data-menu-publish>증거 공개하기</button>
-    <button type="button" data-menu-detail>상세 보기</button>
-    <button type="button" data-menu-close>닫기</button>
-</section>
-<section class="evidence-confirm-modal" data-publish-confirm hidden>
-    <div class="memory-backdrop" data-confirm-cancel></div>
-    <article class="memory-paper confirm-paper">
-        <p class="eyebrow">공개 확인</p>
-        <h2 data-confirm-title>증거를 공개하시겠습니까?</h2>
-        <p>공용 설명은 모든 플레이어가 볼 수 있습니다. 개인 해석은 각자의 캐릭터에 맞는 내용만 표시됩니다.</p>
-        <div class="button-row">
-            <button class="button danger" type="button" data-confirm-publish>공개하기</button>
-            <button class="button ghost" type="button" data-confirm-cancel>취소</button>
-        </div>
-    </article>
-</section>
-<section class="evidence-memory-modal" data-memory-modal hidden>
-    <div class="memory-backdrop" data-memory-close></div>
-    <article class="memory-paper" role="dialog" aria-modal="true" aria-labelledby="memory-title">
-        <button class="button ghost small memory-close" type="button" data-memory-close>접기</button>
-        <p class="eyebrow" data-memory-location>사건 장소</p>
-        <h2 id="memory-title" data-memory-title>증거</h2>
-        <section class="memory-section">
-            <h3>공용 기록</h3>
-            <div class="memory-text" data-memory-common></div>
-        </section>
-        <section class="memory-section">
-            <h3>개인 해석</h3>
-            <div class="memory-text" data-memory-personal></div>
-        </section>
-        <section class="memory-section recalled-memory" data-memory-recalled-wrap hidden>
-            <h3>떠오른 말</h3>
-            <div class="memory-text" data-memory-recalled></div>
-        </section>
-    </article>
-</section>
+
 <div class="phase-curtain" data-phase-curtain hidden>
     <div>
         <p>눈을 감습니다.</p>

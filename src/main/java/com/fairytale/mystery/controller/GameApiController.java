@@ -35,7 +35,6 @@ public class GameApiController {
                 Map.entry("phase", state.getPhase().name()),
                 Map.entry("phaseLabel", state.getPhase().getLabel()),
                 Map.entry("phaseDescription", state.getPhase().getDescription()),
-                Map.entry("investigationOpen", state.isInvestigationOpen()),
                 Map.entry("timerSeconds", state.getTimerSeconds()),
                 Map.entry("timerRunning", state.isTimerRunning()),
                 Map.entry("personalStoryRevealed", storyRevealed),
@@ -92,6 +91,59 @@ public class GameApiController {
                 .toList());
     }
 
+    @GetMapping("/api/evidence/public")
+    public ResponseEntity<List<Map<String, Object>>> publicEvidence(HttpSession session) {
+        if (gameService.currentPlayer(session).isEmpty()) {
+            return ResponseEntity.status(401).body(List.of());
+        }
+        return ResponseEntity.ok(gameService.publicEvidenceBoard().stream()
+                .map(this::simpleEvidenceMap)
+                .toList());
+    }
+
+    @GetMapping("/api/evidence/private")
+    public ResponseEntity<List<Map<String, Object>>> privateEvidence(HttpSession session) {
+        Player player = gameService.currentPlayer(session).orElse(null);
+        if (player == null) {
+            return ResponseEntity.status(401).body(List.of());
+        }
+        return ResponseEntity.ok(gameService.privateEvidenceForPlayer(player).stream()
+                .map(evidence -> privateEvidenceMap(evidence, gameService.isPrivateEvidencePublished(evidence.id())))
+                .toList());
+    }
+
+    @GetMapping("/api/evidence-board")
+    public ResponseEntity<Map<String, Object>> evidenceBoard(HttpSession session) {
+        Player player = gameService.currentPlayer(session).orElse(null);
+        if (player == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false));
+        }
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "publicEvidence", gameService.publicEvidenceBoard().stream().map(this::simpleEvidenceMap).toList(),
+                "privateEvidence", gameService.privateEvidenceForPlayer(player).stream()
+                        .map(evidence -> privateEvidenceMap(evidence, gameService.isPrivateEvidencePublished(evidence.id())))
+                        .toList(),
+                "publishedPrivateEvidence", gameService.publishedPrivateEvidenceBoard().stream()
+                        .map(this::publishedPrivateEvidenceMap)
+                        .toList()
+        ));
+    }
+
+    @PostMapping("/api/evidence/private/publish")
+    public ResponseEntity<Map<String, Object>> publishPrivateEvidence(@RequestParam String evidenceId, HttpSession session) {
+        Player player = gameService.currentPlayer(session).orElse(null);
+        if (player == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
+        }
+        GameService.PublishEvidenceResult result = gameService.publishPrivateEvidence(player, evidenceId);
+        Map<String, Object> body = Map.of("success", result.success(), "message", result.message());
+        if (result.forbidden()) {
+            return ResponseEntity.status(403).body(body);
+        }
+        return ResponseEntity.ok(body);
+    }
+
     @GetMapping("/api/public-statuses")
     public ResponseEntity<List<Map<String, Object>>> publicStatuses(HttpSession session) {
         Player player = gameService.currentPlayer(session).orElse(null);
@@ -127,88 +179,6 @@ public class GameApiController {
                 .toList());
     }
 
-    @GetMapping("/api/evidence")
-    public ResponseEntity<List<Map<String, Object>>> evidence(HttpSession session) {
-        Player player = gameService.currentPlayer(session).orElse(null);
-        if (player == null) {
-            return ResponseEntity.status(401).body(List.of());
-        }
-        return ResponseEntity.ok(gameService.sharedEvidenceHints().stream()
-                .map(item -> Map.<String, Object>of(
-                        "id", item.id(),
-                        "revealRound", item.roundLabel(),
-                        "category", item.type().getLabel(),
-                        "name", item.title(),
-                        "shortDescription", item.body().split("\\R", 2)[0],
-                        "detail", item.body(),
-                        "keywords", List.of(item.type().getLabel(), item.roundLabel()),
-                        "visual", "paper"
-                ))
-                .toList());
-    }
-
-    @GetMapping("/api/investigation")
-    public ResponseEntity<Map<String, Object>> investigation(HttpSession session) {
-        Player player = gameService.currentPlayer(session).orElse(null);
-        if (player == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false));
-        }
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "locations", gameService.investigationLocationStatusesFor(player).stream().map(this::locationMap).toList(),
-                "privateEvidence", gameService.privateEvidenceFor(player).stream().map(this::playerEvidenceMap).toList(),
-                "publicEvidence", gameService.publicInvestigationEvidenceFor(player).stream().map(this::playerEvidenceMap).toList()
-        ));
-    }
-
-    @PostMapping("/api/investigation/location/enter")
-    public ResponseEntity<Map<String, Object>> enterInvestigationLocation(@RequestParam String locationId, HttpSession session) {
-        Player player = gameService.currentPlayer(session).orElse(null);
-        if (player == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
-        }
-        GameService.InvestigationActionResult result = gameService.enterInvestigationLocation(player, locationId);
-        return ResponseEntity.ok(Map.of("success", result.success(), "message", result.message()));
-    }
-
-    @PostMapping("/api/investigation/location/leave")
-    public ResponseEntity<Map<String, Object>> leaveInvestigationLocation(@RequestParam String locationId, HttpSession session) {
-        Player player = gameService.currentPlayer(session).orElse(null);
-        if (player == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
-        }
-        GameService.InvestigationActionResult result = gameService.leaveInvestigationLocation(player, locationId);
-        return ResponseEntity.ok(Map.of("success", result.success(), "message", result.message()));
-    }
-
-    @PostMapping("/api/investigation/evidence/discover")
-    public ResponseEntity<Map<String, Object>> discoverInvestigationEvidence(@RequestParam String evidenceId, HttpSession session) {
-        Player player = gameService.currentPlayer(session).orElse(null);
-        if (player == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
-        }
-        return ResponseEntity.ok(evidenceDetailResponse(gameService.discoverInvestigationEvidence(player, evidenceId)));
-    }
-
-    @GetMapping("/api/investigation/evidence/detail")
-    public ResponseEntity<Map<String, Object>> investigationEvidenceDetail(@RequestParam String evidenceId, HttpSession session) {
-        Player player = gameService.currentPlayer(session).orElse(null);
-        if (player == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
-        }
-        return ResponseEntity.ok(evidenceDetailResponse(gameService.evidenceDetail(player, evidenceId)));
-    }
-
-    @PostMapping("/api/investigation/evidence/publish")
-    public ResponseEntity<Map<String, Object>> publishInvestigationEvidence(@RequestParam String evidenceId, HttpSession session) {
-        Player player = gameService.currentPlayer(session).orElse(null);
-        if (player == null) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
-        }
-        GameService.InvestigationActionResult result = gameService.publishInvestigationEvidence(player, evidenceId);
-        return ResponseEntity.ok(Map.of("success", result.success(), "message", result.message()));
-    }
-
     @PostMapping("/api/vote")
     public ResponseEntity<Map<String, Object>> vote(@RequestParam String suspectCode, HttpSession session) {
         Player player = gameService.currentPlayer(session).orElse(null);
@@ -229,6 +199,45 @@ public class GameApiController {
         return ResponseEntity.ok(Map.of("success", result.success(), "message", result.message()));
     }
 
+    private Map<String, Object> simpleEvidenceMap(GameService.SimpleEvidence evidence) {
+        return Map.of(
+                "id", evidence.id(),
+                "type", evidence.type().name(),
+                "title", evidence.title(),
+                "locationText", evidence.locationText(),
+                "publicDescription", evidence.publicDescription(),
+                "description", evidence.publicDescription()
+        );
+    }
+
+    private Map<String, Object> privateEvidenceMap(GameService.SimpleEvidence evidence, boolean published) {
+        return Map.of(
+                "id", evidence.id(),
+                "type", evidence.type().name(),
+                "title", evidence.title(),
+                "locationText", evidence.locationText(),
+                "publicDescription", evidence.publicDescription(),
+                "description", evidence.publicDescription(),
+                "privateInterpretation", evidence.privateInterpretation(),
+                "status", published ? "PUBLIC" : "PRIVATE",
+                "publishable", !published
+        );
+    }
+
+    private Map<String, Object> publishedPrivateEvidenceMap(GameService.PublishedPrivateEvidenceView evidence) {
+        return Map.of(
+                "id", evidence.id(),
+                "type", "PUBLISHED_PRIVATE",
+                "title", evidence.title(),
+                "locationText", evidence.locationText(),
+                "publicDescription", evidence.publicDescription(),
+                "description", evidence.publicDescription(),
+                "publishedByCharacterCode", evidence.publishedByCharacterCode(),
+                "publishedByName", evidence.publishedByName(),
+                "publishedAt", evidence.publishedAt().toString()
+        );
+    }
+
     private String[] splitSecretAndActingHint(String source) {
         String text = source == null ? "" : source;
         int actingIndex = text.indexOf("연기 힌트");
@@ -239,62 +248,5 @@ public class GameApiController {
                 text.substring(0, actingIndex).trim(),
                 text.substring(actingIndex).trim()
         };
-    }
-
-    private Map<String, Object> evidenceDetailResponse(GameService.EvidenceDetailResult result) {
-        if (!result.success() || result.evidence() == null) {
-            return Map.of("success", result.success(), "message", result.message());
-        }
-        return Map.of(
-                "success", true,
-                "message", result.message(),
-                "evidence", evidenceDetailMap(result.evidence())
-        );
-    }
-
-    private Map<String, Object> evidenceDetailMap(GameService.EvidenceDetailView evidence) {
-        return Map.of(
-                "id", evidence.id(),
-                "title", evidence.title(),
-                "location", evidence.locationName() + " - " + evidence.detailLocation(),
-                "commonDescription", evidence.commonDescription(),
-                "personalInterpretation", evidence.personalInterpretation(),
-                "recalledLine", evidence.recalledLine(),
-                "publicItem", evidence.publicItem(),
-                "publishedByName", evidence.publishedByName()
-        );
-    }
-
-    private Map<String, Object> locationMap(GameService.InvestigationLocationStatus location) {
-        return Map.of(
-                "id", location.id(),
-                "act", location.act(),
-                "name", location.name(),
-                "description", location.description(),
-                "open", location.open(),
-                "occupied", location.occupied(),
-                "occupiedBySelf", location.occupiedBySelf(),
-                "canEnter", location.canEnter(),
-                "occupiedByName", location.occupiedByName(),
-                "evidenceItems", location.evidenceItems().stream().map(evidence -> Map.of(
-                        "id", evidence.id(),
-                        "title", evidence.title(),
-                        "detailLocation", evidence.detailLocation(),
-                        "publicItem", evidence.publicItem(),
-                        "privateFound", evidence.privateFound()
-                )).toList()
-        );
-    }
-
-    private Map<String, Object> playerEvidenceMap(GameService.PlayerEvidenceView evidence) {
-        return Map.of(
-                "id", evidence.id(),
-                "title", evidence.title(),
-                "locationName", evidence.locationName(),
-                "detailLocation", evidence.detailLocation(),
-                "locationId", evidence.locationId(),
-                "ownerName", evidence.ownerName(),
-                "status", evidence.status().name()
-        );
     }
 }

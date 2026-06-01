@@ -247,7 +247,7 @@ button.button,
     background-position: center !important;
 }
 
-.scene-investigation {
+.scene-evidence {
     background:
             linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,0,0,0.32) 44%, rgba(0,0,0,0.86)),
             linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.92)),

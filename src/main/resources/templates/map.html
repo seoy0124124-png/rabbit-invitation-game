@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>사건 장소 기록</title>
+    <title>남겨진 증거</title>
     <link rel="stylesheet" href="/css/game.css">
     <link rel="stylesheet" href="/css/visual-novel.css">
     <script defer src="/js/game.js"></script>
 </head>
-<body class="scene scene-game scene-investigation" th:classappend="' player-' + ${#strings.toLowerCase(player.code)}">
+<body class="scene scene-game scene-evidence" th:classappend="' player-' + ${#strings.toLowerCase(player.code)}">
 <div class="snow" aria-hidden="true"></div>
+
 <header class="topbar">
     <div>
         <p class="eyebrow" th:text="${player.name}">플레이어</p>
-        <h1 data-phase-label>사건 장소 기록</h1>
-        <p class="topbar-note">장소를 이동하는 것이 아니라, 남겨진 장면을 다시 펼쳐봅니다.</p>
+        <h1>남겨진 증거</h1>
+        <p class="topbar-note">관리자가 공개한 흔적과 당신만 받은 단서를 확인합니다.</p>
     </div>
     <div class="topbar-actions">
         <a class="button ghost small" href="/lobby">무대로 돌아가기</a>
@@ -22,114 +23,137 @@
     </div>
 </header>
 
-<main class="investigation-workspace" data-investigation-root>
-    <section class="investigation-locations" aria-label="사건 장면">
-        <article class="scene-file investigation-location"
-                 th:each="location, stat : ${locations}"
-                 th:classappend="${location.occupiedBySelf} ? ' is-active'"
-                 th:data-location-id="${location.id}">
-            <span th:text="${location.act} + '막 장면'">1막 장면</span>
-            <strong th:text="${location.name}">중앙 홀</strong>
-            <em th:text="${location.description}">핏자국과 멈춘 시간이 남아 있는 곳</em>
+<main class="simple-evidence-board" data-evidence-board>
+    <section class="evidence-board-section public-evidence-section">
+        <div class="section-heading">
+            <p class="eyebrow">공용 증거</p>
+            <h2>모두가 확인할 수 있는 흔적</h2>
+            <p>관리자가 공개한 기본 증거입니다. 어떤 의미를 가지는지는 직접 이야기해보세요.</p>
+        </div>
 
-            <p class="location-state" th:if="${!location.open}">아직 공개되지 않음</p>
-            <p class="location-state" th:if="${location.open && !location.occupied}">조사 가능</p>
-            <p class="location-state" th:if="${location.open && location.occupied && !location.occupiedBySelf}"
-               th:text="'현재 ' + ${location.occupiedByName} + ' 조사 중'">현재 앨리스 조사 중</p>
-            <p class="location-state" th:if="${location.occupiedBySelf}">내가 조사 중</p>
-
-            <button class="button primary small"
-                    type="button"
-                    data-location-enter
-                    th:data-location-id="${location.id}"
-                    th:disabled="${!location.canEnter}">
-                <span th:if="${!location.occupiedBySelf}">조사하기</span>
-                <span th:if="${location.occupiedBySelf}">다시 들어가기</span>
-            </button>
-        </article>
+        <p class="empty-evidence-note" th:if="${#lists.isEmpty(publicEvidence)}">아직 공개된 증거가 없습니다.</p>
+        <div class="simple-evidence-grid" data-public-evidence-list>
+            <article class="simple-evidence-card" th:each="evidence : ${publicEvidence}">
+                <button class="evidence-card-open"
+                        type="button"
+                        data-memory-evidence
+                        data-memory-mode="public"
+                        th:data-memory-title="${evidence.title}"
+                        th:data-memory-location="${evidence.locationText}"
+                        th:data-memory-public-description="${evidence.publicDescription}">
+                    <span>공용 증거</span>
+                    <strong th:text="${evidence.title}">뜯겨나간 외투 단추</strong>
+                    <em th:text="${evidence.locationText}">눈 덮인 숲길</em>
+                    <small>확인하기</small>
+                </button>
+            </article>
+        </div>
     </section>
 
-    <section class="scene-document investigation-room" data-investigation-room>
-        <p class="eyebrow" data-room-kicker>사건 장면</p>
-        <h2 data-room-title>조사할 장면을 선택하세요</h2>
-        <p class="scene-summary" data-room-summary>한 장면에는 한 명만 들어갈 수 있습니다. 조사 중 발견한 증거는 먼저 내 손에 남습니다.</p>
+    <section class="evidence-board-section private-evidence-section">
+        <div class="section-heading">
+            <p class="eyebrow">내가 받은 비공개 단서</p>
+            <h2>말할지 숨길지는 당신의 선택입니다</h2>
+            <p>지급받은 단서입니다. 모두에게 공개해도 나만의 해석은 당신에게만 남습니다.</p>
+        </div>
 
-        <div class="evidence-memory-list" data-room-evidence></div>
-
-        <button class="button danger small investigation-exit" type="button" data-location-leave hidden>조사 종료</button>
+        <p class="empty-evidence-note" th:if="${#lists.isEmpty(privateEvidence)}">아직 지급된 비공개 단서가 없습니다.</p>
+        <div class="simple-evidence-grid private" data-private-evidence-list>
+            <article class="simple-evidence-card is-private" th:each="evidence : ${privateEvidence}">
+                <button class="evidence-card-open"
+                        type="button"
+                        data-memory-evidence
+                        data-memory-mode="private"
+                        th:data-memory-id="${evidence.id}"
+                        th:data-memory-title="${evidence.title}"
+                        th:data-memory-location="${evidence.locationText}"
+                        th:data-memory-public-description="${evidence.publicDescription}"
+                        th:data-memory-private-interpretation="${evidence.privateInterpretation}"
+                        th:data-memory-publishable="${!@gameService.isPrivateEvidencePublished(evidence.id)}">
+                    <span th:text="${@gameService.isPrivateEvidencePublished(evidence.id)} ? '상태: 모두에게 공개됨' : '상태: 나만 알고 있음'">상태: 나만 알고 있음</span>
+                    <strong th:text="${evidence.title}">반복된 시계 스케치</strong>
+                    <em th:text="${evidence.locationText}">앨리스의 방</em>
+                    <small>확인하기</small>
+                </button>
+                <div class="evidence-card-actions">
+                    <button class="button danger small"
+                            type="button"
+                            data-private-evidence-publish
+                            th:data-evidence-id="${evidence.id}"
+                            th:data-evidence-title="${evidence.title}"
+                            th:disabled="${@gameService.isPrivateEvidencePublished(evidence.id)}">
+                        <span th:if="${!@gameService.isPrivateEvidencePublished(evidence.id)}">모두에게 공개하기</span>
+                        <span th:if="${@gameService.isPrivateEvidencePublished(evidence.id)}">공개 완료</span>
+                    </button>
+                </div>
+            </article>
+        </div>
     </section>
 
-    <aside class="investigation-ledger">
-        <section class="ledger-section">
-            <p class="eyebrow">내가 쥔 단서</p>
-            <div class="ledger-list" data-private-evidence>
-                <button class="ledger-evidence"
-                        th:each="evidence : ${privateEvidence}"
-                        type="button"
-                        data-private-evidence-card
-                        th:data-evidence-id="${evidence.id}">
-                    <strong th:text="${evidence.title}">젖은 늑대 털</strong>
-                    <span th:text="${evidence.locationName} + ' - ' + ${evidence.detailLocation}">중앙 홀 - 긴 식탁 아래</span>
-                </button>
-            </div>
-        </section>
+    <section class="evidence-board-section published-private-evidence-section">
+        <div class="section-heading">
+            <p class="eyebrow">공개된 비공개 단서</p>
+            <h2>플레이어가 직접 펼친 흔적</h2>
+            <p>누군가 스스로 공개한 비공개 단서입니다. 개인적인 기억과 해석은 공개되지 않습니다.</p>
+        </div>
 
-        <section class="ledger-section">
-            <p class="eyebrow">모두의 기록</p>
-            <div class="ledger-list" data-public-evidence>
-                <button class="ledger-evidence is-public"
-                        th:each="evidence : ${publicEvidence}"
+        <p class="empty-evidence-note" th:if="${#lists.isEmpty(publishedPrivateEvidence)}">아직 공개된 비공개 단서가 없습니다.</p>
+        <div class="simple-evidence-grid" data-published-private-evidence-list>
+            <article class="simple-evidence-card is-published-private" th:each="evidence : ${publishedPrivateEvidence}">
+                <button class="evidence-card-open"
                         type="button"
-                        data-public-evidence-card
-                        th:data-evidence-id="${evidence.id}">
-                    <strong th:text="${evidence.title}">젖은 늑대 털</strong>
-                    <span th:text="${evidence.locationName} + ' - ' + ${evidence.detailLocation}">중앙 홀 - 긴 식탁 아래</span>
+                        data-memory-evidence
+                        data-memory-mode="published-private"
+                        th:data-memory-title="${evidence.title}"
+                        th:data-memory-location="${evidence.locationText}"
+                        th:data-memory-public-description="${evidence.publicDescription}"
+                        th:data-memory-published-by="${evidence.publishedByName}">
+                    <span th:text="'공개자: ' + ${evidence.publishedByName}">공개자</span>
+                    <strong th:text="${evidence.title}">손바닥에만 남은 피</strong>
+                    <em th:text="${evidence.locationText}">확인 방식</em>
+                    <small>확인하기</small>
                 </button>
-            </div>
-        </section>
-    </aside>
+            </article>
+        </div>
+    </section>
 </main>
 
-<section class="evidence-context-menu" data-evidence-menu hidden>
-    <button type="button" data-menu-publish>증거 공개하기</button>
-    <button type="button" data-menu-detail>상세 보기</button>
-    <button type="button" data-menu-close>닫기</button>
-</section>
+<section class="evidence-memory-modal" data-memory-modal hidden>
+    <div class="memory-backdrop" data-memory-close></div>
+    <article class="memory-paper simple-evidence-paper" role="dialog" aria-modal="true" aria-labelledby="memory-title">
+        <button class="button ghost small memory-close" type="button" data-memory-close>닫기</button>
+        <p class="eyebrow" data-memory-location>위치</p>
+        <h2 id="memory-title" data-memory-title>증거</h2>
+        <p class="published-by-line" data-memory-published-by hidden></p>
 
-<section class="evidence-confirm-modal" data-publish-confirm hidden>
-    <div class="memory-backdrop" data-confirm-cancel></div>
-    <article class="memory-paper confirm-paper">
-        <p class="eyebrow">공개 확인</p>
-        <h2 data-confirm-title>증거를 공개하시겠습니까?</h2>
-        <p>이 증거는 모든 플레이어의 모두의 기록에 올라갑니다. 공용 설명은 모두에게 같게 보이고, 개인 해석은 각자 자신의 것만 보입니다.</p>
-        <div class="button-row">
-            <button class="button danger" type="button" data-confirm-publish>공개하기</button>
-            <button class="button ghost" type="button" data-confirm-cancel>취소</button>
+        <section class="memory-section">
+            <h3>객관적인 내용</h3>
+            <div class="memory-text" data-memory-public-description></div>
+        </section>
+        <section class="memory-section" data-memory-private-section hidden>
+            <h3>나만의 해석</h3>
+            <div class="memory-text" data-memory-private-interpretation></div>
+        </section>
+        <div class="memory-actions">
+            <button class="button danger" type="button" data-memory-publish hidden>모두에게 공개하기</button>
         </div>
     </article>
 </section>
 
-<section class="evidence-memory-modal" data-memory-modal hidden>
-    <div class="memory-backdrop" data-memory-close></div>
-    <article class="memory-paper" role="dialog" aria-modal="true" aria-labelledby="memory-title">
-        <button class="button ghost small memory-close" type="button" data-memory-close>접기</button>
-        <p class="eyebrow" data-memory-location>중앙 홀 - 긴 식탁 아래</p>
-        <h2 id="memory-title" data-memory-title>젖은 늑대 털</h2>
-
-        <section class="memory-section">
-            <h3>공용 기록</h3>
-            <div class="memory-text" data-memory-common></div>
-        </section>
-
-        <section class="memory-section">
-            <h3>개인 해석</h3>
-            <div class="memory-text" data-memory-personal></div>
-        </section>
-
-        <section class="memory-section recalled-memory" data-memory-recalled-wrap hidden>
-            <h3>떠오른 말</h3>
-            <div class="memory-text" data-memory-recalled></div>
-        </section>
+<section class="evidence-memory-modal" data-private-publish-confirm hidden>
+    <div class="memory-backdrop" data-private-publish-cancel></div>
+    <article class="memory-paper simple-evidence-paper confirm-paper" role="dialog" aria-modal="true">
+        <p class="eyebrow">공개 확인</p>
+        <h2 data-private-publish-title>단서를 모두에게 공개하시겠습니까?</h2>
+        <div class="memory-text">
+            <p>이 단서의 객관적인 내용이<br>모든 플레이어에게 공개됩니다.</p>
+            <p>당신만의 개인적인 해석은<br>다른 플레이어에게 보이지 않습니다.</p>
+            <p>한 번 공개한 단서는<br>다시 숨길 수 없습니다.</p>
+        </div>
+        <div class="button-row">
+            <button class="button danger" type="button" data-private-publish-confirm-button>공개하기</button>
+            <button class="button ghost" type="button" data-private-publish-cancel>취소</button>
+        </div>
     </article>
 </section>
 

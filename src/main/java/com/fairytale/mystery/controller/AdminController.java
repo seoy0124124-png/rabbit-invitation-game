@@ -30,13 +30,9 @@ public class AdminController {
         model.addAttribute("disclosures", gameService.playerDisclosureStatuses());
         model.addAttribute("globalDisclosure", gameService.globalDisclosureStatus());
         model.addAttribute("publicRecords", gameService.publicRecords());
-        model.addAttribute("hintRounds", gameService.hintRoundStatuses());
-        model.addAttribute("investigationActs", gameService.investigationActStatuses());
-        model.addAttribute("investigationEvidence", gameService.investigationEvidenceItems());
-        model.addAttribute("investigationLocations", gameService.adminLocationStatuses());
-        model.addAttribute("privateEvidenceByPlayer", gameService.adminPrivateEvidenceStatuses());
-        model.addAttribute("publishedEvidence", gameService.publicInvestigationEvidenceFor(new Player("ADMIN", "관리자", "", "", "", "", "")));
         model.addAttribute("endingRevealed", gameService.isEndingRevealed());
+        model.addAttribute("evidenceReleaseStatus", gameService.evidenceReleaseStatus());
+        model.addAttribute("privateEvidenceStatuses", gameService.privateEvidenceAdminStatuses());
         return "admin";
     }
 
@@ -106,22 +102,6 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/open/investigation")
-    public String openInvestigation(HttpSession session) {
-        if (isAdmin(session)) {
-            gameService.openInvestigationScenes();
-        }
-        return "redirect:/admin";
-    }
-
-    @PostMapping("/admin/open/investigation-act")
-    public String openInvestigationAct(@RequestParam int act, HttpSession session) {
-        if (isAdmin(session)) {
-            gameService.openInvestigationAct(act);
-        }
-        return "redirect:/admin";
-    }
-
     @PostMapping("/admin/reveal/hint")
     public String revealHint(@RequestParam String hintId, HttpSession session) {
         if (isAdmin(session)) {
@@ -138,26 +118,18 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/reveal/evidence")
-    public String revealEvidence(@RequestParam String evidenceId, HttpSession session) {
+    @PostMapping("/admin/evidence/public/release")
+    public String releasePublicEvidence(@RequestParam int order, HttpSession session) {
         if (isAdmin(session)) {
-            gameService.revealEvidence(evidenceId);
+            gameService.releasePublicEvidence(order);
         }
         return "redirect:/admin";
     }
 
-    @PostMapping("/admin/investigation/location/release")
-    public String releaseInvestigationLocation(@RequestParam String locationId, HttpSession session) {
+    @PostMapping("/admin/evidence/private/release")
+    public String releasePrivateEvidence(@RequestParam int order, HttpSession session) {
         if (isAdmin(session)) {
-            gameService.forceReleaseInvestigationLocation(locationId);
-        }
-        return "redirect:/admin";
-    }
-
-    @PostMapping("/admin/investigation/evidence/publish")
-    public String publishInvestigationEvidence(@RequestParam String evidenceId, HttpSession session) {
-        if (isAdmin(session)) {
-            gameService.adminPublishInvestigationEvidence(evidenceId);
+            gameService.releasePrivateEvidence(order);
         }
         return "redirect:/admin";
     }

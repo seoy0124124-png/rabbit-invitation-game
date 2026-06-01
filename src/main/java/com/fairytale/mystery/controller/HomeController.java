@@ -29,14 +29,14 @@ public class HomeController {
     @GetMapping("/")
     public String index(HttpSession session) {
         return gameService.currentPlayer(session)
-                .map(player -> player.code().equals("ADMIN") ? "redirect:/admin" : "redirect:/prologue")
+                .map(player -> player.code().equals("ADMIN") ? "redirect:/admin" : "redirect:/lobby")
                 .orElse("index");
     }
 
     @PostMapping("/enter")
     public String enter(@RequestParam @NotBlank String code, HttpSession session, Model model) {
         return gameService.login(code, session)
-                .map(player -> player.code().equals("ADMIN") ? "redirect:/admin" : "redirect:/prologue")
+                .map(player -> player.code().equals("ADMIN") ? "redirect:/admin" : "redirect:/lobby")
                 .orElseGet(() -> {
                     model.addAttribute("error", "초대장에 적힌 입장코드를 다시 확인하세요.");
                     return "index";
@@ -55,12 +55,7 @@ public class HomeController {
         if (player == null) {
             return "redirect:/";
         }
-        if (gameService.isPrologueDone(session)) {
-            return "redirect:/lobby";
-        }
-        model.addAttribute("player", player);
-        model.addAttribute("prologue", gameService.prologueFor(player));
-        return "prologue";
+        return "redirect:/lobby";
     }
 
     @PostMapping("/prologue/finish")
@@ -80,7 +75,6 @@ public class HomeController {
         model.addAttribute("hints", gameService.visibleHintsFor(player));
         model.addAttribute("suspects", gameService.playableCharacters());
         model.addAttribute("storyRevealed", gameService.isPersonalStoryRevealedFor(player));
-        model.addAttribute("investigationOpen", gameService.state().isInvestigationOpen());
         model.addAttribute("publicStatuses", gameService.publicInfoStatusesFor(player));
         model.addAttribute("publicRecords", gameService.publicRecords());
         return "lobby";
@@ -92,14 +86,11 @@ public class HomeController {
         if (player == null) {
             return "redirect:/";
         }
-        if (!gameService.state().isInvestigationOpen()) {
-            return "redirect:/lobby";
-        }
         model.addAttribute("player", player);
         model.addAttribute("state", gameService.state());
-        model.addAttribute("locations", gameService.investigationLocationStatusesFor(player));
-        model.addAttribute("privateEvidence", gameService.privateEvidenceFor(player));
-        model.addAttribute("publicEvidence", gameService.publicInvestigationEvidenceFor(player));
+        model.addAttribute("publicEvidence", gameService.publicEvidenceBoard());
+        model.addAttribute("privateEvidence", gameService.privateEvidenceForPlayer(player));
+        model.addAttribute("publishedPrivateEvidence", gameService.publishedPrivateEvidenceBoard());
         return "map";
     }
 
