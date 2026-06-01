@@ -26,11 +26,16 @@ public class GameApiController {
         GameState state = gameService.state();
         Player player = gameService.currentPlayer(session).orElse(null);
         List<String> visibleHintIds = player == null ? List.of() : gameService.visibleHintIdsFor(player);
+        List<String> privateEvidenceIds = player == null
+                ? List.of()
+                : gameService.privateEvidenceForPlayer(player).stream().map(GameService.SimpleEvidence::id).toList();
         boolean storyRevealed = player != null && gameService.isPersonalStoryRevealedFor(player);
         boolean endingRevealed = gameService.isEndingRevealed();
+        GameService.EvidenceReleaseStatus evidenceStatus = gameService.evidenceReleaseStatus();
         GameService.EndingText endingText = endingRevealed
                 ? gameService.endingText()
                 : new GameService.EndingText("", "");
+        GameService.ChapterCue chapterCue = gameService.currentChapterCue();
         return Map.ofEntries(
                 Map.entry("phase", state.getPhase().name()),
                 Map.entry("phaseLabel", state.getPhase().getLabel()),
@@ -39,6 +44,17 @@ public class GameApiController {
                 Map.entry("timerRunning", state.isTimerRunning()),
                 Map.entry("personalStoryRevealed", storyRevealed),
                 Map.entry("visibleHintIds", visibleHintIds),
+                Map.entry("publicEvidenceCount", gameService.publicEvidenceBoard().size()),
+                Map.entry("privateEvidenceIds", privateEvidenceIds),
+                Map.entry("privateEvidenceCount", privateEvidenceIds.size()),
+                Map.entry("privateEvidenceReleaseLevel", evidenceStatus.privateEvidenceReleaseLevel()),
+                Map.entry("publishedPrivateEvidenceCount", gameService.publishedPrivateEvidenceBoard().size()),
+                Map.entry("chapterCue", chapterCue == null ? Map.of() : Map.of(
+                        "id", chapterCue.id(),
+                        "title", chapterCue.title(),
+                        "lines", chapterCue.lines(),
+                        "durationMs", chapterCue.durationMs()
+                )),
                 Map.entry("endingRevealed", endingRevealed),
                 Map.entry("endingTitle", endingText.title()),
                 Map.entry("endingBody", endingText.body())
@@ -58,7 +74,7 @@ public class GameApiController {
         return ResponseEntity.ok(Map.of(
                 "revealed", true,
                 "personalStory", player.personalStory(),
-                "secret", secretParts[0],
+                "secret", "",
                 "actingHint", secretParts[1]
         ));
     }
@@ -242,11 +258,12 @@ public class GameApiController {
         String text = source == null ? "" : source;
         int actingIndex = text.indexOf("연기 힌트");
         if (actingIndex < 0) {
-            return new String[] {text, ""};
+            return new String[] {"", text.trim()};
         }
+        String actingHint = text.substring(actingIndex + "연기 힌트".length()).trim();
         return new String[] {
-                text.substring(0, actingIndex).trim(),
-                text.substring(actingIndex).trim()
+                "",
+                actingHint
         };
     }
 }

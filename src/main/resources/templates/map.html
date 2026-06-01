@@ -11,11 +11,13 @@
 <body class="scene scene-game scene-evidence" th:classappend="' player-' + ${#strings.toLowerCase(player.code)}">
 <div class="snow" aria-hidden="true"></div>
 
-<header class="topbar">
-    <div>
-        <p class="eyebrow" th:text="${player.name}">플레이어</p>
-        <h1>남겨진 증거</h1>
-        <p class="topbar-note">관리자가 공개한 흔적과 당신만 받은 단서를 확인합니다.</p>
+<header class="topbar stage-topbar">
+    <div class="topbar-progress-slot">
+        <section class="player-progress-guide" data-progress-guidance aria-live="polite">
+            <p data-progress-title>현재 진행 안내</p>
+            <span data-progress-line-one>저택의 밤이 시작되기를 기다리고 있습니다.</span>
+            <span data-progress-line-two>관리자의 진행에 따라 다음 기록이 열립니다.</span>
+        </section>
     </div>
     <div class="topbar-actions">
         <a class="button ghost small" href="/lobby">무대로 돌아가기</a>
@@ -121,7 +123,7 @@
 <section class="evidence-memory-modal" data-memory-modal hidden>
     <div class="memory-backdrop" data-memory-close></div>
     <article class="memory-paper simple-evidence-paper" role="dialog" aria-modal="true" aria-labelledby="memory-title">
-        <button class="button ghost small memory-close" type="button" data-memory-close>닫기</button>
+        <button class="memory-close" type="button" data-memory-close aria-label="닫기">×</button>
         <p class="eyebrow" data-memory-location>위치</p>
         <h2 id="memory-title" data-memory-title>증거</h2>
         <p class="published-by-line" data-memory-published-by hidden></p>

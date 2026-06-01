@@ -33,6 +33,7 @@ public class AdminController {
         model.addAttribute("endingRevealed", gameService.isEndingRevealed());
         model.addAttribute("evidenceReleaseStatus", gameService.evidenceReleaseStatus());
         model.addAttribute("privateEvidenceStatuses", gameService.privateEvidenceAdminStatuses());
+        model.addAttribute("progressSteps", gameService.adminProgressSteps());
         return "admin";
     }
 
@@ -88,7 +89,7 @@ public class AdminController {
 
     @PostMapping("/admin/reveal/story")
     public String revealStory(HttpSession session) {
-        if (isAdmin(session)) {
+        if (isAdmin(session) && gameService.canRunProgressStep(1)) {
             gameService.unlockPersonalStories();
         }
         return "redirect:/admin";
@@ -120,7 +121,8 @@ public class AdminController {
 
     @PostMapping("/admin/evidence/public/release")
     public String releasePublicEvidence(@RequestParam int order, HttpSession session) {
-        if (isAdmin(session)) {
+        int step = order == 1 ? 2 : 5;
+        if (isAdmin(session) && gameService.canRunProgressStep(step)) {
             gameService.releasePublicEvidence(order);
         }
         return "redirect:/admin";
@@ -128,16 +130,62 @@ public class AdminController {
 
     @PostMapping("/admin/evidence/private/release")
     public String releasePrivateEvidence(@RequestParam int order, HttpSession session) {
-        if (isAdmin(session)) {
+        int step = order == 1 ? 3 : 6;
+        if (isAdmin(session) && gameService.canRunProgressStep(step)) {
             gameService.releasePrivateEvidence(order);
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/discussion/start")
+    public String startDiscussion(@RequestParam GamePhase phase,
+                                  @RequestParam(defaultValue = "10") int minutes,
+                                  @RequestParam(defaultValue = "0") int seconds,
+                                  HttpSession session) {
+        int step = phase == GamePhase.FIRST_DISCUSSION ? 4 : 7;
+        if (isAdmin(session) && gameService.canRunProgressStep(step)) {
+            gameService.startDiscussion(phase, minutes, seconds);
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/discussion/end")
+    public String endDiscussion(@RequestParam GamePhase phase, HttpSession session) {
+        boolean valid = phase == GamePhase.FIRST_DISCUSSION || phase == GamePhase.FINAL_DISCUSSION;
+        if (isAdmin(session) && valid) {
+            gameService.finishDiscussion(phase);
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/vote/start")
+    public String startVote(HttpSession session) {
+        if (isAdmin(session) && gameService.canRunProgressStep(8)) {
+            gameService.startVote();
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/vote/end")
+    public String endVote(HttpSession session) {
+        if (isAdmin(session) && gameService.canRunProgressStep(9)) {
+            gameService.closeVote();
         }
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/reveal/ending")
     public String revealEnding(HttpSession session) {
-        if (isAdmin(session)) {
+        if (isAdmin(session) && gameService.canRunProgressStep(10)) {
             gameService.revealEnding();
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/reset")
+    public String resetGame(@RequestParam String resetCode, HttpSession session) {
+        if (isAdmin(session) && "RESET".equals(resetCode)) {
+            gameService.resetGameState();
         }
         return "redirect:/admin";
     }

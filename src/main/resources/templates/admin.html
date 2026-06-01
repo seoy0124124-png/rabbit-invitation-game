@@ -24,75 +24,54 @@
     </div>
 </header>
 
-<main class="admin-grid">
-    <section class="parchment">
-        <p class="eyebrow">진행 제어</p>
-        <ol class="phase-list">
-            <li th:each="phase : ${phases}" th:classappend="${phase == state.phase} ? 'active'">
-                <strong th:text="${phase.label}">대기실</strong>
-                <span th:text="${phase.description}">설명</span>
-            </li>
-        </ol>
-        <div class="button-row">
-            <form action="/admin/phase/previous" method="post"><button class="button ghost" type="submit">이전 단계</button></form>
-            <form action="/admin/phase/next" method="post"><button class="button primary" type="submit">다음 단계</button></form>
-            <form action="/admin/reveal/ending" method="post">
-                <button class="button danger" type="submit" th:disabled="${endingRevealed}">
-                    <span th:if="${!endingRevealed}">엔딩 진실 공개</span>
-                    <span th:if="${endingRevealed}">엔딩 공개됨</span>
-                </button>
-            </form>
-        </div>
-    </section>
-
-    <section class="parchment">
-        <p class="eyebrow">타이머</p>
-        <div class="giant-timer" data-timer>00:00</div>
-        <form class="timer-form" action="/admin/timer/set" method="post">
-            <label>분<input name="minutes" type="number" min="0" max="120" value="10"></label>
-            <label>초<input name="seconds" type="number" min="0" max="59" value="0"></label>
-            <button class="button ghost" type="submit">설정</button>
-        </form>
-        <div class="button-row">
-            <form action="/admin/timer/start" method="post"><button class="button primary" type="submit">시작</button></form>
-            <form action="/admin/timer/stop" method="post"><button class="button ghost" type="submit">정지</button></form>
-            <form action="/admin/timer/reset" method="post"><button class="button danger" type="submit">초기화</button></form>
-        </div>
-    </section>
-
-    <section class="parchment disclosure-section">
-        <p class="eyebrow">개인 이야기 공개</p>
-        <div class="global-release-row">
-            <form action="/admin/reveal/story" method="post">
-                <button class="button primary" type="submit" th:disabled="${globalDisclosure.storyUnlocked()}">
-                    <span th:if="${!globalDisclosure.storyUnlocked()}">개인 이야기 전체 공개</span>
-                    <span th:if="${globalDisclosure.storyUnlocked()}">개인 이야기 전체 공개됨</span>
-                </button>
-            </form>
-        </div>
-        <div class="global-status">
-            <span><i class="status-light" th:classappend="${globalDisclosure.storyUnlocked()} ? ' open'"></i><b th:text="${globalDisclosure.storyUnlockedCount} + ' / ' + ${globalDisclosure.storyTotalCount}">0 / 4</b> 개인 이야기</span>
-        </div>
-
-        <div class="disclosure-board">
-            <article class="disclosure-row" th:each="item : ${disclosures}">
+<main class="admin-grid admin-flow-grid">
+    <section class="parchment admin-flow-section">
+        <p class="eyebrow">진행 순서</p>
+        <h2>위에서 아래로 진행하세요</h2>
+        <div class="admin-flow-list">
+            <article class="admin-flow-step"
+                     th:each="step : ${progressSteps}"
+                     th:classappend="${(step.completed ? ' is-complete' : '') + (step.enabled ? ' is-current' : '') + (step.active ? ' is-active' : '')}">
                 <header>
-                    <strong th:text="${item.player.name}">빨간망토</strong>
-                    <span th:text="${item.player.role}">역할</span>
+                    <span th:text="${'[' + step.order + ']'}">[1]</span>
+                    <strong th:text="${step.title}">개인 이야기 공개</strong>
+                    <em th:text="${'현재 상태: ' + step.status}">현재 상태: 진행 가능</em>
                 </header>
-                <div class="disclosure-item" th:classappend="${item.storyRevealed} ? 'open'">
-                    <span><i class="status-light" th:classappend="${item.storyRevealed} ? ' open'"></i>개인 이야기</span>
-                    <b th:if="${item.storyRevealed}">열람 가능</b>
-                    <form th:if="${!item.storyRevealed}" action="/admin/reveal/player-story" method="post">
-                        <input type="hidden" name="playerCode" th:value="${item.player.code}">
-                        <button class="button primary small" type="submit">이 캐릭터만 공개</button>
+
+                <div class="admin-flow-action" th:if="${!step.timerControls}">
+                    <form th:action="${step.action}" method="post">
+                        <input th:if="${step.releaseOrder != null}" type="hidden" name="order" th:value="${step.releaseOrder}">
+                        <button class="button primary" type="submit" th:disabled="${!step.enabled}" th:text="${step.buttonLabel}">공개하기</button>
                     </form>
+                </div>
+
+                <div class="admin-discussion-controls" th:if="${step.timerControls}">
+                    <form th:action="${step.action}" method="post">
+                        <input type="hidden" name="phase" th:value="${step.phaseName}">
+                        <button class="button primary" type="submit" th:disabled="${step.completed || step.active}" th:text="${step.buttonLabel}">토론 시작</button>
+                    </form>
+                    <div class="button-row">
+                        <form action="/admin/discussion/end" method="post">
+                            <input type="hidden" name="phase" th:value="${step.phaseName}">
+                            <button class="button danger small" type="submit" th:disabled="${!step.active}">종료</button>
+                        </form>
+                    </div>
                 </div>
             </article>
         </div>
     </section>
 
-    <section class="parchment">
+    <section class="parchment admin-side-section">
+        <p class="eyebrow">현재 타이머</p>
+        <div class="giant-timer" data-timer>00:00</div>
+        <form class="timer-form" action="/admin/timer/set" method="post">
+            <label>분<input name="minutes" type="number" min="0" max="120" value="10"></label>
+            <label>초<input name="seconds" type="number" min="0" max="59" value="0"></label>
+            <button class="button ghost" type="submit">시간만 설정</button>
+        </form>
+    </section>
+
+    <section class="parchment admin-side-section">
         <p class="eyebrow">입장 플레이어</p>
         <div class="player-list" th:if="${not #lists.isEmpty(players)}">
             <div th:each="entry : ${players}">
@@ -103,7 +82,7 @@
         <p th:if="${#lists.isEmpty(players)}">아직 입장한 플레이어가 없습니다.</p>
     </section>
 
-    <section class="parchment">
+    <section class="parchment admin-side-section">
         <p class="eyebrow">투표 현황</p>
         <div class="player-list" th:if="${not #lists.isEmpty(votes)}">
             <div th:each="vote : ${votes}">
@@ -113,26 +92,9 @@
         </div>
         <p th:if="${#lists.isEmpty(votes)}">아직 제출된 투표가 없습니다.</p>
     </section>
+
     <section class="parchment disclosure-section">
-        <p class="eyebrow">증거 공개</p>
-        <div class="button-row">
-            <form action="/admin/evidence/public/release" method="post">
-                <input type="hidden" name="order" value="1">
-                <button class="button primary" type="submit" th:disabled="${evidenceReleaseStatus.firstPublicReleased()}">1차 공용 증거 공개</button>
-            </form>
-            <form action="/admin/evidence/private/release" method="post">
-                <input type="hidden" name="order" value="1">
-                <button class="button primary" type="submit" th:disabled="${evidenceReleaseStatus.firstPrivateReleased()}">1차 비공개 단서 지급</button>
-            </form>
-            <form action="/admin/evidence/public/release" method="post">
-                <input type="hidden" name="order" value="2">
-                <button class="button ghost" type="submit" th:disabled="${evidenceReleaseStatus.secondPublicReleased()}">2차 공용 증거 공개</button>
-            </form>
-            <form action="/admin/evidence/private/release" method="post">
-                <input type="hidden" name="order" value="2">
-                <button class="button ghost" type="submit" th:disabled="${evidenceReleaseStatus.secondPrivateReleased()}">2차 비공개 단서 지급</button>
-            </form>
-        </div>
+        <p class="eyebrow">비공개 단서 상태</p>
         <div class="global-status">
             <span><i class="status-light" th:classappend="${evidenceReleaseStatus.firstPublicReleased()} ? ' open'"></i>1차 공용 증거</span>
             <span><i class="status-light" th:classappend="${evidenceReleaseStatus.firstPrivateReleased()} ? ' open'"></i>1차 비공개 단서</span>
@@ -156,7 +118,40 @@
             </article>
         </div>
     </section>
+
+    <section class="parchment admin-dev-tools">
+        <details>
+            <summary>개발 / 테스트 도구</summary>
+            <div class="admin-danger-zone">
+                <p class="eyebrow">위험 기능</p>
+                <h2>게임 상태 초기화</h2>
+                <p>리허설을 다시 시작해야 할 때만 사용하세요.</p>
+                <button class="button danger" type="button" data-reset-open>초기화하기</button>
+            </div>
+        </details>
+    </section>
 </main>
+
+<section class="admin-reset-modal" data-reset-modal hidden>
+    <div class="memory-backdrop" data-reset-cancel></div>
+    <article class="memory-paper confirm-paper" role="dialog" aria-modal="true">
+        <p class="eyebrow">초기화 확인</p>
+        <h2>게임 상태를 초기화하시겠습니까?</h2>
+        <div class="memory-text">
+            <p>모든 공개 상태, 비공개 단서 지급 상태, 플레이어 공개 여부, 투표 결과, 타이머 상태, 엔딩 진행 상태가 초기화됩니다.</p>
+            <p>이 작업은 되돌릴 수 없습니다.</p>
+            <p>초기화하려면 아래 입력란에 <strong>RESET</strong>을 입력해주세요.</p>
+        </div>
+        <form action="/admin/reset" method="post" class="stack">
+            <input name="resetCode" data-reset-code autocomplete="off" placeholder="RESET">
+            <div class="button-row">
+                <button class="button danger" type="submit" data-reset-submit disabled>초기화 실행</button>
+                <button class="button ghost" type="button" data-reset-cancel>취소</button>
+            </div>
+        </form>
+    </article>
+</section>
+
+<div class="toast" data-toast hidden></div>
 </body>
 </html>
-

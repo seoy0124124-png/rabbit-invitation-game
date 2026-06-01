@@ -33,22 +33,49 @@ const postForm = async (url, data) => {
 };
 
 const showToast = (message) => {
-    const toast = document.querySelector("[data-toast]");
-    if (!toast) {
-        if (message) {
-            alert(message);
-        }
+    if (!message) {
         return;
     }
-    toast.textContent = message;
-    toast.hidden = false;
-    window.clearTimeout(showToast.timeout);
-    showToast.timeout = window.setTimeout(() => {
-        toast.hidden = true;
-    }, 3500);
+    if (chapterOverlayActive) {
+        pendingToasts.push(message);
+        return;
+    }
+    let stack = document.querySelector("[data-toast-stack]");
+    if (!stack) {
+        stack = document.createElement("div");
+        stack.className = "toast-stack";
+        stack.dataset.toastStack = "";
+        document.body.appendChild(stack);
+    }
+    const item = document.createElement("div");
+    item.className = "toast-item";
+    item.textContent = message;
+    stack.appendChild(item);
+    window.setTimeout(() => {
+        item.classList.add("is-leaving");
+        window.setTimeout(() => item.remove(), 420);
+    }, 3200);
+    const legacyToast = document.querySelector("[data-toast]");
+    if (!legacyToast) {
+        return;
+    }
+    legacyToast.hidden = true;
 };
 
 let lastPhase = null;
+let lastNoticeSnapshot = null;
+let lastChapterCueId = null;
+let chapterCueInitialized = false;
+let chapterOverlayActive = false;
+let pendingToasts = [];
+
+const flushPendingToasts = () => {
+    const queued = [...pendingToasts];
+    pendingToasts = [];
+    queued.forEach((message, index) => {
+        window.setTimeout(() => showToast(message), index * 420);
+    });
+};
 
 const endingState = {
     source: "",
@@ -84,39 +111,141 @@ const splitReaderPages = (body) => {
     return pages.length ? pages : [{title: "", paragraphs: []}];
 };
 
-const showPhaseCurtain = (phaseLabel, phaseKey) => {
-    const curtain = document.querySelector("[data-phase-curtain]");
-    if (!curtain) {
+const updateProgressGuidance = (state) => {
+    const guide = document.querySelector("[data-progress-guidance]");
+    if (!guide) {
         return;
     }
-    const lines = {
-        WAITING: ["대기실", "저택의 촛불이 아직 흔들리고 있습니다."],
-        STORY_REVEAL: ["개인 이야기 공개", "각자의 오래된 기억이 봉인을 풉니다."],
-        FIRST_DISCUSSION: ["토론 시작", "같은 장면을 보았는데도 모두의 이야기는 다릅니다."],
-        SECOND_DISCUSSION: ["두 번째 토론", "의심은 사람보다 기억을 먼저 향합니다."],
-        FINAL_DISCUSSION: ["최종 토론", "당신들이 본 것은 정말 현실이었을까요."],
-        VOTE: ["투표 직전", "괴물은 누구인가."],
-        ENDING: ["마지막 진실", "토끼가 남긴 시간이 열립니다."]
-    };
-    const selected = lines[phaseKey] || [phaseLabel || "다음 막", "장면이 천천히 바뀝니다."];
-    const title = curtain.querySelector("p");
-    const note = curtain.querySelector("span");
+    const title = guide.querySelector("[data-progress-title]");
+    const lineOne = guide.querySelector("[data-progress-line-one]");
+    const lineTwo = guide.querySelector("[data-progress-line-two]");
+    const discussionPhases = ["FIRST_DISCUSSION", "SECOND_DISCUSSION", "FINAL_DISCUSSION"];
+    let copy = ["현재 진행 안내", "저택의 밤이 시작되기를 기다리고 있습니다.", "관리자의 진행에 따라 다음 기록이 열립니다."];
+    if (state.endingRevealed || state.phase === "ENDING") {
+        copy = ["엔딩 진행 중", "진실이 공개되고 있습니다.", "마지막 기록을 확인하세요."];
+    } else if (state.phase === "VOTE") {
+        copy = ["투표 진행 중", "이제 범인이라고 생각하는 인물을 선택하세요.", "선택은 신중하게 결정해주세요."];
+    } else if (discussionPhases.includes(state.phase)) {
+        copy = ["토론 진행 중", "지금은 토론 중입니다.", "공개된 증거를 확인하고, 서로의 이야기를 비교해보세요."];
+    } else if (["FIRST_HINT", "SECOND_HINT", "THIRD_HINT"].includes(state.phase) && Number(state.privateEvidenceCount || 0) > 0) {
+        copy = ["비공개 단서 도착", "당신에게 새로운 비공개 단서가 도착했습니다.", "다른 사람에게 말할지, 끝까지 숨길지는 당신의 선택입니다."];
+    } else if (state.personalStoryRevealed) {
+        copy = ["개인 이야기 공개", "지금은 각자의 이야기를 읽는 시간입니다.", "당신의 이야기와 연기 힌트를 확인하세요."];
+    }
     if (title) {
-        title.textContent = selected[0];
+        title.textContent = copy[0];
     }
-    if (note) {
-        note.textContent = selected[1];
+    if (lineOne) {
+        lineOne.textContent = copy[1];
     }
-    curtain.hidden = false;
-    curtain.classList.remove("is-fading");
-    window.clearTimeout(showPhaseCurtain.timeout);
-    showPhaseCurtain.timeout = window.setTimeout(() => {
-        curtain.classList.add("is-fading");
-        window.setTimeout(() => {
-            curtain.hidden = true;
-            curtain.classList.remove("is-fading");
-        }, 700);
-    }, 1700);
+    if (lineTwo) {
+        lineTwo.textContent = copy[2];
+    }
+};
+
+const notifyStateChanges = (state) => {
+    if (!document.body.classList.contains("scene-game")) {
+        return;
+    }
+    const snapshot = {
+        publicEvidenceCount: Number(state.publicEvidenceCount || 0),
+        privateEvidenceCount: Number(state.privateEvidenceCount || 0),
+        publishedPrivateEvidenceCount: Number(state.publishedPrivateEvidenceCount || 0)
+    };
+    if (!lastNoticeSnapshot) {
+        lastNoticeSnapshot = snapshot;
+        return;
+    }
+    if (snapshot.publicEvidenceCount > lastNoticeSnapshot.publicEvidenceCount) {
+        showToast("새로운 증거가 공개되었습니다.");
+    }
+    if (snapshot.privateEvidenceCount > lastNoticeSnapshot.privateEvidenceCount) {
+        showToast("당신에게 비공개 단서가 도착했습니다.");
+    }
+    if (snapshot.publishedPrivateEvidenceCount > lastNoticeSnapshot.publishedPrivateEvidenceCount) {
+        showToast("새로운 단서가 공개되었습니다.");
+    }
+    lastNoticeSnapshot = snapshot;
+};
+
+const ensureChapterOverlay = () => {
+    let overlay = document.querySelector("[data-chapter-overlay]");
+    if (overlay) {
+        return overlay;
+    }
+    overlay = document.createElement("section");
+    overlay.className = "chapter-overlay";
+    overlay.dataset.chapterOverlay = "";
+    overlay.hidden = true;
+    overlay.innerHTML = `
+        <article class="chapter-page">
+            <p class="eyebrow" data-chapter-title></p>
+            <div class="chapter-lines" data-chapter-lines></div>
+        </article>
+        <button class="chapter-skip" type="button" data-chapter-skip>건너뛰기</button>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector("[data-chapter-skip]")?.addEventListener("click", () => finishChapterOverlay(overlay));
+    return overlay;
+};
+
+const finishChapterOverlay = (overlay) => {
+    if (!overlay || overlay.hidden) {
+        return;
+    }
+    window.clearTimeout(finishChapterOverlay.timeout);
+    overlay.classList.add("is-leaving");
+    window.setTimeout(() => {
+        overlay.hidden = true;
+        overlay.classList.remove("is-visible", "is-leaving", "is-ending");
+        chapterOverlayActive = false;
+        flushPendingToasts();
+    }, 720);
+};
+
+const showChapterOverlay = (cue) => {
+    if (!document.body.classList.contains("scene-game") || !cue?.id) {
+        return;
+    }
+    const overlay = ensureChapterOverlay();
+    const title = overlay.querySelector("[data-chapter-title]");
+    const lines = overlay.querySelector("[data-chapter-lines]");
+    if (title) {
+        title.textContent = cue.title || "";
+    }
+    if (lines) {
+        lines.innerHTML = (cue.lines || []).map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+    }
+    chapterOverlayActive = true;
+    overlay.hidden = false;
+    overlay.classList.toggle("is-ending", String(cue.id).includes("ENDING"));
+    overlay.classList.remove("is-leaving");
+    window.requestAnimationFrame(() => overlay.classList.add("is-visible"));
+    window.clearTimeout(finishChapterOverlay.timeout);
+    finishChapterOverlay.timeout = window.setTimeout(
+        () => finishChapterOverlay(overlay),
+        Math.max(3000, Number(cue.durationMs) || 3800)
+    );
+};
+
+const handleChapterCue = (cue) => {
+    if (!document.body.classList.contains("scene-game")) {
+        return;
+    }
+    if (!cue?.id) {
+        lastChapterCueId = null;
+        chapterCueInitialized = true;
+        return;
+    }
+    if (!chapterCueInitialized) {
+        lastChapterCueId = cue.id;
+        chapterCueInitialized = true;
+        return;
+    }
+    if (cue.id !== lastChapterCueId) {
+        lastChapterCueId = cue.id;
+        showChapterOverlay(cue);
+    }
 };
 
 const paintEndingPage = () => {
@@ -128,8 +257,11 @@ const paintEndingPage = () => {
     const indicator = panel.querySelector("[data-ending-page-indicator]");
     const prev = panel.querySelector("[data-ending-prev]");
     const next = panel.querySelector("[data-ending-next]");
+    const finish = panel.querySelector("[data-ending-finish]");
     const page = endingState.pages[endingState.page] || [];
     if (body) {
+        body.classList.remove("is-turning");
+        window.requestAnimationFrame(() => body.classList.add("is-turning"));
         body.innerHTML = page.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("");
     }
     if (indicator) {
@@ -139,8 +271,12 @@ const paintEndingPage = () => {
         prev.disabled = endingState.page === 0;
     }
     if (next) {
-        next.disabled = endingState.page >= endingState.pages.length - 1;
-        next.textContent = endingState.page >= endingState.pages.length - 1 ? "마지막" : "다음";
+        const lastPage = endingState.page >= endingState.pages.length - 1;
+        next.disabled = lastPage;
+        next.textContent = lastPage ? "마지막" : "다음";
+    }
+    if (finish) {
+        finish.hidden = endingState.page < endingState.pages.length - 1;
     }
 };
 
@@ -166,7 +302,7 @@ const renderEnding = (state) => {
     if (endingState.source !== state.endingBody) {
         endingState.source = state.endingBody || "";
         endingState.page = 0;
-        endingState.pages = chunkParagraphs(endingState.source, 3);
+        endingState.pages = chunkParagraphs(endingState.source, 2);
         paintEndingPage();
     }
 };
@@ -174,28 +310,14 @@ const renderEnding = (state) => {
 const paintActingPage = () => {
     const panel = document.querySelector("[data-acting-content]");
     const controls = document.querySelector("[data-acting-controls]");
-    if (!panel || !controls) {
+    if (!panel) {
         return;
     }
-    const page = actingReaderState.pages[actingReaderState.page] || actingReaderState.pages[0];
+    const paragraphs = actingReaderState.pages.flatMap((page) => page.paragraphs || []);
     panel.hidden = false;
-    panel.innerHTML = `
-        ${page.title ? `<h3>${escapeHtml(page.title)}</h3>` : ""}
-        ${page.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
-    `;
-    controls.hidden = false;
-    const indicator = controls.querySelector("[data-acting-page-indicator]");
-    const prev = controls.querySelector("[data-acting-prev]");
-    const next = controls.querySelector("[data-acting-next]");
-    if (indicator) {
-        indicator.textContent = `${actingReaderState.page + 1} / ${actingReaderState.pages.length}`;
-    }
-    if (prev) {
-        prev.disabled = actingReaderState.page === 0;
-    }
-    if (next) {
-        next.disabled = actingReaderState.page >= actingReaderState.pages.length - 1;
-        next.textContent = actingReaderState.page >= actingReaderState.pages.length - 1 ? "마지막" : "다음";
+    panel.innerHTML = paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("");
+    if (controls) {
+        controls.hidden = true;
     }
 };
 
@@ -226,10 +348,13 @@ const renderActingHint = async () => {
     if (locked) {
         locked.hidden = true;
     }
-    if (actingReaderState.source !== story.actingHint) {
-        actingReaderState.source = story.actingHint || "아직 별도의 연기 힌트가 없습니다.";
+    const actingHint = String(story.actingHint || "아직 별도의 연기 힌트가 없습니다.")
+        .replace(/^연기\s*힌트\s*/u, "")
+        .trim();
+    if (actingReaderState.source !== actingHint) {
+        actingReaderState.source = actingHint;
         actingReaderState.page = 0;
-        actingReaderState.pages = splitReaderPages(actingReaderState.source);
+        actingReaderState.pages = [{title: "", paragraphs: chunkParagraphs(actingReaderState.source, 99).flatMap((page) => page)}];
     }
     paintActingPage();
 };
@@ -430,9 +555,6 @@ const refreshState = async () => {
         return;
     }
     const state = await response.json();
-    if (lastPhase && lastPhase !== state.phase) {
-        showPhaseCurtain(state.phaseLabel, state.phase);
-    }
     lastPhase = state.phase;
     document.querySelectorAll("[data-timer]").forEach((node) => {
         node.textContent = formatTime(state.timerSeconds);
@@ -450,6 +572,9 @@ const refreshState = async () => {
         node.hidden = state.phase !== "VOTE";
     });
     document.body.dataset.phase = state.phase;
+    updateProgressGuidance(state);
+    handleChapterCue(state.chapterCue);
+    notifyStateChanges(state);
     renderEnding(state);
 };
 
@@ -503,6 +628,10 @@ document.addEventListener("submit", async (event) => {
             }
         }
         await refreshState();
+        const resetModal = document.querySelector("[data-reset-modal]");
+        if (resetModal) {
+            resetModal.hidden = true;
+        }
         window.scrollTo(scrollX, scrollY);
     } finally {
         if (submitButton) {
@@ -512,6 +641,31 @@ document.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("click", async (event) => {
+    if (event.target.closest("[data-reset-open]")) {
+        const modal = document.querySelector("[data-reset-modal]");
+        if (modal) {
+            modal.hidden = false;
+            modal.querySelector("[data-reset-code]")?.focus();
+        }
+        return;
+    }
+
+    if (event.target.closest("[data-reset-cancel]")) {
+        const modal = document.querySelector("[data-reset-modal]");
+        if (modal) {
+            modal.hidden = true;
+            const input = modal.querySelector("[data-reset-code]");
+            const submit = modal.querySelector("[data-reset-submit]");
+            if (input) {
+                input.value = "";
+            }
+            if (submit) {
+                submit.disabled = true;
+            }
+        }
+        return;
+    }
+
     const storyPdfButton = event.target.closest("[data-story-pdf-open]");
     if (storyPdfButton) {
         openStoryPdf(storyPdfButton);
@@ -624,6 +778,21 @@ document.addEventListener("keydown", (event) => {
         closeMemoryEvidence();
         closeStoryPdf();
         closePrivateEvidenceConfirm();
+        const resetModal = document.querySelector("[data-reset-modal]");
+        if (resetModal) {
+            resetModal.hidden = true;
+        }
+    }
+});
+
+document.addEventListener("input", (event) => {
+    const input = event.target.closest("[data-reset-code]");
+    if (!input) {
+        return;
+    }
+    const submit = document.querySelector("[data-reset-submit]");
+    if (submit) {
+        submit.disabled = input.value !== "RESET";
     }
 });
 

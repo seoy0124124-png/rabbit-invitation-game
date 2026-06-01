@@ -39,9 +39,13 @@ public class GameService {
     private final Map<String, Instant> enteredPlayers = new LinkedHashMap<>();
     private final Map<String, String> votes = new LinkedHashMap<>();
     private final Map<String, PublishedPrivateEvidence> publishedPrivateEvidence = new LinkedHashMap<>();
+    private final Set<GamePhase> completedDiscussions = new LinkedHashSet<>();
     private int publicEvidenceReleaseLevel;
     private int privateEvidenceReleaseLevel;
     private boolean endingRevealed;
+    private boolean voteClosed;
+    private int chapterCueSequence;
+    private ChapterCue currentChapterCue;
 
     public GameService() {
         players.put("RED", new Player("RED", "빨간망토", "숲길의 목격자", "늑대에게 쫓긴 뒤 사람을 쉽게 믿지 못하게 된 인물",
@@ -82,7 +86,18 @@ public class GameService {
 
                         그 생각이 가장 무섭다.
                         """,
-                "늑대에게 물린 뒤부터 기억이 끊기는 밤이 생겼다. 당신은 토끼를 죽였는지보다, 자신이 구원받을 가치가 있었는지 두려워한다.", "#a91f2f"));
+                """
+                        연기 힌트
+
+                        사람들과 조금 거리를 두고,
+                        항상 불안한 듯 조심스럽게 행동해주세요.
+
+                        자신의 기억이 완전하지 않아서
+                        무슨 일이 있었는지 확신하지 못하는 느낌으로 말하면 됩니다.
+
+                        누군가 자신을 의심하면 당황하고,
+                        자기 자신도 조금 무서워하는 모습으로 연기해주세요.
+                        """, "#a91f2f"));
         players.put("ALICE", new Player("ALICE", "앨리스", "기묘한 손님", "환각처럼 보이는 장면 속에서 실제 단서를 말하는 인물",
                 """
                         나는 늘 이상한 아이였다.
@@ -129,7 +144,28 @@ public class GameService {
 
                         그렇다면 나는 지금도 길을 잃은 걸까. 아니면 모두가 잊어버린 길 위에, 나 혼자 아직 서 있는 걸까.
                         """,
-                "당신은 환각이라고 불리는 장면 속에서 진실의 가장자리를 본다. 문제는 그것을 믿어줄 사람이 아무도 없다는 것이다.", "#4f86a8"));
+                """
+                        연기 힌트
+
+                        말할 때 가끔 자신의 기억이 맞는지 확신하지 못하는 모습을 보여주세요.
+
+                        분명히 무언가를 봤다고 생각하지만,
+                        그게 현실이었는지 환각이었는지는 잘 모릅니다.
+
+                        토끼 이야기가 나오면 다른 사람들보다 조금 더 예민하게 반응하고,
+                        토끼를 믿고 싶어 하는 모습을 보여주세요.
+
+                        누군가 당신의 말을 믿지 않아도
+                        강하게 화내기보다는 스스로도 흔들리는 듯 말하면 됩니다.
+
+                        가끔 이렇게 말해도 좋습니다.
+
+                        “분명히 봤어. 그런데… 정말이었을까?”
+
+                        “토끼였던 것 같아. 아니, 사람이었나?”
+
+                        “내 기억이 틀린 건지, 누가 바꾼 건지 모르겠어.”
+                        """, "#4f86a8"));
         players.put("PINO", new Player("PINO", "피노키오", "거짓말의 증인", "사건이 일어난 밤의 이야기가 계속 달라지는 인물",
                 """
                         나는 태어난 것이 아니라 만들어졌다.
@@ -180,7 +216,26 @@ public class GameService {
 
                         만들어진 것도 용서받을 수 있을까. 악의에서 태어난 것도, 마지막에는 다른 선택을 할 수 있을까.
                         """,
-                "당신은 사람의 기억을 흔들 수 있다. 하지만 오늘 밤 가장 믿을 수 없는 기억은, 당신 자신의 것이다.", "#b9863a"));
+                """
+                        연기 힌트
+
+                        사람처럼 자연스럽게 행동하려 하지만,
+                        감정을 표현할 때 조금 어색한 모습을 보여주세요.
+
+                        평소에는 차분하게 말하고,
+                        질문을 받으면 잠시 생각한 뒤 대답하면 됩니다.
+
+                        토끼 이야기가 나오면 슬픈 척하려 하지만,
+                        토끼가 다른 아이들도 구해줬다는 말을 들으면
+                        조금 서운하거나 불편한 기색을 보여주세요.
+
+                        누군가 자신을 의심하면 바로 화내기보다
+                        조용히 변명하면서 끝까지 부정해주세요.
+
+                        계속 몰아붙이면
+                        침착함이 조금씩 무너지고,
+                        버려지고 싶지 않았다는 감정이 드러나도 좋습니다.
+                        """, "#b9863a"));
         players.put("MATCH", new Player("MATCH", "성냥팔이 소녀", "불씨를 가진 아이", "중요한 이야기가 나오면 농담으로 화제를 돌리는 인물",
                 """
                         나는 불을 좋아했다.
@@ -229,7 +284,22 @@ public class GameService {
 
                         내가 또 불로 누군가를 지우려 한 건 아닌지. 구원받은 사람이, 결국 구원해준 존재의 흔적을 태워버린 건 아닌지.
                         """,
-                "당신은 불로 많은 것을 지웠다. 하지만 오늘 밤 태운 것이 증거였는지, 누군가를 지키려는 마지막 몸부림이었는지 확신하지 못한다.", "#d16b42"));
+                """
+                        연기 힌트
+
+                        분위기가 무거워지면
+                        농담을 하거나 딴소리를 하면서 넘기려고 해주세요.
+
+                        평소에는 밝고 장난스럽게 행동하지만,
+                        조용해지는 순간에는 조금 불안해 보이면 좋습니다.
+
+                        불, 성냥, 검은 재 이야기가 나오면
+                        표정이 잠깐 굳거나 당황한 모습을 보여주세요.
+
+                        누군가 화재 이야기를 꺼내면
+                        처음에는 웃어넘기려고 하지만,
+                        계속 질문받으면 조금씩 흔들리는 느낌으로 연기하면 됩니다.
+                        """, "#d16b42"));
         players.put("ADMIN", new Player("ADMIN", "관리자", "게임 마스터", "저택의 밤을 진행하는 사람",
                 "저택의 밤을 진행합니다.", "모든 시계와 문은 당신의 손에서 움직입니다.", "#c9a24a"));
 
@@ -369,8 +439,7 @@ public class GameService {
 
         int secretIndex = storyBlock.indexOf("비밀 정보");
         String personalStory = secretIndex >= 0 ? storyBlock.substring(0, secretIndex) : storyBlock;
-        String secret = secretIndex >= 0 ? storyBlock.substring(secretIndex) : "";
-        String secretAndActingHint = (secret + "\n\n" + actingBlock).trim();
+        String secretAndActingHint = actingBlock.trim();
         return new StoryContent(title, prologueParagraphs, cleanSectionTitle(personalStory), cleanSectionTitle(secretAndActingHint));
     }
 
@@ -473,6 +542,10 @@ public class GameService {
         playableCharacters().stream()
                 .map(Player::code)
                 .forEach(unlockedPersonalStoryCodes::add);
+        state.setPhase(GamePhase.PRIVATE_STORY);
+        triggerChapterCue("PROLOGUE_END", "프롤로그 종료", 4200,
+                "하지만 이번에는,",
+                "토끼가 돌아오지 못했다.");
     }
 
     public void unlockPersonalStory(String playerCode) {
@@ -557,15 +630,112 @@ public class GameService {
     }
 
     public void releasePublicEvidence(int revealOrder) {
-        publicEvidenceReleaseLevel = Math.max(publicEvidenceReleaseLevel, clampEvidenceRevealOrder(revealOrder));
+        int order = clampEvidenceRevealOrder(revealOrder);
+        if (order == publicEvidenceReleaseLevel + 1) {
+            publicEvidenceReleaseLevel = order;
+            state.setPhase(order == 1 ? GamePhase.FIRST_HINT : GamePhase.SECOND_HINT);
+            if (order == 1) {
+                triggerChapterCue("ACT1_START", "1막 시작", 3800,
+                        "눈은 계속 내리고 있었다.",
+                        "아무 일도 없었다는 듯이.");
+            } else {
+                triggerChapterCue("ACT2_START", "2막 시작", 3800,
+                        "시간이 흐를수록,",
+                        "침묵은 조금씩 무거워졌다.");
+            }
+        }
     }
 
     public void releasePrivateEvidence(int revealOrder) {
-        privateEvidenceReleaseLevel = Math.max(privateEvidenceReleaseLevel, clampEvidenceRevealOrder(revealOrder));
+        int order = clampEvidenceRevealOrder(revealOrder);
+        if (order == privateEvidenceReleaseLevel + 1) {
+            privateEvidenceReleaseLevel = order;
+            state.setPhase(order == 1 ? GamePhase.FIRST_HINT : GamePhase.SECOND_HINT);
+            if (order == 1) {
+                triggerChapterCue("ACT1_LATE", "1막 후반", 3800,
+                        "누구나",
+                        "말하지 않은 이야기를 하나쯤 가지고 있다.");
+            } else {
+                triggerChapterCue("ACT3_START", "3막 시작", 3800,
+                        "이제는",
+                        "모른 척할 수 없는 것들이 남아 있었다.");
+            }
+        }
     }
 
     public EvidenceReleaseStatus evidenceReleaseStatus() {
         return new EvidenceReleaseStatus(publicEvidenceReleaseLevel, privateEvidenceReleaseLevel);
+    }
+
+    public List<AdminProgressStep> adminProgressSteps() {
+        boolean storyDone = globalDisclosureStatus().storyUnlocked();
+        boolean publicOneDone = publicEvidenceReleaseLevel >= 1;
+        boolean privateOneDone = privateEvidenceReleaseLevel >= 1;
+        boolean firstDiscussionDone = completedDiscussions.contains(GamePhase.FIRST_DISCUSSION);
+        boolean publicTwoDone = publicEvidenceReleaseLevel >= 2;
+        boolean privateTwoDone = privateEvidenceReleaseLevel >= 2;
+        boolean finalDiscussionDone = completedDiscussions.contains(GamePhase.FINAL_DISCUSSION);
+        boolean voteStarted = state.getPhase() == GamePhase.VOTE || voteClosed || endingRevealed;
+        return List.of(
+                adminStep(1, "개인 이야기 공개", storyDone, true, state.getPhase() == GamePhase.PRIVATE_STORY,
+                        "/admin/reveal/story", null, null, "공개하기", "공개 완료", false),
+                adminStep(2, "1차 공용 증거 공개", publicOneDone, storyDone, state.getPhase() == GamePhase.FIRST_HINT && !publicOneDone,
+                        "/admin/evidence/public/release", 1, null, "공개하기", "공개 완료", false),
+                adminStep(3, "1차 비공개 단서 지급", privateOneDone, publicOneDone, state.getPhase() == GamePhase.FIRST_HINT && publicOneDone && !privateOneDone,
+                        "/admin/evidence/private/release", 1, null, "지급하기", "지급 완료", false),
+                adminStep(4, "1차 토론 진행", firstDiscussionDone, privateOneDone, state.getPhase() == GamePhase.FIRST_DISCUSSION && !firstDiscussionDone,
+                        "/admin/discussion/start", null, GamePhase.FIRST_DISCUSSION.name(), "토론 시작", "토론 완료", true),
+                adminStep(5, "2차 공용 증거 공개", publicTwoDone, firstDiscussionDone, state.getPhase() == GamePhase.SECOND_HINT && !publicTwoDone,
+                        "/admin/evidence/public/release", 2, null, "공개하기", "공개 완료", false),
+                adminStep(6, "2차 비공개 단서 지급", privateTwoDone, publicTwoDone, state.getPhase() == GamePhase.SECOND_HINT && publicTwoDone && !privateTwoDone,
+                        "/admin/evidence/private/release", 2, null, "지급하기", "지급 완료", false),
+                adminStep(7, "최종 토론 진행", finalDiscussionDone, privateTwoDone, state.getPhase() == GamePhase.FINAL_DISCUSSION && !finalDiscussionDone,
+                        "/admin/discussion/start", null, GamePhase.FINAL_DISCUSSION.name(), "토론 시작", "토론 완료", true),
+                adminStep(8, "투표 시작", voteStarted, finalDiscussionDone, state.getPhase() == GamePhase.VOTE && !voteClosed,
+                        "/admin/vote/start", null, null, "투표 시작", "투표 시작됨", false),
+                adminStep(9, "투표 종료", voteClosed || endingRevealed, voteStarted && !endingRevealed, voteClosed && !endingRevealed,
+                        "/admin/vote/end", null, null, "투표 종료", "투표 종료됨", false),
+                adminStep(10, "엔딩 공개", endingRevealed, voteClosed, endingRevealed,
+                        "/admin/reveal/ending", null, null, "엔딩 공개", "엔딩 공개됨", false)
+        );
+    }
+
+    public boolean canRunProgressStep(int order) {
+        return adminProgressSteps().stream()
+                .filter(step -> step.order() == order)
+                .findFirst()
+                .map(AdminProgressStep::enabled)
+                .orElse(false);
+    }
+
+    private AdminProgressStep adminStep(int order, String title, boolean completed, boolean prerequisiteMet, boolean active,
+                                        String action, Integer releaseOrder, String phaseName,
+                                        String buttonLabel, String completedLabel, boolean timerControls) {
+        boolean enabled = !completed && !active;
+        String status = completed ? "완료" : (active ? "진행 중" : (enabled ? "진행 가능" : "대기 중"));
+        return new AdminProgressStep(order, title, status, enabled, completed, active, action, releaseOrder, phaseName,
+                enabled ? buttonLabel : (completed ? completedLabel : "잠김"), timerControls);
+    }
+
+    public void resetGameState() {
+        revealedHintIds.clear();
+        sharedHintIds.clear();
+        unlockedPersonalStoryCodes.clear();
+        releasedHintPhases.clear();
+        publicRecords.clear();
+        votes.clear();
+        publishedPrivateEvidence.clear();
+        completedDiscussions.clear();
+        publicEvidenceReleaseLevel = 0;
+        privateEvidenceReleaseLevel = 0;
+        endingRevealed = false;
+        voteClosed = false;
+        chapterCueSequence = 0;
+        currentChapterCue = null;
+        state.setPhase(GamePhase.WAITING);
+        state.setTimerRunning(false);
+        state.setTimerEndsAt(null);
+        state.setTimerSeconds(600);
     }
 
     public List<PrivateEvidenceAdminStatus> privateEvidenceAdminStatuses() {
@@ -610,8 +780,54 @@ public class GameService {
                 Instant.now()
         ));
         return new PublishEvidenceResult(true, "비공개 단서를 모두에게 공개했습니다.", false);
-    }    public boolean isPrivateEvidencePublished(String evidenceId) {
+    }
+
+    public boolean isPrivateEvidencePublished(String evidenceId) {
         return publishedPrivateEvidence.containsKey(evidenceId);
+    }
+
+    public void startDiscussion(GamePhase phase, int minutes, int seconds) {
+        if (phase != GamePhase.FIRST_DISCUSSION && phase != GamePhase.FINAL_DISCUSSION) {
+            return;
+        }
+        completedDiscussions.remove(phase);
+        setTimer(minutes, seconds);
+        state.setPhase(phase);
+        startTimer();
+        if (phase == GamePhase.FINAL_DISCUSSION) {
+            triggerChapterCue("FINAL_RECORD", "마지막 기록", 4200,
+                    "누군가는 진실을 숨겼다.",
+                    "누군가는",
+                    "자기 자신에게조차 숨겼다.");
+        }
+    }
+
+    public void finishDiscussion(GamePhase phase) {
+        if (phase != GamePhase.FIRST_DISCUSSION && phase != GamePhase.FINAL_DISCUSSION) {
+            return;
+        }
+        if (state.getPhase() != phase) {
+            return;
+        }
+        completedDiscussions.add(phase);
+        stopTimer();
+        state.setTimerSeconds(0);
+    }
+
+    public void startVote() {
+        voteClosed = false;
+        state.setPhase(GamePhase.VOTE);
+        stopTimer();
+        triggerChapterCue("VOTE_START", "선택의 시간", 3800,
+                "이제,",
+                "한 사람을 선택해야 한다.");
+    }
+
+    public void closeVote() {
+        if (state.getPhase() == GamePhase.VOTE) {
+            voteClosed = true;
+            stopTimer();
+        }
     }
 
     private String privateEvidenceState(SimpleEvidence evidence) {
@@ -678,10 +894,48 @@ public class GameService {
         state.setTimerRunning(false);
         state.setTimerEndsAt(null);
         endingRevealed = true;
+        if (isCorrectEnding()) {
+            triggerChapterCue("ENDING_CORRECT", "사람이 되고 싶었던 인형", 6200,
+                    "누군가는",
+                    "끝까지 혼자 남고 싶지 않았다.",
+                    "그래서 붙잡았다.",
+                    "다시는 떠날 수 없도록.",
+                    "하지만 토끼는",
+                    "마지막 순간까지도",
+                    "그를 괴물처럼 바라보지 않았다.");
+        } else {
+            triggerChapterCue("ENDING_WRONG", "잘못 선택된 괴물", 5600,
+                    "사람들은 언제나",
+                    "괴물을 찾고 싶어 했다.",
+                    "진실보다 먼저,",
+                    "두려워하기 쉬운 얼굴을 골랐다.");
+        }
     }
 
     public boolean isEndingRevealed() {
         return endingRevealed;
+    }
+
+    public ChapterCue currentChapterCue() {
+        return currentChapterCue;
+    }
+
+    private void triggerChapterCue(String code, String title, int durationMs, String... lines) {
+        chapterCueSequence++;
+        currentChapterCue = new ChapterCue(chapterCueSequence + ":" + code, title, List.of(lines), durationMs);
+    }
+
+    private boolean isCorrectEnding() {
+        if (votes.isEmpty()) {
+            return false;
+        }
+        return votes.values().stream()
+                .collect(Collectors.groupingBy(code -> code, LinkedHashMap::new, Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.<String, Long>comparingByValue()
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .map(entry -> "PINO".equals(entry.getKey()))
+                .orElse(false);
     }
 
     public EndingText endingText() {
@@ -1055,6 +1309,24 @@ public class GameService {
         public boolean secondPrivateReleased() {
             return privateEvidenceReleaseLevel >= 2;
         }
+    }
+
+    public record AdminProgressStep(
+            int order,
+            String title,
+            String status,
+            boolean enabled,
+            boolean completed,
+            boolean active,
+            String action,
+            Integer releaseOrder,
+            String phaseName,
+            String buttonLabel,
+            boolean timerControls
+    ) {
+    }
+
+    public record ChapterCue(String id, String title, List<String> lines, int durationMs) {
     }
 
     public record PrivateEvidenceAdminStatus(Player player, List<PrivateEvidenceStatus> items) {

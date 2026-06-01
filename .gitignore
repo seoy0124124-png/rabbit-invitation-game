@@ -4,3 +4,6 @@ target/
 *.iml
 *.log
 .codex-push-upload/
+# Maven wrapper downloaded files
+.mvn/wrapper/apache-maven-*-bin.zip
+.mvn/wrapper/apache-maven-*/

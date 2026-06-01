@@ -11,10 +11,12 @@
 <body class="scene scene-game stage-body" th:classappend="' player-' + ${#strings.toLowerCase(player.code)}">
 <div class="snow" aria-hidden="true"></div>
 <header class="topbar stage-topbar">
-    <div>
-        <p class="eyebrow">현재 막</p>
-        <h1 data-phase-label th:text="${state.phase.label}">대기실</h1>
-        <p class="topbar-note" data-phase-description th:text="${state.phase.description}"></p>
+    <div class="topbar-progress-slot">
+        <section class="player-progress-guide" data-progress-guidance aria-live="polite">
+            <p data-progress-title>현재 진행 안내</p>
+            <span data-progress-line-one>저택의 밤이 시작되기를 기다리고 있습니다.</span>
+            <span data-progress-line-two>관리자의 진행에 따라 다음 기록이 열립니다.</span>
+        </section>
     </div>
     <div class="topbar-actions">
         <form action="/leave" method="post">
@@ -68,14 +70,9 @@
         <p class="eyebrow">연기 힌트</p>
         <div class="locked-panel" data-acting-locked th:hidden="${storyRevealed}">
             <span>잠김</span>
-            <p>아직 공개되지 않았습니다. 관리자가 공개하면 확인할 수 있습니다.</p>
+            <p>개인 이야기가 공개되면 볼 수 있습니다.</p>
         </div>
         <div class="story-body story-reader-body" data-acting-content hidden></div>
-        <div class="ending-controls story-reader-controls" data-acting-controls hidden>
-            <button class="button ghost small" data-acting-prev type="button">뒤로</button>
-            <span data-acting-page-indicator>1 / 1</span>
-            <button class="button primary small" data-acting-next type="button">다음</button>
-        </div>
     </section>
 
     <form class="floating-panel parchment vote-form" data-vote th:hidden="${state.phase.name() != 'VOTE'}">
@@ -97,6 +94,9 @@
                 <span data-ending-page-indicator>1 / 1</span>
                 <button class="button primary small" data-ending-next type="button">다음</button>
             </div>
+            <form class="ending-finish" action="/leave" method="post" data-ending-finish hidden>
+                <button class="button danger" type="submit">게임 종료</button>
+            </form>
         </div>
     </section>
 </main>
