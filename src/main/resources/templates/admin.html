@@ -27,7 +27,7 @@
 <main class="admin-grid admin-flow-grid">
     <section class="parchment admin-flow-section">
         <p class="eyebrow">진행 순서</p>
-        <h2>위에서 아래로 진행하세요</h2>
+        <h2>개인 이야기, 토론, 투표 순서로 진행하세요</h2>
         <div class="admin-flow-list">
             <article class="admin-flow-step"
                      th:each="step : ${progressSteps}"
@@ -94,12 +94,30 @@
     </section>
 
     <section class="parchment disclosure-section">
-        <p class="eyebrow">비공개 단서 상태</p>
+        <p class="eyebrow">증거 공개 관리</p>
         <div class="global-status">
             <span><i class="status-light" th:classappend="${evidenceReleaseStatus.firstPublicReleased()} ? ' open'"></i>1차 공용 증거</span>
             <span><i class="status-light" th:classappend="${evidenceReleaseStatus.firstPrivateReleased()} ? ' open'"></i>1차 비공개 단서</span>
             <span><i class="status-light" th:classappend="${evidenceReleaseStatus.secondPublicReleased()} ? ' open'"></i>2차 공용 증거</span>
             <span><i class="status-light" th:classappend="${evidenceReleaseStatus.secondPrivateReleased()} ? ' open'"></i>2차 비공개 단서</span>
+        </div>
+        <div class="evidence-manual-actions">
+            <form action="/admin/evidence/public/release" method="post">
+                <input type="hidden" name="order" value="1">
+                <button class="button ghost small" type="submit" th:disabled="${evidenceReleaseStatus.firstPublicReleased()}">1차 공용 증거 공개</button>
+            </form>
+            <form action="/admin/evidence/private/release" method="post">
+                <input type="hidden" name="order" value="1">
+                <button class="button ghost small" type="submit" th:disabled="${evidenceReleaseStatus.firstPrivateReleased()}">1차 비공개 단서 지급</button>
+            </form>
+            <form action="/admin/evidence/public/release" method="post">
+                <input type="hidden" name="order" value="2">
+                <button class="button ghost small" type="submit" th:disabled="${!evidenceReleaseStatus.firstPublicReleased() || evidenceReleaseStatus.secondPublicReleased()}">2차 공용 증거 공개</button>
+            </form>
+            <form action="/admin/evidence/private/release" method="post">
+                <input type="hidden" name="order" value="2">
+                <button class="button ghost small" type="submit" th:disabled="${!evidenceReleaseStatus.firstPrivateReleased() || evidenceReleaseStatus.secondPrivateReleased()}">2차 비공개 단서 지급</button>
+            </form>
         </div>
         <div class="disclosure-board">
             <article class="disclosure-row" th:each="group : ${privateEvidenceStatuses}">

@@ -4057,80 +4057,89 @@ body[data-phase="VOTE"] .murder-stage::after {
 }
 
 .simple-evidence-board {
-    width: min(1180px, calc(100vw - 3rem));
-    margin: 1.5rem auto 4rem;
+    width: min(1120px, calc(100vw - 2rem));
+    margin: 1rem auto 3rem;
     display: grid;
-    gap: 1.4rem;
+    gap: 1rem;
 }
 
 .evidence-board-section {
     position: relative;
-    padding: clamp(1.2rem, 2vw, 2rem);
-    border: 1px solid rgba(177, 138, 69, 0.22);
+    padding: clamp(1rem, 1.8vw, 1.45rem);
+    border: 1px solid rgba(177, 138, 69, 0.18);
+    border-left: 4px solid rgba(177, 138, 69, 0.48);
+    border-radius: 6px;
     background:
-            radial-gradient(circle at 20% 0%, rgba(143, 23, 40, 0.14), transparent 38%),
-            linear-gradient(135deg, rgba(18, 11, 12, 0.82), rgba(5, 4, 5, 0.72));
-    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.48);
+            linear-gradient(135deg, rgba(29, 17, 18, 0.86), rgba(6, 5, 6, 0.72));
+    box-shadow: 0 1rem 2.4rem rgba(0, 0, 0, 0.34);
 }
 
 .evidence-board-section::before {
     content: "";
     position: absolute;
-    inset: 0.45rem;
+    inset: 0.35rem;
     border: 1px solid rgba(216, 189, 130, 0.12);
+    border-radius: 4px;
     pointer-events: none;
 }
 
 .section-heading {
-    max-width: 42rem;
-    margin-bottom: 1rem;
+    display: grid;
+    gap: 0.28rem;
+    max-width: 46rem;
+    margin-bottom: 0.8rem;
 }
 
 .section-heading h2 {
-    margin: 0.1rem 0 0.35rem;
+    margin: 0;
     font-family: "Cormorant Garamond", "Cinzel", serif;
     color: #ead7a1;
-    font-size: clamp(1.65rem, 3vw, 2.7rem);
+    font-size: clamp(1.35rem, 2.1vw, 2rem);
     letter-spacing: 0;
+    line-height: 1.08;
 }
 
 .section-heading p:not(.eyebrow) {
     margin: 0;
     color: rgba(239, 224, 184, 0.78);
-    line-height: 1.65;
+    line-height: 1.45;
 }
 
 .simple-evidence-grid {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.9rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.65rem;
 }
 
 .simple-evidence-grid.private {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 }
 
 .simple-evidence-card {
-    min-height: 9rem;
-    padding: 1.05rem 1rem;
-    border: 1px solid rgba(177, 138, 69, 0.32);
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid rgba(177, 138, 69, 0.34);
+    border-radius: 6px;
     color: #2b1714;
     text-align: left;
     cursor: pointer;
     background:
-            linear-gradient(rgba(216, 189, 130, 0.58), rgba(199, 166, 107, 0.7)),
-            url("/images/ui/parchment-note-wide.png") center / 100% 100% no-repeat;
-    box-shadow: 0 0.85rem 1.8rem rgba(0, 0, 0, 0.45);
-    transform: rotate(-0.35deg);
+            linear-gradient(180deg, rgba(235, 211, 160, 0.96), rgba(194, 157, 101, 0.94));
+    box-shadow: 0 0.55rem 1.25rem rgba(0, 0, 0, 0.32);
+    transform: none;
 }
 
 .simple-evidence-card .evidence-card-open {
-    display: block;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 0.34rem;
     width: 100%;
     border: 0;
-    padding: 0;
+    min-height: 6.6rem;
+    padding: 0.72rem 0.82rem;
     background: transparent;
     color: inherit;
     text-align: left;
@@ -4140,7 +4149,7 @@ body[data-phase="VOTE"] .murder-stage::after {
 .evidence-card-actions {
     position: relative;
     z-index: 2;
-    margin-top: 0.85rem;
+    padding: 0 0.9rem 0.85rem;
 }
 
 .evidence-card-actions .button {
@@ -4148,66 +4157,78 @@ body[data-phase="VOTE"] .murder-stage::after {
 }
 
 .simple-evidence-card:nth-child(even) {
-    transform: rotate(0.45deg);
+    transform: none;
 }
 
 .simple-evidence-card:hover,
 .simple-evidence-card:focus-visible {
     filter: brightness(1.05);
-    transform: translateY(-2px) rotate(0deg);
+    transform: translateY(-2px);
 }
 
 .simple-evidence-card span {
     display: inline-block;
-    margin-bottom: 0.42rem;
+    width: fit-content;
+    margin-bottom: 0;
+    padding: 0.18rem 0.42rem;
     color: #8f1728;
-    font-size: 0.74rem;
+    background: rgba(143, 23, 40, 0.1);
+    border: 1px solid rgba(143, 23, 40, 0.18);
+    border-radius: 999px;
+    font-size: 0.7rem;
     font-weight: 800;
+    line-height: 1.2;
 }
 
 .simple-evidence-card strong {
     display: block;
     color: #24110f;
-    font-family: "Cormorant Garamond", "Cinzel", serif;
-    font-size: 1.35rem;
-    line-height: 1.15;
+    font-family: "Noto Serif KR", "Nanum Myeongjo", serif;
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.18;
 }
 
 .simple-evidence-card em {
     display: block;
-    margin-top: 0.7rem;
+    margin-top: 0.1rem;
     color: rgba(43, 23, 20, 0.75);
     font-style: normal;
-    line-height: 1.45;
+    line-height: 1.35;
+    font-size: 0.8rem;
 }
 
 .simple-evidence-card small {
     display: inline-flex;
-    margin-top: 0.72rem;
-    padding-top: 0.42rem;
+    width: fit-content;
+    margin-top: 0.05rem;
+    padding-top: 0.28rem;
     border-top: 1px solid rgba(143, 23, 40, 0.28);
     color: #8f1728;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 800;
 }
 
 .simple-evidence-card.is-private {
     background:
-            linear-gradient(rgba(216, 189, 130, 0.62), rgba(199, 166, 107, 0.75)),
-            url("/images/ui/parchment-note-torn.png") center / 100% 100% no-repeat;
+            linear-gradient(180deg, rgba(238, 213, 158, 0.98), rgba(179, 139, 91, 0.96));
 }
 
 .simple-evidence-card.is-published-private {
     background:
-            linear-gradient(rgba(216, 189, 130, 0.58), rgba(160, 132, 92, 0.78)),
-            url("/images/ui/parchment-note-square.png") center / 100% 100% no-repeat;
+            linear-gradient(180deg, rgba(218, 197, 151, 0.98), rgba(151, 122, 83, 0.96));
 }
 
 .empty-evidence-note,
 .published-by-line {
     position: relative;
     z-index: 1;
+    margin: 0;
+    padding: 0.85rem 0.95rem;
     color: rgba(239, 224, 184, 0.72);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px dashed rgba(216, 189, 130, 0.22);
+    border-radius: 6px;
     line-height: 1.7;
 }
 
@@ -4399,6 +4420,17 @@ body[data-phase="VOTE"] .murder-stage::after {
     min-width: min(25rem, 100%);
 }
 
+.evidence-manual-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.evidence-manual-actions form {
+    margin: 0;
+}
+
 .timer-form.compact {
     grid-template-columns: 4.8rem 4.8rem auto;
     gap: 0.45rem;
@@ -4491,7 +4523,7 @@ body[data-phase="VOTE"] .murder-stage::after {
 
     .simple-evidence-grid,
     .simple-evidence-grid.private {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
     }
 
     .player-progress-guide {
@@ -4535,5 +4567,12 @@ body[data-phase="VOTE"] .murder-stage::after {
 
     .timer-form.compact .button {
         grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 520px) {
+    .simple-evidence-grid,
+    .simple-evidence-grid.private {
+        grid-template-columns: 1fr;
     }
 }

@@ -669,33 +669,21 @@ public class GameService {
 
     public List<AdminProgressStep> adminProgressSteps() {
         boolean storyDone = globalDisclosureStatus().storyUnlocked();
-        boolean publicOneDone = publicEvidenceReleaseLevel >= 1;
-        boolean privateOneDone = privateEvidenceReleaseLevel >= 1;
         boolean firstDiscussionDone = completedDiscussions.contains(GamePhase.FIRST_DISCUSSION);
-        boolean publicTwoDone = publicEvidenceReleaseLevel >= 2;
-        boolean privateTwoDone = privateEvidenceReleaseLevel >= 2;
-        boolean finalDiscussionDone = completedDiscussions.contains(GamePhase.FINAL_DISCUSSION);
+        boolean secondDiscussionDone = completedDiscussions.contains(GamePhase.SECOND_DISCUSSION);
         boolean voteStarted = state.getPhase() == GamePhase.VOTE || voteClosed || endingRevealed;
         return List.of(
                 adminStep(1, "개인 이야기 공개", storyDone, true, state.getPhase() == GamePhase.PRIVATE_STORY,
                         "/admin/reveal/story", null, null, "공개하기", "공개 완료", false),
-                adminStep(2, "1차 공용 증거 공개", publicOneDone, storyDone, state.getPhase() == GamePhase.FIRST_HINT && !publicOneDone,
-                        "/admin/evidence/public/release", 1, null, "공개하기", "공개 완료", false),
-                adminStep(3, "1차 비공개 단서 지급", privateOneDone, publicOneDone, state.getPhase() == GamePhase.FIRST_HINT && publicOneDone && !privateOneDone,
-                        "/admin/evidence/private/release", 1, null, "지급하기", "지급 완료", false),
-                adminStep(4, "1차 토론 진행", firstDiscussionDone, privateOneDone, state.getPhase() == GamePhase.FIRST_DISCUSSION && !firstDiscussionDone,
+                adminStep(2, "1차 토론 진행", firstDiscussionDone, storyDone, state.getPhase() == GamePhase.FIRST_DISCUSSION && !firstDiscussionDone,
                         "/admin/discussion/start", null, GamePhase.FIRST_DISCUSSION.name(), "토론 시작", "토론 완료", true),
-                adminStep(5, "2차 공용 증거 공개", publicTwoDone, firstDiscussionDone, state.getPhase() == GamePhase.SECOND_HINT && !publicTwoDone,
-                        "/admin/evidence/public/release", 2, null, "공개하기", "공개 완료", false),
-                adminStep(6, "2차 비공개 단서 지급", privateTwoDone, publicTwoDone, state.getPhase() == GamePhase.SECOND_HINT && publicTwoDone && !privateTwoDone,
-                        "/admin/evidence/private/release", 2, null, "지급하기", "지급 완료", false),
-                adminStep(7, "최종 토론 진행", finalDiscussionDone, privateTwoDone, state.getPhase() == GamePhase.FINAL_DISCUSSION && !finalDiscussionDone,
-                        "/admin/discussion/start", null, GamePhase.FINAL_DISCUSSION.name(), "토론 시작", "토론 완료", true),
-                adminStep(8, "투표 시작", voteStarted, finalDiscussionDone, state.getPhase() == GamePhase.VOTE && !voteClosed,
+                adminStep(3, "2차 토론 진행", secondDiscussionDone, firstDiscussionDone, state.getPhase() == GamePhase.SECOND_DISCUSSION && !secondDiscussionDone,
+                        "/admin/discussion/start", null, GamePhase.SECOND_DISCUSSION.name(), "토론 시작", "토론 완료", true),
+                adminStep(4, "투표 시작", voteStarted, secondDiscussionDone, state.getPhase() == GamePhase.VOTE && !voteClosed,
                         "/admin/vote/start", null, null, "투표 시작", "투표 시작됨", false),
-                adminStep(9, "투표 종료", voteClosed || endingRevealed, voteStarted && !endingRevealed, voteClosed && !endingRevealed,
+                adminStep(5, "투표 종료", voteClosed || endingRevealed, voteStarted && !endingRevealed, voteClosed && !endingRevealed,
                         "/admin/vote/end", null, null, "투표 종료", "투표 종료됨", false),
-                adminStep(10, "엔딩 공개", endingRevealed, voteClosed, endingRevealed,
+                adminStep(6, "엔딩 공개", endingRevealed, voteClosed, endingRevealed,
                         "/admin/reveal/ending", null, null, "엔딩 공개", "엔딩 공개됨", false)
         );
     }
@@ -711,7 +699,7 @@ public class GameService {
     private AdminProgressStep adminStep(int order, String title, boolean completed, boolean prerequisiteMet, boolean active,
                                         String action, Integer releaseOrder, String phaseName,
                                         String buttonLabel, String completedLabel, boolean timerControls) {
-        boolean enabled = !completed && !active;
+        boolean enabled = prerequisiteMet && !completed && !active;
         String status = completed ? "완료" : (active ? "진행 중" : (enabled ? "진행 가능" : "대기 중"));
         return new AdminProgressStep(order, title, status, enabled, completed, active, action, releaseOrder, phaseName,
                 enabled ? buttonLabel : (completed ? completedLabel : "잠김"), timerControls);
@@ -787,15 +775,15 @@ public class GameService {
     }
 
     public void startDiscussion(GamePhase phase, int minutes, int seconds) {
-        if (phase != GamePhase.FIRST_DISCUSSION && phase != GamePhase.FINAL_DISCUSSION) {
+        if (phase != GamePhase.FIRST_DISCUSSION && phase != GamePhase.SECOND_DISCUSSION) {
             return;
         }
         completedDiscussions.remove(phase);
         setTimer(minutes, seconds);
         state.setPhase(phase);
         startTimer();
-        if (phase == GamePhase.FINAL_DISCUSSION) {
-            triggerChapterCue("FINAL_RECORD", "마지막 기록", 4200,
+        if (phase == GamePhase.SECOND_DISCUSSION) {
+            triggerChapterCue("SECOND_DISCUSSION", "2차 토론", 4200,
                     "누군가는 진실을 숨겼다.",
                     "누군가는",
                     "자기 자신에게조차 숨겼다.");
@@ -803,7 +791,7 @@ public class GameService {
     }
 
     public void finishDiscussion(GamePhase phase) {
-        if (phase != GamePhase.FIRST_DISCUSSION && phase != GamePhase.FINAL_DISCUSSION) {
+        if (phase != GamePhase.FIRST_DISCUSSION && phase != GamePhase.SECOND_DISCUSSION) {
             return;
         }
         if (state.getPhase() != phase) {
