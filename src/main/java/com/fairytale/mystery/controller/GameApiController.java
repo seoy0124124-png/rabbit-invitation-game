@@ -147,7 +147,7 @@ public class GameApiController {
     }
 
     @PostMapping("/api/evidence/private/publish")
-    public ResponseEntity<Map<String, Object>> publishPrivateEvidence(@RequestParam String evidenceId, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> publishPrivateEvidence(@RequestParam("evidenceId") String evidenceId, HttpSession session) {
         Player player = gameService.currentPlayer(session).orElse(null);
         if (player == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
@@ -196,7 +196,7 @@ public class GameApiController {
     }
 
     @PostMapping("/api/vote")
-    public ResponseEntity<Map<String, Object>> vote(@RequestParam String suspectCode, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> vote(@RequestParam("suspectCode") String suspectCode, HttpSession session) {
         Player player = gameService.currentPlayer(session).orElse(null);
         if (player == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));
@@ -206,7 +206,7 @@ public class GameApiController {
     }
 
     @PostMapping("/api/share/hint")
-    public ResponseEntity<Map<String, Object>> shareHint(@RequestParam String hintId, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> shareHint(@RequestParam("hintId") String hintId, HttpSession session) {
         Player player = gameService.currentPlayer(session).orElse(null);
         if (player == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "입장이 필요합니다."));

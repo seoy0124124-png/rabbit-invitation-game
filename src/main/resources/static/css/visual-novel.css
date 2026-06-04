@@ -159,6 +159,71 @@ button.button,
     animation: vnRecordOpen 220ms ease-out both;
 }
 
+.vote-form.vote-board-frame {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+}
+
+.vote-form.vote-board-frame .vote-board-overlay {
+    color: var(--vn-ink);
+}
+
+.vote-form.vote-board-frame .vote-board-overlay .button,
+.vote-form.vote-board-frame .vote-board-overlay .button.primary {
+    color: #f8e6ba !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.55) !important;
+}
+
+.vote-form.vote-board-frame .vote-board-overlay .button:hover,
+.vote-form.vote-board-frame .vote-board-overlay .button.primary:hover {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    filter: brightness(1.12);
+}
+
+.private-clue-overlay .evidence-card-actions .button,
+.clue-modal-overlay .memory-actions .button,
+.private-confirm-overlay .button-row .button {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    color: #fff8df !important;
+}
+
+.private-clue-overlay .evidence-card-actions .button {
+    color: transparent !important;
+}
+
+.private-clue-overlay .evidence-card-actions .button::after {
+    color: #fff8df !important;
+}
+
+.private-clue-overlay .evidence-card-actions .button:hover,
+.clue-modal-overlay .memory-actions .button:hover,
+.private-confirm-overlay .button-row .button:hover {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    filter: brightness(1.12);
+}
+
+.private-clue-overlay .evidence-card-actions .button:hover {
+    transform: translateY(-1px) !important;
+}
+
 .panel-close {
     min-height: 1.85rem;
     padding: 0.3rem 0.72rem;

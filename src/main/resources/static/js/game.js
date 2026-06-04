@@ -119,7 +119,7 @@ const updateProgressGuidance = (state) => {
     const title = guide.querySelector("[data-progress-title]");
     const lineOne = guide.querySelector("[data-progress-line-one]");
     const lineTwo = guide.querySelector("[data-progress-line-two]");
-    const discussionPhases = ["FIRST_DISCUSSION", "SECOND_DISCUSSION", "FINAL_DISCUSSION"];
+    const discussionPhases = ["FIRST_DISCUSSION", "SECOND_DISCUSSION"];
     let copy = ["현재 진행 안내", "저택의 밤이 시작되기를 기다리고 있습니다.", "관리자의 진행에 따라 다음 기록이 열립니다."];
     if (state.endingRevealed || state.phase === "ENDING") {
         copy = ["엔딩 진행 중", "진실이 공개되고 있습니다.", "마지막 기록을 확인하세요."];
@@ -127,8 +127,10 @@ const updateProgressGuidance = (state) => {
         copy = ["투표 진행 중", "이제 범인이라고 생각하는 인물을 선택하세요.", "선택은 신중하게 결정해주세요."];
     } else if (discussionPhases.includes(state.phase)) {
         copy = ["토론 진행 중", "지금은 토론 중입니다.", "공개된 증거를 확인하고, 서로의 이야기를 비교해보세요."];
-    } else if (["FIRST_HINT", "SECOND_HINT", "THIRD_HINT"].includes(state.phase) && Number(state.privateEvidenceCount || 0) > 0) {
+    } else if (Number(state.privateEvidenceCount || 0) > 0) {
         copy = ["비공개 단서 도착", "당신에게 새로운 비공개 단서가 도착했습니다.", "다른 사람에게 말할지, 끝까지 숨길지는 당신의 선택입니다."];
+    } else if (Number(state.publicEvidenceCount || 0) > 0) {
+        copy = ["공용 증거 공개", "새로운 증거가 증거판에 공개되었습니다.", "확인한 내용을 토론 때 함께 비교해보세요."];
     } else if (state.personalStoryRevealed) {
         copy = ["개인 이야기 공개", "지금은 각자의 이야기를 읽는 시간입니다.", "당신의 이야기와 연기 힌트를 확인하세요."];
     }
@@ -398,6 +400,7 @@ const openMemoryEvidence = (button) => {
     const title = modal.querySelector("[data-memory-title]");
     const location = modal.querySelector("[data-memory-location]");
     const publicDescription = modal.querySelector("[data-memory-public-description]");
+    const memoryColumns = modal.querySelector(".memory-columns");
     const privateSection = modal.querySelector("[data-memory-private-section]");
     const privateInterpretation = modal.querySelector("[data-memory-private-interpretation]");
     const publishedBy = modal.querySelector("[data-memory-published-by]");
@@ -412,6 +415,9 @@ const openMemoryEvidence = (button) => {
         publicDescription.innerHTML = paragraphsHtml(button.dataset.memoryPublicDescription || button.dataset.memoryDescription || "");
     }
     const privateText = button.dataset.memoryPrivateInterpretation || "";
+    if (memoryColumns) {
+        memoryColumns.classList.toggle("has-private-detail", Boolean(privateText));
+    }
     if (privateSection) {
         privateSection.hidden = !privateText;
     }
@@ -463,7 +469,7 @@ const closePrivateEvidenceConfirm = () => {
     privateEvidencePublishState.title = "";
 };
 
-const renderEvidenceCard = (evidence, mode) => {
+const renderEvidenceCard = (evidence, mode, index = 0) => {
     const published = mode === "published-private";
     const privateMode = mode === "private";
     const publishable = privateMode && evidence.publishable;
@@ -487,7 +493,7 @@ const renderEvidenceCard = (evidence, mode) => {
         </div>
     ` : "";
     return `
-        <article class="simple-evidence-card ${privateMode ? "is-private" : ""} ${published ? "is-published-private" : ""}">
+        <article class="simple-evidence-card evidence-slot slot-${index + 1} ${privateMode ? "is-private" : ""} ${published ? "is-published-private" : ""}">
             <button class="evidence-card-open" type="button" data-memory-evidence
                     data-memory-mode="${mode}"
                     data-memory-title="${escapeHtml(evidence.title)}"
@@ -520,7 +526,24 @@ const renderEvidenceList = (selector, items, mode, emptyMessage) => {
         empty.textContent = emptyMessage;
         empty.hidden = items.length > 0;
     }
-    container.innerHTML = items.map((item) => renderEvidenceCard(item, mode)).join("");
+    if (section && section.classList.contains("game-frame")) {
+        section.classList.toggle("is-empty", items.length === 0);
+    }
+    container.innerHTML = items.map((item, index) => renderEvidenceCard(item, mode, index)).join("");
+};
+
+const updateVoteSelectedName = (form) => {
+    const voteForm = form || document.querySelector("[data-vote]");
+    if (!voteForm) {
+        return;
+    }
+    const selectedName = voteForm.querySelector("[data-vote-selected-name]");
+    const checked = voteForm.querySelector("input[name='suspectCode']:checked");
+    const label = checked ? checked.closest(".vote-target") : null;
+    const name = label ? label.querySelector("strong") : null;
+    if (selectedName && name) {
+        selectedName.textContent = name.textContent.trim();
+    }
 };
 
 const refreshEvidenceBoard = async () => {
@@ -570,6 +593,7 @@ const refreshState = async () => {
     });
     document.querySelectorAll("[data-vote]").forEach((node) => {
         node.hidden = state.phase !== "VOTE";
+        updateVoteSelectedName(node);
     });
     document.body.dataset.phase = state.phase;
     updateProgressGuidance(state);
@@ -796,6 +820,14 @@ document.addEventListener("input", (event) => {
     }
 });
 
+document.addEventListener("change", (event) => {
+    const voteInput = event.target.closest("[data-vote] input[name='suspectCode']");
+    if (voteInput) {
+        updateVoteSelectedName(voteInput.closest("[data-vote]"));
+    }
+});
+
+updateVoteSelectedName();
 refreshState();
 refreshEvidenceBoard();
 window.setInterval(refreshState, 1000);

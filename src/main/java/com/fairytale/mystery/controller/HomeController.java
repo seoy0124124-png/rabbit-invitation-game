@@ -34,7 +34,7 @@ public class HomeController {
     }
 
     @PostMapping("/enter")
-    public String enter(@RequestParam @NotBlank String code, HttpSession session, Model model) {
+    public String enter(@RequestParam("code") @NotBlank String code, HttpSession session, Model model) {
         return gameService.login(code, session)
                 .map(player -> player.code().equals("ADMIN") ? "redirect:/admin" : "redirect:/lobby")
                 .orElseGet(() -> {

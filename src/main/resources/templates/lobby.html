@@ -75,13 +75,27 @@
         <div class="story-body story-reader-body" data-acting-content hidden></div>
     </section>
 
-    <form class="floating-panel parchment vote-form" data-vote th:hidden="${state.phase.name() != 'VOTE'}">
-        <p class="eyebrow">투표</p>
-        <label for="suspectCode">범인 지목</label>
-        <select id="suspectCode" name="suspectCode">
-            <option th:each="suspect : ${suspects}" th:value="${suspect.code}" th:text="${suspect.name}">빨간망토</option>
-        </select>
-        <button class="button primary" type="submit">투표한다</button>
+    <form class="floating-panel parchment vote-form game-frame vote-board-frame" data-vote th:hidden="${state.phase.name() != 'VOTE'}">
+        <img class="game-frame-image" src="/images/ui/vote-board-frame.png" alt="">
+        <div class="game-frame-overlay vote-board-overlay">
+            <p class="eyebrow">투표</p>
+            <p class="vote-selected-name" data-vote-selected-name>빨간망토</p>
+            <fieldset class="vote-target-list" aria-label="범인 지목">
+                <label class="vote-target"
+                       th:each="suspect, stat : ${suspects}">
+                    <input type="radio"
+                           name="suspectCode"
+                           th:value="${suspect.code}"
+                           th:checked="${stat.index == 0}">
+                    <span class="vote-portrait-card">
+                        <img th:src="@{'/images/characters/' + ${#strings.toLowerCase(suspect.code)} + '.png'}"
+                             th:alt="${suspect.name}">
+                        <strong th:text="${suspect.name}">빨간망토</strong>
+                    </span>
+                </label>
+            </fieldset>
+            <button class="button primary" type="submit">투표한다</button>
+        </div>
     </form>
 
     <section class="ending-reveal" data-ending-reveal hidden aria-live="polite">

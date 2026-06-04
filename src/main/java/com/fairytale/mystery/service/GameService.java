@@ -633,7 +633,6 @@ public class GameService {
         int order = clampEvidenceRevealOrder(revealOrder);
         if (order == publicEvidenceReleaseLevel + 1) {
             publicEvidenceReleaseLevel = order;
-            state.setPhase(order == 1 ? GamePhase.FIRST_HINT : GamePhase.SECOND_HINT);
             if (order == 1) {
                 triggerChapterCue("ACT1_START", "1막 시작", 3800,
                         "눈은 계속 내리고 있었다.",
@@ -650,7 +649,6 @@ public class GameService {
         int order = clampEvidenceRevealOrder(revealOrder);
         if (order == privateEvidenceReleaseLevel + 1) {
             privateEvidenceReleaseLevel = order;
-            state.setPhase(order == 1 ? GamePhase.FIRST_HINT : GamePhase.SECOND_HINT);
             if (order == 1) {
                 triggerChapterCue("ACT1_LATE", "1막 후반", 3800,
                         "누구나",

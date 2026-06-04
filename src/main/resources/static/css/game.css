@@ -4232,6 +4232,458 @@ body[data-phase="VOTE"] .murder-stage::after {
     line-height: 1.7;
 }
 
+.game-frame {
+    position: relative;
+    overflow: hidden;
+}
+
+.game-frame-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+}
+
+.game-frame-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.evidence-board-section.game-frame {
+    width: min(1120px, calc(100vw - 2rem));
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.evidence-board-section.game-frame.is-empty {
+    aspect-ratio: auto;
+    min-height: clamp(10rem, 24vw, 15rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    border: 1px solid rgba(177, 138, 69, 0.22);
+    border-left: 4px solid rgba(177, 138, 69, 0.5);
+    background:
+            radial-gradient(circle at 50% 0, rgba(143, 23, 40, 0.08), transparent 14rem),
+            linear-gradient(135deg, rgba(29, 17, 18, 0.86), rgba(6, 5, 6, 0.72));
+    box-shadow: 0 1rem 2.4rem rgba(0, 0, 0, 0.34);
+}
+
+.evidence-board-section.game-frame.is-empty .game-frame-image,
+.evidence-board-section.game-frame.is-empty .game-frame-overlay {
+    display: none;
+}
+
+.evidence-board-section.game-frame:not(.is-empty) .evidence-empty-panel {
+    display: none;
+}
+
+.evidence-empty-panel {
+    width: min(36rem, 100%);
+    margin: 0;
+    padding: 1.2rem 1.4rem;
+    color: rgba(239, 224, 184, 0.82);
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px dashed rgba(216, 189, 130, 0.28);
+    border-radius: 6px;
+    line-height: 1.7;
+    text-align: center;
+}
+
+.evidence-board-section.game-frame::before {
+    content: none;
+}
+
+.evidence-board-frame {
+    aspect-ratio: 1448 / 1086;
+}
+
+.private-clue-board-frame {
+    aspect-ratio: 1448 / 1086;
+}
+
+.board-header {
+    position: absolute;
+    left: 30.4%;
+    top: 11.15%;
+    width: 39.2%;
+    height: 7.4%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: none;
+}
+
+.private-clue-overlay .board-header {
+    left: 29.3%;
+    top: 10.25%;
+    width: 41.4%;
+    height: 7.6%;
+}
+
+.board-header .eyebrow {
+    display: none;
+}
+
+.board-header h2 {
+    display: block;
+    width: auto !important;
+    max-width: 100%;
+    justify-self: auto;
+    margin: 0;
+    color: #21150f;
+    font-family: "Nanum Myeongjo", "Noto Serif KR", serif;
+    font-size: clamp(1.02rem, 1.95vw, 1.62rem);
+    font-weight: 950;
+    line-height: 1.08;
+    text-align: center;
+    text-shadow: 0 1px rgba(255,255,255,0.24);
+    word-break: keep-all;
+}
+
+.evidence-board-overlay .board-header h2 {
+    font-size: clamp(1.08rem, 2.1vw, 1.75rem);
+    font-weight: 1000;
+    text-shadow:
+            0 1px rgba(255,255,255,0.28),
+            0 0 0.18rem rgba(82, 46, 19, 0.12);
+}
+
+.board-header p:not(.eyebrow) {
+    display: none;
+}
+
+.evidence-frame-list {
+    position: absolute;
+    inset: 0;
+}
+
+.evidence-frame-list .empty-evidence-note {
+    position: absolute;
+    left: 12%;
+    top: 43%;
+    width: 76%;
+    padding: 0;
+    color: #d2b16b;
+    background: transparent;
+    border: 0;
+    text-align: center;
+}
+
+.evidence-slot {
+    position: absolute;
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: #21150f;
+    transform: none;
+}
+
+.evidence-slot.is-private,
+.evidence-slot.is-published-private {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.evidence-slot:hover,
+.evidence-slot:focus-visible {
+    filter: none;
+    transform: none;
+}
+
+.evidence-slot .evidence-card-open {
+    min-height: 100%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.42rem;
+    background: transparent;
+    text-align: center;
+}
+
+.evidence-slot .evidence-card-open > span {
+    display: none;
+}
+
+.evidence-slot strong {
+    color: #180f0b;
+    font-family: "Nanum Myeongjo", "Noto Serif KR", serif;
+    font-size: clamp(0.86rem, 1.62vw, 1.28rem);
+    line-height: 1.16;
+    text-align: center;
+    word-break: keep-all;
+    text-shadow: 0 1px rgba(255, 242, 211, 0.18);
+}
+
+.evidence-slot em {
+    color: rgba(24, 15, 11, 0.78);
+    font-size: clamp(0.64rem, 1.06vw, 0.9rem);
+    line-height: 1.25;
+    text-align: center;
+    word-break: keep-all;
+}
+
+.evidence-slot .evidence-card-open > small {
+    display: none;
+}
+
+.evidence-board-overlay .slot-1 { left: 11.4%; top: 30.5%; width: 22.5%; height: 17.8%; }
+.evidence-board-overlay .slot-2 { left: 40.4%; top: 30.5%; width: 22.5%; height: 17.8%; }
+.evidence-board-overlay .slot-3 { left: 68.6%; top: 30.5%; width: 22.5%; height: 17.8%; }
+.evidence-board-overlay .slot-4 { left: 11.4%; top: 62.5%; width: 22.5%; height: 17.8%; }
+.evidence-board-overlay .slot-5 { left: 40.4%; top: 62.5%; width: 22.5%; height: 17.8%; }
+.evidence-board-overlay .slot-6 { left: 68.6%; top: 62.5%; width: 22.5%; height: 17.8%; }
+
+.private-clue-overlay .slot-1 { left: 12.4%; top: 24.9%; width: 36.3%; height: 62.4%; }
+.private-clue-overlay .slot-2 { left: 53.9%; top: 24.9%; width: 36.4%; height: 62.4%; }
+
+.private-clue-overlay .evidence-slot .evidence-card-open {
+    height: 68%;
+    padding: 0 12%;
+}
+
+.private-clue-overlay .evidence-slot strong {
+    font-size: clamp(0.9rem, 1.8vw, 1.38rem);
+}
+
+.private-clue-overlay .evidence-slot em {
+    font-size: clamp(0.58rem, 1.1vw, 0.88rem);
+}
+
+.private-clue-overlay .evidence-card-actions {
+    position: absolute;
+    left: 4.8%;
+    right: 10%;
+    bottom: 6%;
+    height: 14.2%;
+    z-index: 4;
+    padding: 0;
+}
+
+.private-clue-overlay .evidence-card-actions .button,
+.clue-modal-overlay .memory-actions .button {
+    width: 100%;
+    color: #f3d6a0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.55);
+}
+
+.private-clue-overlay .evidence-card-actions .button {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: transparent;
+    font-family: "Noto Sans KR", "Noto Serif KR", sans-serif;
+    font-size: 0;
+    font-weight: 1000;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: visible;
+    transform: none;
+}
+
+.private-clue-overlay .evidence-card-actions .button::after {
+    content: "모두에게 공개하기";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    color: #fff8df;
+    font-family: "Noto Sans KR", "Noto Serif KR", sans-serif;
+    font-size: clamp(1.72rem, 3.9vw, 2.72rem);
+    font-weight: 1000;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    text-shadow:
+            0 2px 0 rgba(41, 4, 7, 0.92),
+            0 0 0.35rem rgba(255, 238, 184, 0.55),
+            0 0 0.9rem rgba(255, 238, 184, 0.28);
+}
+
+.private-clue-overlay .evidence-card-actions .button:hover,
+.clue-modal-overlay .memory-actions .button:hover {
+    color: #fff1c7;
+    transform: translateY(-1px);
+}
+
+.clue-modal-frame {
+    width: min(820px, 92vw);
+    aspect-ratio: 1 / 1;
+    max-height: min(88vh, 820px);
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    box-shadow: none;
+}
+
+.clue-modal-overlay {
+    padding: 0;
+    color: #21150f;
+}
+
+.clue-modal-overlay .memory-close {
+    position: absolute;
+    right: 6.8%;
+    top: 6.8%;
+    width: 7.5%;
+    height: 7.5%;
+    opacity: 0;
+}
+
+.clue-modal-overlay > .eyebrow {
+    position: absolute;
+    left: 22%;
+    top: 11%;
+    width: 56%;
+    margin: 0;
+    text-align: center;
+    color: #8c1f2e;
+}
+
+.clue-modal-overlay h2 {
+    position: absolute;
+    left: 16%;
+    top: 16.2%;
+    width: 68%;
+    margin: 0;
+    max-width: none;
+    color: #21150f;
+    font-size: clamp(1.2rem, 2.45vw, 1.85rem);
+    line-height: 1.12;
+    text-align: center;
+    word-break: keep-all;
+}
+
+.memory-columns {
+    position: absolute;
+    left: 18%;
+    top: 34%;
+    width: 64%;
+    height: 39%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.4rem;
+    overflow: hidden;
+}
+
+.memory-columns.has-private-detail {
+    left: 14%;
+    width: 72%;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.clue-modal-overlay .memory-section {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.clue-modal-overlay .memory-section h3 {
+    margin: 0 0 0.65rem;
+    color: #681421;
+}
+
+.clue-modal-overlay .memory-text {
+    color: #321d15;
+    font-size: clamp(0.78rem, 1.2vw, 0.96rem);
+    line-height: 1.62;
+    text-align: left;
+}
+
+.clue-modal-overlay .memory-actions {
+    position: absolute;
+    left: 32%;
+    right: 32%;
+    bottom: 13.4%;
+    margin: 0;
+}
+
+.clue-modal-overlay .published-by-line {
+    position: absolute;
+    left: 18%;
+    top: 27%;
+    width: 64%;
+    padding: 0;
+    color: #7a1827;
+    background: transparent;
+    border: 0;
+    text-align: center;
+}
+
+.private-confirm-overlay > .eyebrow {
+    display: none;
+}
+
+.private-confirm-overlay h2 {
+    left: 17%;
+    top: 13.2%;
+    width: 66%;
+    font-size: clamp(1.22rem, 2.25vw, 1.7rem);
+    line-height: 1.22;
+}
+
+.private-confirm-overlay > .memory-text {
+    position: absolute;
+    left: 22%;
+    top: 34%;
+    width: 56%;
+    height: 31.5%;
+    overflow: hidden;
+    color: #321d15;
+    font-size: clamp(0.95rem, 1.45vw, 1.08rem);
+    line-height: 1.7;
+    text-align: center;
+}
+
+.private-confirm-overlay .button-row {
+    position: absolute;
+    left: 30%;
+    right: 30%;
+    bottom: 11.8%;
+    height: 9.7%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin: 0;
+}
+
+.private-confirm-overlay .button-row .button {
+    min-height: 0;
+    height: 100%;
+    color: #ffe0a3;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    font-size: clamp(1.12rem, 2.25vw, 1.68rem);
+    font-weight: 950;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.55);
+}
+
+.private-confirm-overlay .button-row .button.ghost {
+    display: none;
+}
+
 .simple-evidence-paper {
     width: min(720px, 88vw);
     max-height: 78vh;
@@ -4250,6 +4702,226 @@ body[data-phase="VOTE"] .murder-stage::after {
     margin-top: 1.4rem;
     display: flex;
     justify-content: flex-end;
+}
+
+.simple-evidence-paper.clue-modal-frame {
+    width: min(820px, 92vw);
+    aspect-ratio: 1 / 1;
+    max-height: min(88vh, 820px);
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    box-shadow: none;
+}
+
+.vote-board-frame {
+    position: fixed !important;
+    left: 50vw !important;
+    top: 50vh !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 40;
+    width: min(720px, calc(100vw - 2rem), calc((100vh - 2rem) * 1.333));
+    aspect-ratio: 1448 / 1086;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    clip-path: none;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+}
+
+.vote-board-frame .game-frame-image {
+    transform: none;
+    transform-origin: center;
+}
+
+.vote-board-frame::before {
+    content: none;
+}
+
+.vote-board-overlay {
+    padding: 0;
+    color: #21150f;
+    text-align: center;
+}
+
+.vote-board-overlay .eyebrow {
+    display: none;
+}
+
+.vote-selected-name {
+    position: absolute;
+    left: 41.2%;
+    top: 49.7%;
+    width: 17.6%;
+    min-height: 5.2%;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    color: #fff3d8;
+    font-family: "Nanum Myeongjo", "Noto Serif KR", serif;
+    font-size: clamp(0.76rem, 1.55vw, 1.12rem);
+    font-weight: 900;
+    line-height: 1.15;
+    text-align: center;
+    text-shadow:
+            0 1px 1px rgba(0,0,0,0.92),
+            0 0 0.45rem rgba(255, 221, 150, 0.24);
+    pointer-events: none;
+    word-break: keep-all;
+}
+
+.vote-target-list {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.vote-target {
+    position: absolute;
+    display: block;
+    width: 17.15%;
+    height: 32.45%;
+}
+
+.vote-target:nth-of-type(1) {
+    left: 9.75%;
+    top: 13.75%;
+    --portrait-tilt: -4.6deg;
+}
+
+.vote-target:nth-of-type(2) {
+    left: 73.35%;
+    top: 13.75%;
+    --portrait-tilt: 4.6deg;
+}
+
+.vote-target:nth-of-type(3) {
+    left: 9.7%;
+    top: 52.35%;
+    width: 17.55%;
+    height: 32.6%;
+    --portrait-tilt: 2.4deg;
+}
+
+.vote-target:nth-of-type(4) {
+    left: 73.05%;
+    top: 52.45%;
+    width: 17.55%;
+    height: 32.55%;
+    --portrait-tilt: -2.4deg;
+}
+
+.vote-target input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.vote-portrait-card {
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    color: #2b1714;
+    background: transparent;
+    border: 0;
+    border-radius: 1px;
+    box-shadow: none;
+    text-align: center;
+    cursor: pointer;
+    transform: rotate(var(--portrait-tilt, 0deg));
+    transform-origin: center;
+    transition: transform 140ms ease, filter 140ms ease;
+    overflow: hidden;
+}
+
+.vote-portrait-card img {
+    align-self: stretch;
+    justify-self: center;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter:
+            saturate(0.86)
+            brightness(0.86)
+            contrast(1.12);
+    pointer-events: none;
+}
+
+.vote-portrait-card strong {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.vote-target input:checked + .vote-portrait-card {
+    color: #f7dfaa;
+    background:
+            radial-gradient(circle at 50% 46%, rgba(161, 26, 40, 0.24), transparent 66%);
+    box-shadow:
+            inset 0 0 0 2px rgba(205, 149, 57, 0.72),
+            inset 0 0 1.4rem rgba(128, 21, 34, 0.32);
+}
+
+.vote-target input:checked + .vote-portrait-card strong {
+    color: #f7dfaa;
+    text-shadow: 0 1px rgba(0,0,0,0.55);
+}
+
+.vote-target:hover .vote-portrait-card {
+    transform: translateY(-2px) rotate(var(--portrait-tilt, 0deg));
+    filter: brightness(1.05);
+}
+
+.vote-target input:focus-visible + .vote-portrait-card {
+    outline: 2px solid rgba(220, 176, 92, 0.88);
+    outline-offset: 2px;
+}
+
+.vote-board-overlay .button {
+    position: absolute;
+    left: 34.4%;
+    top: 68.4%;
+    bottom: auto;
+    width: 31.3%;
+    min-height: 9.6%;
+    padding: 0;
+    color: #f8e6ba;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: clamp(0.68rem, 1.4vw, 1rem);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+    cursor: pointer;
+}
+
+.vote-board-overlay .button:hover {
+    transform: none;
+    filter: brightness(1.12);
+    text-shadow:
+            0 1px 1px rgba(0,0,0,0.55),
+            0 0 0.45rem rgba(255, 228, 160, 0.35);
+}
+
+.vote-board-overlay .button:focus-visible {
+    outline: 2px solid rgba(240, 199, 112, 0.9);
+    outline-offset: -0.35rem;
 }
 
 .confirm-paper {

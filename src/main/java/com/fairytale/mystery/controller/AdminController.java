@@ -54,8 +54,8 @@ public class AdminController {
     }
 
     @PostMapping("/admin/timer/set")
-    public String setTimer(@RequestParam(defaultValue = "10") int minutes,
-                           @RequestParam(defaultValue = "0") int seconds,
+    public String setTimer(@RequestParam(value = "minutes", defaultValue = "10") int minutes,
+                           @RequestParam(value = "seconds", defaultValue = "0") int seconds,
                            HttpSession session) {
         if (isAdmin(session)) {
             gameService.setTimer(minutes, seconds);
@@ -96,7 +96,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/reveal/player-story")
-    public String revealPlayerStory(@RequestParam String playerCode, HttpSession session) {
+    public String revealPlayerStory(@RequestParam("playerCode") String playerCode, HttpSession session) {
         if (isAdmin(session)) {
             gameService.unlockPersonalStory(playerCode);
         }
@@ -104,7 +104,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/reveal/hint")
-    public String revealHint(@RequestParam String hintId, HttpSession session) {
+    public String revealHint(@RequestParam("hintId") String hintId, HttpSession session) {
         if (isAdmin(session)) {
             gameService.revealHint(hintId);
         }
@@ -112,7 +112,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/release/hints")
-    public String releaseHints(@RequestParam GamePhase phase, HttpSession session) {
+    public String releaseHints(@RequestParam("phase") GamePhase phase, HttpSession session) {
         if (isAdmin(session)) {
             gameService.releaseHintRound(phase);
         }
@@ -120,7 +120,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/evidence/public/release")
-    public String releasePublicEvidence(@RequestParam int order, HttpSession session) {
+    public String releasePublicEvidence(@RequestParam("order") int order, HttpSession session) {
         if (isAdmin(session)) {
             gameService.releasePublicEvidence(order);
         }
@@ -128,7 +128,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/evidence/private/release")
-    public String releasePrivateEvidence(@RequestParam int order, HttpSession session) {
+    public String releasePrivateEvidence(@RequestParam("order") int order, HttpSession session) {
         if (isAdmin(session)) {
             gameService.releasePrivateEvidence(order);
         }
@@ -136,9 +136,9 @@ public class AdminController {
     }
 
     @PostMapping("/admin/discussion/start")
-    public String startDiscussion(@RequestParam GamePhase phase,
-                                  @RequestParam(defaultValue = "10") int minutes,
-                                  @RequestParam(defaultValue = "0") int seconds,
+    public String startDiscussion(@RequestParam("phase") GamePhase phase,
+                                  @RequestParam(value = "minutes", defaultValue = "10") int minutes,
+                                  @RequestParam(value = "seconds", defaultValue = "0") int seconds,
                                   HttpSession session) {
         int step = phase == GamePhase.FIRST_DISCUSSION ? 2 : 3;
         if (isAdmin(session) && gameService.canRunProgressStep(step)) {
@@ -148,7 +148,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/discussion/end")
-    public String endDiscussion(@RequestParam GamePhase phase, HttpSession session) {
+    public String endDiscussion(@RequestParam("phase") GamePhase phase, HttpSession session) {
         boolean valid = phase == GamePhase.FIRST_DISCUSSION || phase == GamePhase.SECOND_DISCUSSION;
         if (isAdmin(session) && valid) {
             gameService.finishDiscussion(phase);
@@ -181,7 +181,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/reset")
-    public String resetGame(@RequestParam String resetCode, HttpSession session) {
+    public String resetGame(@RequestParam("resetCode") String resetCode, HttpSession session) {
         if (isAdmin(session) && "RESET".equals(resetCode)) {
             gameService.resetGameState();
         }
