@@ -207,7 +207,7 @@ button.button,
 }
 
 .private-clue-overlay .evidence-card-actions .button::after {
-    color: #fff8df !important;
+    color: #f4d99a !important;
 }
 
 .private-clue-overlay .evidence-card-actions .button:hover,

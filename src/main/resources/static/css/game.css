@@ -4502,24 +4502,27 @@ body[data-phase="VOTE"] .murder-stage::after {
     transform: none;
 }
 
+.private-clue-overlay .evidence-card-actions .button > * {
+    visibility: hidden;
+}
+
 .private-clue-overlay .evidence-card-actions .button::after {
     content: "모두에게 공개하기";
     position: absolute;
     left: 50%;
     top: 50%;
     z-index: 1;
-    color: #fff8df;
+    color: #f4d99a;
     font-family: "Noto Sans KR", "Noto Serif KR", sans-serif;
-    font-size: clamp(1.72rem, 3.9vw, 2.72rem);
+    font-size: clamp(1.25rem, 2.8vw, 1.95rem);
     font-weight: 1000;
     line-height: 1;
     white-space: nowrap;
     pointer-events: none;
     transform: translate(-50%, -50%);
     text-shadow:
-            0 2px 0 rgba(41, 4, 7, 0.92),
-            0 0 0.35rem rgba(255, 238, 184, 0.55),
-            0 0 0.9rem rgba(255, 238, 184, 0.28);
+            0 1px 1px rgba(24, 3, 5, 0.82),
+            0 0 0.28rem rgba(255, 225, 154, 0.28);
 }
 
 .private-clue-overlay .evidence-card-actions .button:hover,
@@ -4545,10 +4548,10 @@ body[data-phase="VOTE"] .murder-stage::after {
 
 .clue-modal-overlay .memory-close {
     position: absolute;
-    right: 6.8%;
-    top: 6.8%;
-    width: 7.5%;
-    height: 7.5%;
+    right: 4.2%;
+    top: 6.5%;
+    width: 12%;
+    height: 12%;
     opacity: 0;
 }
 
@@ -4636,32 +4639,49 @@ body[data-phase="VOTE"] .murder-stage::after {
 }
 
 .private-confirm-overlay h2 {
-    left: 17%;
-    top: 13.2%;
-    width: 66%;
-    font-size: clamp(1.22rem, 2.25vw, 1.7rem);
-    line-height: 1.22;
+    left: 22%;
+    top: 15.4%;
+    width: 56%;
+    font-size: clamp(0.9rem, 1.48vw, 1.15rem);
+    line-height: 1.28;
+    color: #25170f;
+    text-shadow: 0 1px rgba(255, 235, 190, 0.18);
 }
 
 .private-confirm-overlay > .memory-text {
     position: absolute;
-    left: 22%;
-    top: 34%;
-    width: 56%;
+    left: 18.5%;
+    top: 33.5%;
+    width: 34%;
     height: 31.5%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    column-gap: 0;
+    row-gap: 0.82rem;
     overflow: hidden;
     color: #321d15;
-    font-size: clamp(0.95rem, 1.45vw, 1.08rem);
-    line-height: 1.7;
+    font-size: clamp(0.86rem, 1.22vw, 0.98rem);
+    line-height: 1.68;
     text-align: center;
+}
+
+.private-confirm-overlay > .memory-text p {
+    margin: 0;
+}
+
+.private-confirm-overlay > .memory-text p:nth-child(3) {
+    grid-column: auto;
+    justify-self: stretch;
+    width: auto;
 }
 
 .private-confirm-overlay .button-row {
     position: absolute;
-    left: 30%;
-    right: 30%;
-    bottom: 11.8%;
-    height: 9.7%;
+    left: 33%;
+    right: 33%;
+    bottom: 12.8%;
+    height: 8.4%;
     display: grid;
     grid-template-columns: 1fr;
     gap: 0;
@@ -4675,9 +4695,10 @@ body[data-phase="VOTE"] .murder-stage::after {
     background: transparent;
     border: 0;
     box-shadow: none;
-    font-size: clamp(1.12rem, 2.25vw, 1.68rem);
+    font-size: clamp(0.98rem, 1.85vw, 1.34rem);
     font-weight: 950;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.55);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.6);
+    transform: translateY(-0.55rem);
 }
 
 .private-confirm-overlay .button-row .button.ghost {
