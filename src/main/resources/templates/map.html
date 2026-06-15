@@ -61,7 +61,9 @@
     <section class="evidence-board-section private-evidence-section game-frame private-clue-board-frame"
              th:classappend="${#lists.isEmpty(privateEvidence)} ? ' is-empty' : ''">
         <p class="empty-evidence-note evidence-empty-panel" th:if="${#lists.isEmpty(privateEvidence)}">아직 지급된 비공개 단서가 없습니다.</p>
-        <img class="game-frame-image" src="/images/ui/private-clue-board-frame.png" alt="">
+        <img class="game-frame-image"
+             th:src="${#lists.size(privateEvidence) == 1} ? '/images/ui/private-clue-board-frame-first.png' : '/images/ui/private-clue-board-frame.png'"
+             alt="">
         <div class="game-frame-overlay private-clue-overlay">
             <div class="section-heading board-header">
                 <p class="eyebrow">내가 받은 비공개 단서</p>

@@ -163,7 +163,7 @@ button.button,
     padding: 0 !important;
     border: 0 !important;
     background: transparent !important;
-    clip-path: none !important;
+    clip-path: inset(1px) !important;
     box-shadow: none !important;
 }
 
@@ -207,7 +207,7 @@ button.button,
 }
 
 .private-clue-overlay .evidence-card-actions .button::after {
-    color: #f4d99a !important;
+    color: #e8c77f !important;
 }
 
 .private-clue-overlay .evidence-card-actions .button:hover,
@@ -222,6 +222,22 @@ button.button,
 
 .private-clue-overlay .evidence-card-actions .button:hover {
     transform: translateY(-1px) !important;
+}
+
+.private-confirm-overlay .button-row .button,
+.private-confirm-overlay .button-row .button:hover {
+    color: #ffe0a3 !important;
+    background: linear-gradient(180deg, rgba(139, 25, 38, 0.96), rgba(87, 12, 22, 0.96)) !important;
+    border: 1px solid rgba(231, 183, 93, 0.55) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.32) !important;
+}
+
+.private-confirm-overlay .button-row .button.ghost,
+.private-confirm-overlay .button-row .button.ghost:hover {
+    color: #f0dbb0 !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(206, 163, 84, 0.35) !important;
 }
 
 .panel-close {

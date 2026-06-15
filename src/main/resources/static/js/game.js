@@ -434,6 +434,10 @@ const openMemoryEvidence = (button) => {
         publishButton.hidden = !publishable;
         publishButton.dataset.evidenceId = button.dataset.memoryId || "";
         publishButton.dataset.evidenceTitle = button.dataset.memoryTitle || "";
+        const actions = publishButton.closest(".memory-actions");
+        if (actions) {
+            actions.hidden = !publishable;
+        }
     }
     modal.hidden = false;
     document.body.classList.add("memory-modal-open");
@@ -520,7 +524,13 @@ const renderEvidenceList = (selector, items, mode, emptyMessage) => {
     if (!empty && section) {
         empty = document.createElement("p");
         empty.className = "empty-evidence-note";
-        section.insertBefore(empty, container);
+        if (container.parentNode === section) {
+            section.insertBefore(empty, container);
+        } else {
+            section.appendChild(empty);
+        }
+    } else if (empty && section && empty.parentNode !== section) {
+        section.appendChild(empty);
     }
     if (empty) {
         empty.textContent = emptyMessage;
@@ -528,6 +538,14 @@ const renderEvidenceList = (selector, items, mode, emptyMessage) => {
     }
     if (section && section.classList.contains("game-frame")) {
         section.classList.toggle("is-empty", items.length === 0);
+    }
+    if (mode === "private" && section) {
+        const frameImage = section.querySelector(".game-frame-image");
+        if (frameImage) {
+            frameImage.src = items.length === 1
+                ? "/images/ui/private-clue-board-frame-first.png"
+                : "/images/ui/private-clue-board-frame.png";
+        }
     }
     container.innerHTML = items.map((item, index) => renderEvidenceCard(item, mode, index)).join("");
 };
